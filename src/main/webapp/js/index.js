@@ -13,8 +13,8 @@
 // limitations under the License.
 
 $(function() {
-  var start = moment().subtract(29, 'days');
-  var end = moment();
+  const start = moment().subtract(29, 'days');
+  const end = moment();
 
   function cb(start, end) {
     $('#reportrange span')
