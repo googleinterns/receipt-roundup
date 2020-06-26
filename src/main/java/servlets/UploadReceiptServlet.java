@@ -30,6 +30,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.annotation.WebServlet;
@@ -45,11 +47,13 @@ import javax.servlet.http.HttpServletResponse;
 public class UploadReceiptServlet extends HttpServlet {
   // Matches JPEG image filenames.
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
+  // Logs to System.err by default.
+  private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
 
   /**
    * Creates a URL that uploads the receipt image to Blobstore when the user submits the upload
    * form. After Blobstore handles the parsing, storing, and hosting of the image, the form
-   * data and a URL where the image can be accessed is forwarded to this servlet as a POST
+   * data and a URL where the image can be accessed is forwarded to this servlet in a POST
    * request.
    */
   @Override
@@ -63,49 +67,75 @@ public class UploadReceiptServlet extends HttpServlet {
 
   /**
    * When the user submits the upload form, Blobstore processes the image and then forwards the
-   * request to this servlet. This servlet analyzes the receipt image and inserts information
+   * request to this servlet, which analyzes the receipt image and inserts information
    * about the receipt into Datastore.
    */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String imageUrl = getUploadedFileUrl(request, "receipt-image");
+    Optional<Entity> receipt = createReceiptEntity(request);
 
-    // TODO: Replace dummy values using receipt analysis with Cloud Vision.
+    if (!receipt.isPresent()) {
+      logger.severe("Valid JPEG file was not uploaded.");
+      response.sendRedirect("/");
+      return;
+    }
+
+    // Store the receipt entity in Datastore.
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.put(receipt.get());
+
+    // TODO: Redirect to receipt analysis page for MVP
+    response.sendRedirect("/");
+  }
+
+  /**
+   * Creates and returns a receipt entity, which includes the receipt image and
+   * information about the receipt, or null if the user didn't upload a JPEG file.
+   */
+  private Optional<Entity> createReceiptEntity(HttpServletRequest request) {
+    Optional<BlobKey> blobKeyOption = getUploadedBlobKey(request, "receipt-image");
+
+    if (!blobKeyOption.isPresent()) {
+      return Optional.empty();
+    }
+
+    BlobKey blobKey = blobKeyOption.get();
+    String imageUrl = getBlobServingUrl(blobKey);
+    long timestamp = System.currentTimeMillis();
     String label = request.getParameter("label");
+
+    // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
     double price = 5.89;
     String store = "McDonald's";
     String rawText = "McDonald’s Restaurant \n Order No. 389 \n "
         + "Qty Item Total \n 1 Big Mac 3.99 \n 1 M Iced Coffee 1.40 \n"
         + "Subtotal 5.39 \n Tax 0.50 \n Total 5.89";
-    long timestamp = System.currentTimeMillis();
 
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
+    receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("imageUrl", imageUrl);
+    receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
     receipt.setProperty("price", price);
     receipt.setProperty("store", store);
     receipt.setProperty("rawText", rawText);
-    receipt.setProperty("timestamp", timestamp);
 
-    // Store the receipt entity in Datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(receipt);
-
-    response.sendRedirect("/");
+    return Optional.of(receipt);
   }
 
   /**
-   * Returns a URL that points to the uploaded file, or null if the user didn't upload a file.
+   * Returns a URL that points to the uploaded file, or null if the user didn't upload a JPEG file.
    */
-  private String getUploadedFileUrl(HttpServletRequest request, String formInputElementName) {
+  private Optional<BlobKey> getUploadedBlobKey(
+      HttpServletRequest request, String formInputElementName) {
     BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(request);
     List<BlobKey> blobKeys = blobs.get(formInputElementName);
 
     // User submitted the form without selecting a file. (dev server)
     if (blobKeys == null || blobKeys.isEmpty()) {
-      return null;
+      return Optional.empty();
     }
 
     // The form only contains a single file input, so get the first index.
@@ -115,34 +145,30 @@ public class UploadReceiptServlet extends HttpServlet {
     BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
     if (blobInfo.getSize() == 0) {
       blobstoreService.delete(blobKey);
-      return null;
+      return Optional.empty();
     }
 
     // User uploaded a file that is not a JPEG.
     String filename = blobInfo.getFilename();
     if (!isValidFilename(filename)) {
       blobstoreService.delete(blobKey);
-      return null;
+      return Optional.empty();
     }
 
-    // Use ImagesService to get a URL that points to the uploaded file.
-    ImagesService imagesService = ImagesServiceFactory.getImagesService();
-    ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey);
-
-    // To support running in Google Cloud Shell with AppEngine's devserver, we must use the relative
-    // path to the image, rather than the path returned by imagesService which contains a host.
-    try {
-      URL url = new URL(imagesService.getServingUrl(options));
-      return url.getPath();
-    } catch (MalformedURLException e) {
-      return imagesService.getServingUrl(options);
-    }
+    return Optional.of(blobKey);
   }
 
   /**
-   * Checks if the filename is a valid JPEG file..
+   * Checks if the filename is a valid JPEG file.
    */
   private static boolean isValidFilename(String filename) {
     return validFilename.matcher(filename).matches();
+  }
+
+  /**
+   * Gets a URL that serves the blob file using the blob key.
+   */
+  private String getBlobServingUrl(BlobKey blobKey) {
+    return "/serve-image?blob-key=" + blobKey.getKeyString();
   }
 }
