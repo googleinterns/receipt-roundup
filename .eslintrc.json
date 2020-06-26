@@ -9,6 +9,7 @@
   "extends": ["eslint:recommended", "google"],
   "rules": {
     "no-multi-spaces": "off",
+    "no-unused-vars": ["error", { "vars": "local" }],
     "require-jsdoc": "off",
     "valid-jsdoc": "off"
   }
