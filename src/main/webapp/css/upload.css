@@ -1,0 +1,14 @@
+/* Form is hidden by default. */
+.hidden {
+  display: none;
+}
+
+h1,
+form {
+  text-align: center;
+}
+
+#submit-receipt {
+  font-size: 1.33em;
+  margin: 10px;
+}

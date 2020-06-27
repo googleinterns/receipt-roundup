@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<meta charset="UTF-8" />
+<title>Add a Receipt</title>
+
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/upload.css" />
+
+<script src="js/upload.js"></script>
+
+<body onload="fetchBlobstoreUrlAndShowForm()">
+  <button type="button" onclick="cancelUpload()">Cancel</button>
+  <h1>Upload a Receipt</h1>
+  <br /><br />
+
+  <form id="upload-form" class="hidden" method="post" enctype="multipart/form-data">
+    <label for="label">Enter a label for the receipt:</label>
+    <input type="text" name="label" placeholder="Receipt 1" required />
+    <br /><br />
+
+    <label for="receipt-image">Upload a receipt image:</label>
+    <input type="file" name="receipt-image" />
+    <br /><br />
+
+    <button id="submit-receipt" type="submit">Add Receipt</button>
+  </form>
+</body>
