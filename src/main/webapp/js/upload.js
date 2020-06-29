@@ -54,3 +54,17 @@ function checkFileUpload() {
     alert('A JPEG file was not uploaded.');
   }
 }
+
+/**
+ * Displays an error message if the user selects a file larger than 5 MB.
+ */
+function checkFileSize() {
+  const fileInput = document.getElementById('receipt-image-input');
+  const MAX_FILE_SIZE_BYTES = 5242880;
+
+  if (fileInput.files.length > 0 &&
+      fileInput.files[0].size > MAX_FILE_SIZE_BYTES) {
+    alert('Maximum file size is 5 MB.');
+    fileInput.value = '';
+  }
+}

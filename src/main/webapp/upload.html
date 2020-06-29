@@ -18,7 +18,14 @@
     <br /><br />
 
     <label for="receipt-image">Upload a receipt image:</label>
-    <input type="file" name="receipt-image" required />
+    <input
+      id="receipt-image-input"
+      type="file"
+      name="receipt-image"
+      accept="image/jpeg"
+      onchange="checkFileSize()"
+      required
+    />
     <br /><br />
 
     <button id="submit-receipt" type="submit">Add Receipt</button>
