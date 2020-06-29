@@ -20,6 +20,15 @@ function cancelUpload() {
 }
 
 /**
+ * Loads the form to upload a new receipt and displays an error message
+ * if the upload failed.
+ */
+function loadForm() {
+  fetchBlobstoreUrlAndShowForm();
+  checkFileUpload();
+}
+
+/**
  * Gets a Blobstore upload URL and connects it to the form for uploading a
  * receipt image, then reveals the form on the page.
  */
@@ -32,4 +41,16 @@ async function fetchBlobstoreUrlAndShowForm() {
 
   // The form is hidden by default.
   uploadForm.classList.remove('hidden');
+}
+
+/**
+ * Displays an error message if the user did not upload a JPEG file.
+ */
+function checkFileUpload() {
+  const queryString = window.location.search;
+  const urlParameters = new URLSearchParams(queryString);
+
+  if (urlParameters.get('upload-error') === 'true') {
+    alert('A JPEG file was not uploaded.');
+  }
 }

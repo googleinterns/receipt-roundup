@@ -7,7 +7,7 @@
 
 <script src="js/upload.js"></script>
 
-<body onload="fetchBlobstoreUrlAndShowForm()">
+<body onload="loadForm()">
   <button type="button" onclick="cancelUpload()">Cancel</button>
   <h1>Upload a Receipt</h1>
   <br /><br />
@@ -18,7 +18,7 @@
     <br /><br />
 
     <label for="receipt-image">Upload a receipt image:</label>
-    <input type="file" name="receipt-image" />
+    <input type="file" name="receipt-image" required />
     <br /><br />
 
     <button id="submit-receipt" type="submit">Add Receipt</button>

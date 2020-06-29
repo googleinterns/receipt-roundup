@@ -74,9 +74,10 @@ public class UploadReceiptServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Optional<Entity> receipt = createReceiptEntity(request);
 
+    // Redirect to upload page and display an error message.
     if (!receipt.isPresent()) {
-      logger.severe("Valid JPEG file was not uploaded.");
-      response.sendRedirect("/");
+      logger.warning("Valid JPEG file was not uploaded.");
+      response.sendRedirect("/upload.html?upload-error=true");
       return;
     }
 
@@ -90,7 +91,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
   /**
    * Creates and returns a receipt entity, which includes the receipt image and
-   * information about the receipt, or null if the user didn't upload a JPEG file.
+   * information about the receipt, or an empty Optional if the user didn't upload a JPEG file.
    */
   private Optional<Entity> createReceiptEntity(HttpServletRequest request) {
     Optional<BlobKey> blobKeyOption = getUploadedBlobKey(request, "receipt-image");
@@ -125,7 +126,8 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
-   * Returns a URL that points to the uploaded file, or null if the user didn't upload a JPEG file.
+   * Returns a URL that points to the uploaded file, or an empty Optional if the user didn't upload
+   * a JPEG file.
    */
   private Optional<BlobKey> getUploadedBlobKey(
       HttpServletRequest request, String formInputElementName) {
