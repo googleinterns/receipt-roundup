@@ -20,39 +20,39 @@ function cancelUpload() {
 }
 
 /**
- * Loads the form to upload a new receipt and displays an error message
- * if the upload failed.
+ * Sends a request to add a receipt to Blobstore.
  */
-function loadForm() {
-  fetchBlobstoreUrlAndShowForm();
-  checkFileUpload();
+async function uploadReceipt(event) {
+  // Prevent the default action of reloading the page on form submission.
+  event.preventDefault();
+
+  const uploadUrl = await fetchBlobstoreUrl();
+  const label = document.getElementById('label-input').value;
+  const image = document.getElementById('receipt-image-input').files[0];
+
+  const formData = new FormData();
+  formData.append('label', label);
+  formData.append('receipt-image', image);
+
+  const response = await fetch(uploadUrl, {method: 'POST', body: formData});
+
+  if (response.status === 413) {
+    alert('The maximum file size is 5 MB.');
+  } else if (response.status === 400) {
+    alert('A JPEG file was not uploaded.');
+  } else {
+    // TODO: Redirect to receipt analysis page for MVP
+    window.location.href = '/';
+  }
 }
 
 /**
- * Gets a Blobstore upload URL and connects it to the form for uploading a
- * receipt image, then reveals the form on the page.
+ * Gets a Blobstore upload URL for uploading a receipt image.
  */
-async function fetchBlobstoreUrlAndShowForm() {
+async function fetchBlobstoreUrl() {
   const response = await fetch('/upload-receipt');
   const imageUploadUrl = await response.text();
-
-  const uploadForm = document.getElementById('upload-form');
-  uploadForm.action = imageUploadUrl;
-
-  // The form is hidden by default.
-  uploadForm.classList.remove('hidden');
-}
-
-/**
- * Displays an error message if the user did not upload a JPEG file.
- */
-function checkFileUpload() {
-  const queryString = window.location.search;
-  const urlParameters = new URLSearchParams(queryString);
-
-  if (urlParameters.get('upload-error') === 'true') {
-    alert('A JPEG file was not uploaded.');
-  }
+  return imageUploadUrl;
 }
 
 /**
@@ -64,7 +64,7 @@ function checkFileSize() {
 
   if (fileInput.files.length > 0 &&
       fileInput.files[0].size > MAX_FILE_SIZE_BYTES) {
-    alert('Maximum file size is 5 MB.');
+    alert('The selected file exceeds the maximum file size of 5 MB.');
     fileInput.value = '';
   }
 }

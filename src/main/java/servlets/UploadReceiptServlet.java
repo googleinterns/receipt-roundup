@@ -77,19 +77,16 @@ public class UploadReceiptServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Optional<Entity> receipt = createReceiptEntity(request);
 
-    // Redirect to upload page and display an error message.
+    // Respond with status code 400, Bad Request.
     if (!receipt.isPresent()) {
       logger.warning("Valid JPEG file was not uploaded.");
-      response.sendRedirect("/upload.html?upload-error=true");
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No JPEG file uploaded.");
       return;
     }
 
     // Store the receipt entity in Datastore.
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(receipt.get());
-
-    // TODO: Redirect to receipt analysis page for MVP
-    response.sendRedirect("/");
   }
 
   /**

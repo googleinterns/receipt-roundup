@@ -7,27 +7,25 @@
 
 <script src="js/upload.js"></script>
 
-<body onload="loadForm()">
-  <button type="button" onclick="cancelUpload()">Cancel</button>
-  <h1>Upload a Receipt</h1>
+<button type="button" onclick="cancelUpload()">Cancel</button>
+<h1>Upload a Receipt</h1>
+<br /><br />
+
+<form id="upload-form" action="#" onsubmit="uploadReceipt(event)">
+  <label for="label">Enter a label for the receipt:</label>
+  <input id="label-input" type="text" name="label" placeholder="Receipt 1" required />
   <br /><br />
 
-  <form id="upload-form" class="hidden" method="post" enctype="multipart/form-data">
-    <label for="label">Enter a label for the receipt:</label>
-    <input type="text" name="label" placeholder="Receipt 1" required />
-    <br /><br />
+  <label for="receipt-image">Upload a receipt image:</label>
+  <input
+    id="receipt-image-input"
+    type="file"
+    name="receipt-image"
+    accept="image/jpeg"
+    onchange="checkFileSize()"
+    required
+  />
+  <br /><br />
 
-    <label for="receipt-image">Upload a receipt image:</label>
-    <input
-      id="receipt-image-input"
-      type="file"
-      name="receipt-image"
-      accept="image/jpeg"
-      onchange="checkFileSize()"
-      required
-    />
-    <br /><br />
-
-    <button id="submit-receipt" type="submit">Add Receipt</button>
-  </form>
-</body>
+  <button id="submit-receipt" type="submit">Add Receipt</button>
+</form>
