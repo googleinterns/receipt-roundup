@@ -12,6 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/** Fetches comments from the server and adds them to the DOM. */
+async function searchReceipts() {
+  const label = document.getElementById("search-input").value;
+  const response = await fetch(`/search-receipts?label=${label}`);
+  const receipts = await response.json();
+//   console.log(receipts);
+//   const commentsDisplayed = document.getElementById("comment-list");
+//   commentsDisplayed.innerHTML = "";
+
+//   comments.forEach((comment) => {
+//     commentsDisplayed.appendChild(createCommentElement(comment));
+//   });
+}
+
 $(function() {
   const start = moment().subtract(29, 'days');
   const end = moment();
