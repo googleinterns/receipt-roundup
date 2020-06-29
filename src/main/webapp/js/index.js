@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* Date range picker handler:
+ * https://www.daterangepicker.com/
+ */
 $(function() {
   const start = moment().subtract(29, 'days');
   const end = moment();
