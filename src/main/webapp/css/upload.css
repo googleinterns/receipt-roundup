@@ -1,8 +1,3 @@
-/* Form is hidden by default. */
-.hidden {
-  display: none;
-}
-
 h1,
 form {
   text-align: center;
