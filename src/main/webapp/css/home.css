@@ -1,0 +1,13 @@
+.time-range-form {
+  background: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  padding: 5px 10px;
+  width: 100%;
+}
+
+.receipt-img {
+  display: block;
+  height: 50%;
+  width: 100%;
+}
