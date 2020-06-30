@@ -44,15 +44,26 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String filePath = request.getParameter("file-path");
     ByteString imgBytes;
+    AnalysisResults results;
 
     // Ignore requests that don't specify a file path
     if (filePath == null) {
       return;
     }
 
-    imgBytes = readImageBytes(filePath);
+    try {
+      imgBytes = readImageBytes(filePath);
+    } catch (IOException e) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File path invalid.");
+      return;
+    }
 
-    AnalysisResults results = new AnalysisResults(retrieveText(imgBytes));
+    try {
+      results = new AnalysisResults(retrieveText(imgBytes));
+    } catch (IOException e) {
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to retrieve text.");
+      return;
+    }
 
     Gson gson = new Gson();
     response.setContentType("text/html;");
