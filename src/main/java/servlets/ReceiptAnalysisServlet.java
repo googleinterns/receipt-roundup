@@ -43,42 +43,50 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String filePath = request.getParameter("file-path");
+    ByteString imgBytes;
 
     // Ignore requests that don't specify a file path
     if (filePath == null) {
       return;
     }
 
-    AnalysisResults results = new AnalysisResults(retrieveText(filePath));
+    imgBytes = readImageBytes(filePath);
+
+    AnalysisResults results = new AnalysisResults(retrieveText(imgBytes));
 
     Gson gson = new Gson();
     response.setContentType("text/html;");
     response.getWriter().println(gson.toJson(results));
   }
 
-  /** Detects and retrieves text in the specified image. */
-  private static String retrieveText(String filePath) {
-    String description = "";
+  /** Reads the image bytes from the specified path. */
+  private static ByteString readImageBytes(String filePath) throws IOException {
+    ByteString imgBytes;
 
     try (InputStream fileInputStream = new FileInputStream(filePath)) {
-      List<AnnotateImageRequest> requests = new ArrayList<>();
+      imgBytes = ByteString.readFrom(fileInputStream);
+    }
 
-      ByteString imgBytes = ByteString.readFrom(fileInputStream);
+    return imgBytes;
+  }
 
-      Image img = Image.newBuilder().setContent(imgBytes).build();
-      Feature feat = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
-      AnnotateImageRequest request =
-          AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
-      requests.add(request);
+  /** Detects and retrieves text in the provided image. */
+  private static String retrieveText(ByteString imgBytes) throws IOException {
+    List<AnnotateImageRequest> requests = new ArrayList<>();
+    String description = "";
 
-      try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
-        BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
-        AnnotateImageResponse response = batchResponse.getResponsesList().get(0);
-        EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
+    Image img = Image.newBuilder().setContent(imgBytes).build();
+    Feature feat = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
+    AnnotateImageRequest request =
+        AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
+    requests.add(request);
 
-        description = annotation.getDescription();
-      }
-    } catch (IOException e) {
+    try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
+      BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
+      AnnotateImageResponse response = batchResponse.getResponsesList().get(0);
+      EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
+
+      description = annotation.getDescription();
     }
 
     return description;
