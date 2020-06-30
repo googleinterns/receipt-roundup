@@ -60,7 +60,7 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   }
 
   /** Reads the image bytes from the specified path. */
-  private static ByteString readImageBytes(String filePath) throws IOException {
+  private ByteString readImageBytes(String filePath) throws IOException {
     ByteString imgBytes;
 
     try (InputStream fileInputStream = new FileInputStream(filePath)) {
@@ -71,7 +71,7 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   }
 
   /** Detects and retrieves text in the provided image. */
-  private static String retrieveText(ByteString imgBytes) throws IOException {
+  private String retrieveText(ByteString imgBytes) throws IOException {
     List<AnnotateImageRequest> requests = new ArrayList<>();
     String description = "";
 
