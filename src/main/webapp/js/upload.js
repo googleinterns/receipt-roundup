@@ -60,7 +60,7 @@ async function fetchBlobstoreUrl() {
  */
 function checkFileSize() {
   const fileInput = document.getElementById('receipt-image-input');
-  const MAX_FILE_SIZE_BYTES = 5242880;
+  const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
   if (fileInput.files.length > 0 &&
       fileInput.files[0].size > MAX_FILE_SIZE_BYTES) {

@@ -45,7 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/upload-receipt")
 public class UploadReceiptServlet extends HttpServlet {
   // Max upload size of 5 MB.
-  private static final long MAX_UPLOAD_SIZE_BYTES = 5242880;
+  private static final long MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
   // Matches JPEG image filenames.
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
   // Logs to System.err by default.
