@@ -68,10 +68,17 @@
         </div>
       </div>
       <h1 class="text-center">Home</h1>
-      <form>
+      <form onsubmit="return false">
         <div class="row mb-4">
           <div class="col-md-4">
-            <input class="form-control mr-sm-2" name="label" id="search-input" placeholder="Search" required/>
+            <input
+              class="form-control mr-sm-2"
+              name="label"
+              id="search-input"
+              placeholder="Search"
+              type="text"
+              required
+            />
           </div>
           <div class="col-md-4">
             <div id="reportrange" class="time-range-form">
@@ -80,7 +87,9 @@
             </div>
           </div>
           <div class="col-md-4">
-            <button type='button' class="btn btn-outline-success my-2 my-sm-0" onclick="searchReceipts()">Search</button>
+            <button type="submit" class="btn btn-outline-success my-2 my-sm-0" onclick="searchReceipts()">
+              Search
+            </button>
           </div>
         </div>
       </form>
