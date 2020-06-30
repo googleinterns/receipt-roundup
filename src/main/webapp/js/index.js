@@ -72,7 +72,9 @@ function createReceiptCardElement(receipt) {
   return formattedHTML;
 }
 
-/* Calendar handler. */
+/* Date range picker handler:
+ * https://www.daterangepicker.com/
+ */
 $(function() {
   const start = moment().subtract(29, 'days');
   const end = moment();
