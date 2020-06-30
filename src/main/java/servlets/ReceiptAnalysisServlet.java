@@ -52,7 +52,7 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   }
 
   /** Detects and retrieves text in the specified image. */
-  public static String retrieveText(String filePath) {
+  private static String retrieveText(String filePath) {
     String description = "";
 
     try (InputStream fileInputStream = new FileInputStream(filePath)) {
