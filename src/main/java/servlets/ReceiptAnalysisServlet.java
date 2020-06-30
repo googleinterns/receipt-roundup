@@ -21,7 +21,9 @@ import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
+import com.google.sps.data.AnalysisResults;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,8 +49,11 @@ public class ReceiptAnalysisServlet extends HttpServlet {
       return;
     }
 
-    response.setContentType("text/html");
-    response.getWriter().println(retrieveText(filePath));
+    AnalysisResults results = new AnalysisResults(retrieveText(filePath));
+
+    Gson gson = new Gson();
+    response.setContentType("text/html;");
+    response.getWriter().println(gson.toJson(results));
   }
 
   /** Detects and retrieves text in the specified image. */
