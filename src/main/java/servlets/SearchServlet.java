@@ -18,12 +18,19 @@ import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.cloud.language.v1.Document;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.Sentiment;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.google.sps.data.Receipt;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet; 
 import java.util.List;
 import java.util.Set; 
@@ -32,73 +39,47 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.google.sps.data.Receipt;
 
-/** Servlet that adds a comment to the datastore. */
+/** Servlet that searches and returns matching receipts from datastore. */
 @WebServlet("/search-receipts")
 public class SearchServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String label = request.getParameter("label");
-    System.out.println("Label is: " + label);
-
-    // Filter niceComments = new FilterPredicate("sentimentScore", FilterOperator.GREATER_THAN_OR_EQUAL, COMMENT_FILTER_THRESHOLD);
-    // Query query = new Query("Comment").addSort("sentimentScore", SortDirection.DESCENDING);    
-    // query.setFilter(niceComments);
-
-    // DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    // List<Entity> results = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(numCommentsToDisplay));
-
-    // List<Comment> comments = new ArrayList<>();
-    // for (Entity entity : results) {
-    //   long id = entity.getKey().getId(); 
-    //   String name = (String) entity.getProperty("name");
-    //   String email = (String) entity.getProperty("email");
-    //   String subject = (String) entity.getProperty("subject");
-    //   String message = (String) entity.getProperty("message");
-    //   long timestamp = (long) entity.getProperty("timestamp");
-    //   double sentimentScore = (double) entity.getProperty("sentimentScore");
-
-    //   Comment comment = new Comment(id, name, email, subject, message, timestamp, sentimentScore);
-    //   comments.add(comment);
-    // }
-
-    List<Receipt> receipts = new ArrayList<>();
-    addTestReceipts(receipts);
+    String desiredLabel = request.getParameter("label");
+    List<Receipt> receipts = getReceiptsWithMatchingLabel(desiredLabel);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
     response.getWriter().println(gson.toJson(receipts)); 
   }
 
-  private void addTestReceipts(List<Receipt> receipts) {
-    // Create test blobkey object
-    BlobKey blobkey = new BlobKey("Test");
+  /* Return a list of receipts from datastore with the same label as desiredLabel.*/
+  private List<Receipt> getReceiptsWithMatchingLabel(String desiredLabel) {
+    // Set filter to retrieve only receipts with label equal to desiredLabel.
+    Filter matchingLabels = new FilterPredicate("label", FilterOperator.EQUAL, desiredLabel);
+    Query query = new Query("Receipt");    
+    query.setFilter(matchingLabels);
 
-    // Create test categories tags
-    Set<String> categories = new HashSet<String>(); 
-    categories.add("Candy"); 
-    categories.add("Drink"); 
-    categories.add("Personal");
+    List<Receipt> receipts = new ArrayList<>();
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
-    // Create test text translation
-    String rawText = "Wal-Mart\nAlways Low Prices at Wal-Mart\nAlways:\nWe Sell For Less\nManager Tim Stryczek...";
-    
-    // Add test receipts
-    Receipt receipt = new Receipt(1, 123, 6292020, blobkey, "img/walmart-receipt.jpg", 26.12, "Walmart", "hello", categories, rawText);
-    receipts.add(receipt);
+    // Iterate through matching receipt entities, convert them to receipt objects, and add to return list.
+    for (Entity entity : datastore.prepare(query).asIterable()) {
+      long id = entity.getKey().getId(); 
+      long userId = (long) entity.getProperty("userId");
+      long timestamp = (long) entity.getProperty("timestamp");
+      BlobKey blobkey = (BlobKey) entity.getProperty("blobkey");
+      String imageURL = (String) entity.getProperty("imageURL");
+      double price = (double) entity.getProperty("price");
+      String store = (String) entity.getProperty("store");
+      String label = (String) entity.getProperty("label");
+      Set<String> categories = new HashSet<String>((ArrayList) entity.getProperty("categories"));
+      String rawText = (String) entity.getProperty("rawText");
 
-    Receipt receipt1 = new Receipt(2, 123, 6302020, blobkey, "img/walmart-receipt.jpg", 26.12, "Walmart", "hello", categories, rawText);
-    receipts.add(receipt1);
-
-    Receipt receipt2 = new Receipt(3, 123, 7012020, blobkey, "img/walmart-receipt.jpg", 26.12, "Walmart", "test", categories, rawText);
-    receipts.add(receipt2);
-
-    Receipt receipt3 = new Receipt(4, 123, 7022020, blobkey, "img/walmart-receipt.jpg", 26.12, "Walmart", "test", categories, rawText);
-    receipts.add(receipt3);
-
-    Receipt receipt4 = new Receipt(5, 123, 7032020, blobkey, "img/walmart-receipt.jpg", 26.12, "Walmart", "test", categories, rawText);
-    receipts.add(receipt4);
+      Receipt receipt = new Receipt(id, userId, timestamp, blobkey, imageURL, price, store, label, categories, rawText);
+      receipts.add(receipt);
+    }
+    return receipts;
   }
 }

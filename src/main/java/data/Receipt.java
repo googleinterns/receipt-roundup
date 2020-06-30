@@ -17,6 +17,7 @@ package com.google.sps.data;
 import com.google.appengine.api.blobstore.BlobKey;
 import java.util.Set; 
 
+/* Class to represent a receipt and its properties.*/
 public class Receipt {
     private long id;
     private long userId;
@@ -38,7 +39,7 @@ public class Receipt {
         this.price = price;
         this.store = store;
         this.label = label;
-        this.categories = categories; // Do we need to make a copy?
+        this.categories = categories; 
         this.rawText = rawText;
     }
 }

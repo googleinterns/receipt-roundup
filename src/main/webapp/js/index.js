@@ -18,7 +18,7 @@ async function searchReceipts() {
   const response = await fetch(`/search-receipts?label=${label}`);
   const receipts = await response.json();
 
-  // Clear out old receipt display and populate them with new queried receipts.
+  // Clear out old receipt display and populate with new queried receipts.
   const receiptsDisplayed = document.getElementById("receipt-list");
   receiptsDisplayed.innerHTML = '';
   
@@ -31,7 +31,7 @@ async function searchReceipts() {
   * This card displays trasaction date, store name, trasaction total, categories, 
   * receipt photo, and view/edit/delete buttons. */
 function createReceiptCardElement(receipt) {
-  let categories = Array.from(receipt.categories)
+  let categories = Array.from(receipt.categories);
   var formattedHTML = '<div class="col-md-6">'+
 '          <div class="card mb-4 box-shadow">'+
 '            <p class="card-text align-self-end">' + receipt.timestamp + '</p>'+
