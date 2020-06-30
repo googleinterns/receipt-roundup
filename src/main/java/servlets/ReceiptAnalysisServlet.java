@@ -66,7 +66,7 @@ public class ReceiptAnalysisServlet extends HttpServlet {
     }
 
     Gson gson = new Gson();
-    response.setContentType("text/html;");
+    response.setContentType("application/json;");
     response.getWriter().println(gson.toJson(results));
   }
 
