@@ -38,6 +38,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Servlet with a GET handler that creates a URL that uploads a receipt image to Blobstore and
@@ -107,7 +110,7 @@ public class UploadReceiptServlet extends HttpServlet {
     String label = request.getParameter("label");
 
     // Create an entity with a kind of Receipt.
-    Entity receipt = analyzeReceiptImage(imageUrl);
+    Entity receipt = analyzeReceiptImage(imageUrl, request);
 
     if (receipt == null) {
       return Optional.empty();
@@ -173,15 +176,17 @@ public class UploadReceiptServlet extends HttpServlet {
   /**
    * Extracts the raw text from the image with the Cloud Vision API
    */
-  private Entity analyzeReceiptImage(String imageUrl) {
+  private Entity analyzeReceiptImage(String imageUrl, HttpServletRequest request) {
     AnalysisResults results = null;
-System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAa");
+
+imageUrl = getBaseUrl(request) + imageUrl;
+System.out.println(imageUrl);
     try {
       results = ReceiptAnalysis.serveImageText(imageUrl);
     } catch(IOException e) {
       return null;
     }
-System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+
     // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
     double price = 5.89;
     String store = "McDonald's";
@@ -193,5 +198,26 @@ System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBB");
     receipt.setUnindexedProperty("rawText", results.getRawText());
 
     return receipt;
+  }
+
+  private static String encodeValue(String value) {
+    try {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+    } catch (UnsupportedEncodingException ex) {
+        throw new RuntimeException(ex.getCause());
+    }
+  }
+
+  /**
+   *
+   */
+  private static String getBaseUrl(HttpServletRequest request) {
+    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+
+    if (baseUrl.equals("http://0.0.0.0:80")) {
+      baseUrl = "https://8080-9333ac09-1dd5-4f7f-8a7a-34f16c364c6b.us-east1.cloudshell.dev";
+    }
+
+    return baseUrl;
   }
 }
