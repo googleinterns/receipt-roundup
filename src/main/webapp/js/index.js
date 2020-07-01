@@ -26,8 +26,7 @@ function displayReceipts(label, receipts) {
   const receiptsDisplayed = document.getElementById('receipt-list');
   receiptsDisplayed.innerHTML = '';
 
-  // If no receipts were returned, display a message to the user. Else, display
-  // receipts.
+  // If no receipts returned, display an error message. Else, display receipts.
   if (Object.keys(receipts).length === 0) {
     receiptsDisplayed.innerHTML =
         '<div class="col-md-12 text-center error-message"><h3>' +
