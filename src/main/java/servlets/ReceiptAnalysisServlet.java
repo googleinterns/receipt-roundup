@@ -24,9 +24,9 @@ import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.annotation.WebServlet;
@@ -74,8 +74,8 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   private ByteString readImageBytes(String filePath) throws IOException {
     ByteString imgBytes;
 
-    try (InputStream fileInputStream = new FileInputStream(filePath)) {
-      imgBytes = ByteString.readFrom(fileInputStream);
+    try (InputStream imgInputStream = new URL(filePath).openStream()) {
+      imgBytes = ByteString.readFrom(imgInputStream);
     }
 
     return imgBytes;
