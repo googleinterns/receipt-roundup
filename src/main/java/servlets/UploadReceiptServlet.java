@@ -24,6 +24,7 @@ import com.google.appengine.api.blobstore.UploadOptions.Builder;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -80,7 +81,7 @@ public class UploadReceiptServlet extends HttpServlet {
     // Respond with status code 400, Bad Request.
     if (!receipt.isPresent()) {
       logger.warning("Valid JPEG file was not uploaded.");
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No JPEG file uploaded.");
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid JPEG file uploaded.");
       return;
     }
 
@@ -96,6 +97,7 @@ public class UploadReceiptServlet extends HttpServlet {
   private Optional<Entity> createReceiptEntity(HttpServletRequest request) {
     Optional<BlobKey> blobKeyOption = getUploadedBlobKey(request, "receipt-image");
 
+    // Either a file was not selected by the user or the uploaded file was not a JPEG.
     if (!blobKeyOption.isPresent()) {
       return Optional.empty();
     }
@@ -105,22 +107,19 @@ public class UploadReceiptServlet extends HttpServlet {
     long timestamp = System.currentTimeMillis();
     String label = request.getParameter("label");
 
-    // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
-    double price = 5.89;
-    String store = "McDonald's";
-    String rawText = "McDonald’s Restaurant \n Order No. 389 \n "
-        + "Qty Item Total \n 1 Big Mac 3.99 \n 1 M Iced Coffee 1.40 \n"
-        + "Subtotal 5.39 \n Tax 0.50 \n Total 5.89";
-
     // Create an entity with a kind of Receipt.
-    Entity receipt = new Entity("Receipt");
+    Optional<Entity> receiptOption = analyzeReceiptImage(imageUrl, request);
+
+    // Either the image url was an invalid path or text extraction failed.
+    if (!receiptOption.isPresent()) {
+      return Optional.empty();
+    }
+
+    Entity receipt = receiptOption.get();
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("imageUrl", imageUrl);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
-    receipt.setProperty("price", price);
-    receipt.setProperty("store", store);
-    receipt.setProperty("rawText", rawText);
 
     return Optional.of(receipt);
   }
@@ -172,5 +171,48 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private String getBlobServingUrl(BlobKey blobKey) {
     return "/serve-image?blob-key=" + blobKey.getKeyString();
+  }
+
+  /**
+   * Extracts the raw text from the image with the Cloud Vision API. Returns a receipt
+   * entity populated with the extracted fields on success, and an empty optional if
+   * the analysis failed.
+   */
+  private Optional<Entity> analyzeReceiptImage(String imageUrl, HttpServletRequest request) {
+    String absoluteUrl = getBaseUrl(request) + imageUrl;
+    AnalysisResults results = null;
+
+    try {
+      results = ReceiptAnalysis.serveImageText(absoluteUrl);
+    } catch (IOException e) {
+      return Optional.empty();
+    }
+
+    // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
+    double price = 5.89;
+    String store = "McDonald's";
+
+    // Create an entity with a kind of Receipt.
+    Entity receipt = new Entity("Receipt");
+    receipt.setProperty("price", price);
+    receipt.setProperty("store", store);
+    receipt.setUnindexedProperty("rawText", results.getRawText());
+
+    return Optional.of(receipt);
+  }
+
+  /**
+   * Get the base URL of the application for either the dev server or deployment.
+   */
+  private String getBaseUrl(HttpServletRequest request) {
+    String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
+        + request.getServerPort() + request.getContextPath();
+
+    // URL for dev server.
+    if (baseUrl.equals("http://0.0.0.0:80")) {
+      return "https://8080-9333ac09-1dd5-4f7f-8a7a-34f16c364c6b.us-east1.cloudshell.dev";
+    }
+
+    return baseUrl;
   }
 }
