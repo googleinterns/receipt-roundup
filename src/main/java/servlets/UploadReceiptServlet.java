@@ -24,6 +24,7 @@ import com.google.appengine.api.blobstore.UploadOptions.Builder;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -105,22 +106,17 @@ public class UploadReceiptServlet extends HttpServlet {
     long timestamp = System.currentTimeMillis();
     String label = request.getParameter("label");
 
-    // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
-    double price = 5.89;
-    String store = "McDonald's";
-    String rawText = "McDonald’s Restaurant \n Order No. 389 \n "
-        + "Qty Item Total \n 1 Big Mac 3.99 \n 1 M Iced Coffee 1.40 \n"
-        + "Subtotal 5.39 \n Tax 0.50 \n Total 5.89";
-
     // Create an entity with a kind of Receipt.
-    Entity receipt = new Entity("Receipt");
+    Entity receipt = analyzeReceiptImage(imageUrl);
+
+    if (receipt == null) {
+      return Optional.empty();
+    }
+
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("imageUrl", imageUrl);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
-    receipt.setProperty("price", price);
-    receipt.setProperty("store", store);
-    receipt.setProperty("rawText", rawText);
 
     return Optional.of(receipt);
   }
@@ -172,5 +168,30 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private String getBlobServingUrl(BlobKey blobKey) {
     return "/serve-image?blob-key=" + blobKey.getKeyString();
+  }
+
+  /**
+   * Extracts the raw text from the image with the Cloud Vision API
+   */
+  private Entity analyzeReceiptImage(String imageUrl) {
+    AnalysisResults results = null;
+System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAa");
+    try {
+      results = ReceiptAnalysis.serveImageText(imageUrl);
+    } catch(IOException e) {
+      return null;
+    }
+System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBB");
+    // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
+    double price = 5.89;
+    String store = "McDonald's";
+
+    // Create an entity with a kind of Receipt.
+    Entity receipt = new Entity("Receipt");
+    receipt.setProperty("price", price);
+    receipt.setProperty("store", store);
+    receipt.setUnindexedProperty("rawText", results.getRawText());
+
+    return receipt;
   }
 }
