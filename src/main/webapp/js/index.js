@@ -29,7 +29,7 @@ async function searchReceipts() {
 
 /**
  * Returns an HTML string that represents a receipt card.
- * This card displays trasaction date, store name, trasaction total, categories,
+ * This card displays transaction date, store name, trasaction total, categories,
  * receipt photo, and view/edit/delete buttons.
  */
 function createReceiptCardElement(receipt) {
@@ -53,7 +53,7 @@ function createReceiptCardElement(receipt) {
       '</span></h4>' +
       '</div>' +
       '</div>' +
-      '<img src=' + receipt.imageURL +
+      '<img src=' + receipt.imageUrl +
       ' alt="Receipt image" class="img-fluid receipt-img" />' +
       '<div class="card-body">' +
       '<div class="d-flex justify-content-between align-items-center">' +

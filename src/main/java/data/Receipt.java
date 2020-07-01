@@ -16,31 +16,32 @@ package com.google.sps.data;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /* Class to represent a receipt and its properties.*/
 public class Receipt {
   private long id;
   private long userId;
   private long timestamp;
-  private BlobKey blobkey;
-  private String imageURL;
+  private BlobKey blobKey;
+  private String imageUrl;
   private double price;
   private String store;
   private String label;
   private Set<String> categories;
   private String rawText;
 
-  public Receipt(long id, long userId, long timestamp, BlobKey blobkey, String imageURL,
+  public Receipt(long id, long userId, long timestamp, BlobKey blobKey, String imageUrl,
       double price, String store, String label, Set<String> categories, String rawText) {
     this.id = id;
     this.userId = userId;
     this.timestamp = timestamp;
-    this.blobkey = blobkey;
-    this.imageURL = imageURL;
+    this.blobKey = blobKey;
+    this.imageUrl = imageUrl;
     this.price = price;
     this.store = store;
     this.label = label;
-    this.categories = categories;
+    this.categories = categories.stream().collect(Collectors.toSet()); // creates a deep copy
     this.rawText = rawText;
   }
 }
