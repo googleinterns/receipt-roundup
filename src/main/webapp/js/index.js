@@ -29,8 +29,8 @@ async function searchReceipts() {
 
 /**
  * Returns an HTML string that represents a receipt card.
- * This card displays transaction date, store name, trasaction total, categories,
- * receipt photo, and view/edit/delete buttons.
+ * This card displays transaction date, store name, trasaction total,
+ * categories, receipt photo, and view/edit/delete buttons.
  */
 function createReceiptCardElement(receipt) {
   const categories = Array.from(receipt.categories);

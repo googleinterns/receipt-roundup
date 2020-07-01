@@ -31,8 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -64,20 +64,22 @@ public class SearchServlet extends HttpServlet {
     // Convert matching receipt entities to receipt objects and add to return list.
     Spliterator<Entity> spliterator = datastore.prepare(query).asIterable().spliterator();
     Stream<Entity> entities = StreamSupport.stream(spliterator, false);
-    List<Receipt> receipts = entities.map(entity -> {
-      long id = entity.getKey().getId();
-      long userId = (long) entity.getProperty("userId");
-      long timestamp = (long) entity.getProperty("timestamp");
-      BlobKey blobKey = (BlobKey) entity.getProperty("blobKey");
-      String imageUrl = (String) entity.getProperty("imageUrl");
-      double price = (double) entity.getProperty("price");
-      String store = (String) entity.getProperty("store");
-      String label = (String) entity.getProperty("label");
-      Set<String> categories = new HashSet<String>((ArrayList) entity.getProperty("categories"));
-      String rawText = (String) entity.getProperty("rawText");
-    return new Receipt(id, userId, timestamp, blobKey, imageUrl, price, store, label, categories, rawText);
-    }).collect(Collectors.toList());
-
-    return receipts;
+    return entities
+        .map(entity -> {
+          long id = entity.getKey().getId();
+          long userId = (long) entity.getProperty("userId");
+          long timestamp = (long) entity.getProperty("timestamp");
+          BlobKey blobKey = (BlobKey) entity.getProperty("blobKey");
+          String imageUrl = (String) entity.getProperty("imageUrl");
+          double price = (double) entity.getProperty("price");
+          String store = (String) entity.getProperty("store");
+          String label = (String) entity.getProperty("label");
+          Set<String> categories =
+              new HashSet<String>((ArrayList) entity.getProperty("categories"));
+          String rawText = (String) entity.getProperty("rawText");
+          return new Receipt(
+              id, userId, timestamp, blobKey, imageUrl, price, store, label, categories, rawText);
+        })
+        .collect(Collectors.toList());
   }
 }
