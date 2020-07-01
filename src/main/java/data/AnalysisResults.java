@@ -18,7 +18,7 @@ package com.google.sps.data;
  * Object for holding the analysis results served by ReceiptAnalysisServlet.
  */
 public class AnalysisResults {
-  String rawText;
+  private String rawText;
 
   public AnalysisResults(String rawText) {
     this.rawText = rawText;
