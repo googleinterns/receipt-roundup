@@ -67,15 +67,19 @@ public class SearchServlet extends HttpServlet {
     return entities
         .map(entity -> {
           long id = entity.getKey().getId();
-          long userId = (long) entity.getProperty("userId");
+          long userId = 1;
           long timestamp = (long) entity.getProperty("timestamp");
           BlobKey blobKey = (BlobKey) entity.getProperty("blobKey");
           String imageUrl = (String) entity.getProperty("imageUrl");
           double price = (double) entity.getProperty("price");
           String store = (String) entity.getProperty("store");
           String label = (String) entity.getProperty("label");
-          Set<String> categories =
-              new HashSet<String>((ArrayList) entity.getProperty("categories"));
+        //   Set<String> categories =
+        //       new HashSet<String>((ArrayList) entity.getProperty("categories"));
+          Set<String> categories = new HashSet<>();
+          categories.add("food");
+          categories.add("drink");
+          categories.add("personal");
           String rawText = (String) entity.getProperty("rawText");
           return new Receipt(
               id, userId, timestamp, blobKey, imageUrl, price, store, label, categories, rawText);
