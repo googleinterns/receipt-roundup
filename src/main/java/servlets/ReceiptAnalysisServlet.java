@@ -42,6 +42,11 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   /** Serves the text of the image at the requested file path. */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    serveImageText(request, response);
+  }
+
+  private void serveImageText(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
     String filePath = request.getParameter("file-path");
     ByteString imgBytes;
     AnalysisResults results;
