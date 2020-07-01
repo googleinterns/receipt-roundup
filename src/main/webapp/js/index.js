@@ -18,14 +18,28 @@ async function searchReceipts() {
   const response = await fetch(`/search-receipts?label=${label}`);
   const receipts = await response.json();
 
-  // Clear out old receipt display and populate with new queried receipts.
+  displayReceipts(label, receipts);
+}
+
+/* Clear out old receipt display and populate with new queried receipts. */
+function displayReceipts(label, receipts) {
   const receiptsDisplayed = document.getElementById('receipt-list');
   receiptsDisplayed.innerHTML = '';
 
-  receipts.forEach((receipt) => {
-    receiptsDisplayed.innerHTML += createReceiptCardElement(receipt);
-  });
+  // If no receipts were returned, display a message to the user. Else, display
+  // receipts.
+  if (Object.keys(receipts).length === 0) {
+    receiptsDisplayed.innerHTML =
+        '<div class="col-md-12 text-center error-message"><h3>' +
+        'Sorry, no results found for "' + label +
+        '". Please try your search again or try a different query.</h3></div>';
+  } else {
+    receipts.forEach((receipt) => {
+      receiptsDisplayed.innerHTML += createReceiptCardElement(receipt);
+    });
+  }
 }
+
 
 /**
  * Returns an HTML string that represents a receipt card.
