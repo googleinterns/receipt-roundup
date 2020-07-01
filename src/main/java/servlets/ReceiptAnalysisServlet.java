@@ -14,6 +14,8 @@
 
 package com.google.sps.servlets;
 
+import com.google.gson.Gson;
+import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -29,6 +31,17 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   /** Serves the text of the image at the requested URL. */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    ReceiptAnalysis.serveImageText(request, response);
+    String url = request.getParameter("url");
+
+    // Ignore requests that don't specify a URL
+    if (url == null) {
+      return;
+    }
+
+    AnalysisResults results = ReceiptAnalysis.serveImageText(url);
+
+    Gson gson = new Gson();
+    response.setContentType("application/json;");
+    response.getWriter().println(gson.toJson(results));
   }
 }

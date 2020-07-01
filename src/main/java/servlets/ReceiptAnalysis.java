@@ -21,7 +21,6 @@ import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
@@ -37,34 +36,10 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ReceiptAnalysis {
   /** Serves the text of the image at the requested URL. */
-  public static void serveImageText(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    String url = request.getParameter("url");
-    ByteString imgBytes;
-    AnalysisResults results;
+  public static AnalysisResults serveImageText(String url) throws IOException {
+    ByteString imgBytes = readImageBytes(url);
 
-    // Ignore requests that don't specify a URL
-    if (url == null) {
-      return;
-    }
-
-    try {
-      imgBytes = readImageBytes(url);
-    } catch (IOException e) {
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "URL invalid.");
-      return;
-    }
-
-    try {
-      results = new AnalysisResults(retrieveText(imgBytes));
-    } catch (IOException e) {
-      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to retrieve text.");
-      return;
-    }
-
-    Gson gson = new Gson();
-    response.setContentType("application/json;");
-    response.getWriter().println(gson.toJson(results));
+    return retrieveText(imgBytes);
   }
 
   /** Reads the image bytes from the URL. */
@@ -79,7 +54,7 @@ public class ReceiptAnalysis {
   }
 
   /** Detects and retrieves text in the provided image. */
-  private static String retrieveText(ByteString imgBytes) throws IOException {
+  private static AnalysisResults retrieveText(ByteString imgBytes) throws IOException {
     List<AnnotateImageRequest> requests = new ArrayList<>();
     String description = "";
 
@@ -97,6 +72,6 @@ public class ReceiptAnalysis {
       description = annotation.getDescription();
     }
 
-    return description;
+    return new AnalysisResults(description);
   }
 }
