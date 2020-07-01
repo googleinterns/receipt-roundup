@@ -32,10 +32,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Class with a method that serves the text of the specified image using the Cloud Vision API.
+ * Class with a method that returns the text of the specified image using the Cloud Vision API.
  */
 public class ReceiptAnalysis {
-  /** Serves the text of the image at the requested URL. */
+  /** Returns the text of the image at the requested URL. */
   public static AnalysisResults serveImageText(String url) throws IOException {
     ByteString imgBytes = readImageBytes(url);
 
