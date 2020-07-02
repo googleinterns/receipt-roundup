@@ -56,6 +56,41 @@ async function fetchBlobstoreUrl() {
 }
 
 /**
+ * Converts the formatted price back to a number when the user
+ * selects the price input.
+ */
+function convertPricetoValue(event){
+  const value = event.target.value;
+  event.target.value = value ? convertStringToNumber(value) : '';
+}
+
+/**
+ * Converts a string value into a number, removing all non-numeric characters.
+ */
+function convertStringToNumber(string){
+  return Number(String(string).replace(/[^0-9.]+/g,""));
+}
+
+/**
+ * Converts the number inputted by the user to a formatted string when
+ * the user unfocuses from the price input.
+ */
+function formatCurrency(event){
+  const value = event.target.value
+
+  if (value) {
+    event.target.value = convertStringToNumber(value).toLocaleString(undefined, {
+      maximumFractionDigits: 2,
+      currency: 'USD',
+      style: "currency",
+      currencyDisplay: "symbol",
+    });
+  } else {
+    event.target.value = '';  
+  }
+}
+
+/**
  * Displays an error message if the user selects a file larger than 5 MB.
  */
 function checkFileSize() {
