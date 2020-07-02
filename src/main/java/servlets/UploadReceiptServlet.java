@@ -76,67 +76,58 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Optional<Entity> receipt = createReceiptEntity(request);
+    Entity receipt = null;
 
-    // Respond with status code 400, Bad Request.
-    if (!receipt.isPresent()) {
-      logger.warning("Valid JPEG file was not uploaded.");
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid JPEG file uploaded.");
+    try {
+      receipt = createReceiptEntity(request);
+    } catch (FileNotSelectedException | InvalidFileException e) {
+      logger.warning(e.toString());
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.toString());
+      return;
+    } catch (ReceiptAnalysisException e) {
+      logger.warning(e.toString());
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
       return;
     }
 
     // Store the receipt entity in Datastore.
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(receipt.get());
+    datastore.put(receipt);
   }
 
   /**
    * Creates and returns a receipt entity, which includes the receipt image and
-   * information about the receipt, or an empty Optional if the user didn't upload a JPEG file.
+   * information about the receipt.
    */
-  private Optional<Entity> createReceiptEntity(HttpServletRequest request) {
-    Optional<BlobKey> blobKeyOption = getUploadedBlobKey(request, "receipt-image");
-
-    // Either a file was not selected by the user or the uploaded file was not a JPEG.
-    if (!blobKeyOption.isPresent()) {
-      return Optional.empty();
-    }
-
-    BlobKey blobKey = blobKeyOption.get();
+  private Entity createReceiptEntity(HttpServletRequest request)
+      throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
+    BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
     String imageUrl = getBlobServingUrl(blobKey);
     long timestamp = System.currentTimeMillis();
     String label = request.getParameter("label");
 
-    // Create an entity with a kind of Receipt.
-    Optional<Entity> receiptOption = analyzeReceiptImage(imageUrl, request);
-
-    // Either the image url was an invalid path or text extraction failed.
-    if (!receiptOption.isPresent()) {
-      return Optional.empty();
-    }
-
-    Entity receipt = receiptOption.get();
+    // Populate a receipt entity with the information extracted from the image with Cloud Vision.
+    Entity receipt = analyzeReceiptImage(imageUrl, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("imageUrl", imageUrl);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
 
-    return Optional.of(receipt);
+    return receipt;
   }
 
   /**
-   * Returns a URL that points to the uploaded file, or an empty Optional if the user didn't upload
-   * a JPEG file.
+   * Returns a blob key that points to the uploaded file.
    */
-  private Optional<BlobKey> getUploadedBlobKey(
-      HttpServletRequest request, String formInputElementName) {
+  private BlobKey getUploadedBlobKey(HttpServletRequest request, String formInputElementName)
+      throws FileNotSelectedException, InvalidFileException {
     BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(request);
     List<BlobKey> blobKeys = blobs.get(formInputElementName);
 
     // User submitted the form without selecting a file. (dev server)
     if (blobKeys == null || blobKeys.isEmpty()) {
-      return Optional.empty();
+      throw new FileNotSelectedException("No file was uploaded by the user (dev server).");
     }
 
     // The form only contains a single file input, so get the first index.
@@ -146,17 +137,16 @@ public class UploadReceiptServlet extends HttpServlet {
     BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
     if (blobInfo.getSize() == 0) {
       blobstoreService.delete(blobKey);
-      return Optional.empty();
+      throw new FileNotSelectedException("No file was uploaded by the user (live server).");
     }
 
-    // User uploaded a file that is not a JPEG.
     String filename = blobInfo.getFilename();
     if (!isValidFilename(filename)) {
       blobstoreService.delete(blobKey);
-      return Optional.empty();
+      throw new InvalidFileException("Uploaded file must be a JPEG image.");
     }
 
-    return Optional.of(blobKey);
+    return blobKey;
   }
 
   /**
@@ -175,17 +165,17 @@ public class UploadReceiptServlet extends HttpServlet {
 
   /**
    * Extracts the raw text from the image with the Cloud Vision API. Returns a receipt
-   * entity populated with the extracted fields on success, and an empty optional if
-   * the analysis failed.
+   * entity populated with the extracted fields.
    */
-  private Optional<Entity> analyzeReceiptImage(String imageUrl, HttpServletRequest request) {
+  private Entity analyzeReceiptImage(String imageUrl, HttpServletRequest request)
+      throws ReceiptAnalysisException {
     String absoluteUrl = getBaseUrl(request) + imageUrl;
     AnalysisResults results = null;
 
     try {
       results = ReceiptAnalysis.serveImageText(absoluteUrl);
     } catch (IOException e) {
-      return Optional.empty();
+      throw new ReceiptAnalysisException("Receipt analysis failed.", e);
     }
 
     // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
@@ -198,7 +188,7 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("store", store);
     receipt.setUnindexedProperty("rawText", results.getRawText());
 
-    return Optional.of(receipt);
+    return receipt;
   }
 
   /**
@@ -214,5 +204,23 @@ public class UploadReceiptServlet extends HttpServlet {
     }
 
     return baseUrl;
+  }
+
+  public class InvalidFileException extends Exception {
+    public InvalidFileException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public class FileNotSelectedException extends Exception {
+    public FileNotSelectedException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public class ReceiptAnalysisException extends Exception {
+    public ReceiptAnalysisException(String errorMessage, Throwable err) {
+      super(errorMessage, err);
+    }
   }
 }
