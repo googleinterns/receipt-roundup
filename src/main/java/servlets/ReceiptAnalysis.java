@@ -37,31 +37,31 @@ import javax.servlet.http.HttpServletResponse;
 public class ReceiptAnalysis {
   /** Returns the text of the image at the requested URL. */
   public static AnalysisResults serveImageText(String url) throws IOException {
-    ByteString imgBytes = readImageBytes(url);
+    ByteString imageBytes = readImageBytes(url);
 
-    return retrieveText(imgBytes);
+    return retrieveText(imageBytes);
   }
 
   /** Reads the image bytes from the URL. */
   private static ByteString readImageBytes(String url) throws IOException {
-    ByteString imgBytes;
+    ByteString imageBytes;
 
-    try (InputStream imgInputStream = new URL(url).openStream()) {
-      imgBytes = ByteString.readFrom(imgInputStream);
+    try (InputStream imageInputStream = new URL(url).openStream()) {
+      imageBytes = ByteString.readFrom(imageInputStream);
     }
 
-    return imgBytes;
+    return imageBytes;
   }
 
   /** Detects and retrieves text in the provided image. */
-  private static AnalysisResults retrieveText(ByteString imgBytes) throws IOException {
+  private static AnalysisResults retrieveText(ByteString imageBytes) throws IOException {
     List<AnnotateImageRequest> requests = new ArrayList<>();
     String description = "";
 
-    Image img = Image.newBuilder().setContent(imgBytes).build();
-    Feature feat = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
+    Image image = Image.newBuilder().setContent(imageBytes).build();
+    Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
     AnnotateImageRequest request =
-        AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
+        AnnotateImageRequest.newBuilder().addFeatures(feature).setImage(image).build();
     requests.add(request);
 
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
