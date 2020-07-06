@@ -22,6 +22,8 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.sps.data.Receipt;
 import java.io.IOException;
@@ -45,15 +47,15 @@ public class SearchServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String desiredLabel = request.getParameter("label");
-    List<Receipt> receipts = getReceiptsWithMatchingLabel(desiredLabel);
+    ImmutableList<Receipt> receipts = getReceiptsWithMatchingLabel(desiredLabel);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
     response.getWriter().println(gson.toJson(receipts));
   }
 
-  /* Return a list of receipts from datastore with the same label as desiredLabel. */
-  private List<Receipt> getReceiptsWithMatchingLabel(String desiredLabel) {
+  /* Return ImmutableList of receipts from datastore with the same label as desiredLabel. */
+  private ImmutableList<Receipt> getReceiptsWithMatchingLabel(String desiredLabel) {
     // Set filter to retrieve only receipts with label equal to desiredLabel.
     Filter matchingLabels = new FilterPredicate("label", FilterOperator.EQUAL, desiredLabel);
     Query query = new Query("Receipt");
@@ -64,7 +66,7 @@ public class SearchServlet extends HttpServlet {
     // Convert matching receipt entities to receipt objects and add to return list.
     Spliterator<Entity> spliterator = datastore.prepare(query).asIterable().spliterator();
     Stream<Entity> entities = StreamSupport.stream(spliterator, false);
-    return entities
+    return ImmutableList.copyOf(entities
         .map(entity -> {
           long id = entity.getKey().getId();
           long userId = (long) entity.getProperty("userId");
@@ -74,12 +76,11 @@ public class SearchServlet extends HttpServlet {
           double price = (double) entity.getProperty("price");
           String store = (String) entity.getProperty("store");
           String label = (String) entity.getProperty("label");
-          Set<String> categories =
-              new HashSet<String>((ArrayList) entity.getProperty("categories"));
+          ImmutableSet<String> categories = ImmutableSet.copyOf((ArrayList) entity.getProperty("categories"));
           String rawText = (String) entity.getProperty("rawText");
           return new Receipt(
               id, userId, timestamp, blobKey, imageUrl, price, store, label, categories, rawText);
         })
-        .collect(Collectors.toList());
+        .collect(Collectors.toList()));
   }
 }

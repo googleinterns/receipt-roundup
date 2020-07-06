@@ -15,24 +15,23 @@
 package com.google.sps.data;
 
 import com.google.appengine.api.blobstore.BlobKey;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.google.common.collect.ImmutableSet;
 
 /* Class to represent a receipt and its properties. */
 public class Receipt {
-  private long id;
-  private long userId;
-  private long timestamp;
-  private BlobKey blobKey;
-  private String imageUrl;
-  private double price;
-  private String store;
-  private String label;
-  private Set<String> categories;
-  private String rawText;
+  private final long id;
+  private final long userId;
+  private final long timestamp;
+  private final BlobKey blobKey;
+  private final String imageUrl;
+  private final double price;
+  private final String store;
+  private final String label;
+  private final ImmutableSet<String> categories;
+  private final String rawText;
 
   public Receipt(long id, long userId, long timestamp, BlobKey blobKey, String imageUrl,
-      double price, String store, String label, Set<String> categories, String rawText) {
+      double price, String store, String label, ImmutableSet<String> categories, String rawText) {
     this.id = id;
     this.userId = userId;
     this.timestamp = timestamp;
@@ -41,7 +40,7 @@ public class Receipt {
     this.price = price;
     this.store = store;
     this.label = label;
-    this.categories = categories.stream().collect(Collectors.toSet()); // creates a deep copy
+    this.categories = ImmutableSet.copyOf(categories);; // creates a deep copy
     this.rawText = rawText;
   }
 }
