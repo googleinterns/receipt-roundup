@@ -109,7 +109,7 @@ public class UploadReceiptServlet extends HttpServlet {
     String label = request.getParameter("label");
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
-    Entity receipt = analyzeReceiptImage(imageUrl, request);
+    Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("imageUrl", imageUrl);
     receipt.setProperty("timestamp", timestamp);
@@ -169,13 +169,13 @@ public class UploadReceiptServlet extends HttpServlet {
    * Extracts the raw text from the image with the Cloud Vision API. Returns a receipt
    * entity populated with the extracted fields.
    */
-  private Entity analyzeReceiptImage(String imageUrl, HttpServletRequest request)
+  private Entity analyzeReceiptImage(BlobKey blobKey, HttpServletRequest request)
       throws ReceiptAnalysisException {
-    String absoluteUrl = getBaseUrl(request) + imageUrl;
+    // String absoluteUrl = getBaseUrl(request) + imageUrl;
     AnalysisResults results = null;
 
     try {
-      results = ReceiptAnalysis.serveImageText(absoluteUrl);
+      results = ReceiptAnalysis.serveImageText(blobKey);
     } catch (IOException e) {
       throw new ReceiptAnalysisException("Receipt analysis failed.", e);
     }

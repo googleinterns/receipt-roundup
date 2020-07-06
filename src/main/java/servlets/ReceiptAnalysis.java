@@ -14,6 +14,9 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
@@ -23,6 +26,7 @@ import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -42,6 +46,13 @@ public class ReceiptAnalysis {
     return retrieveText(imgBytes);
   }
 
+  /** */
+  public static AnalysisResults serveImageText(BlobKey blobKey) throws IOException {
+    ByteString imgBytes = readImageBytes(blobKey);
+
+    return retrieveText(imgBytes);
+  }
+
   /** Reads the image bytes from the URL. */
   private static ByteString readImageBytes(String url) throws IOException {
     ByteString imgBytes;
@@ -51,6 +62,32 @@ public class ReceiptAnalysis {
     }
 
     return imgBytes;
+  }
+
+  /** Retrieves the binary data stored in at the given blob key. */
+  private static ByteString readImageBytes(BlobKey blobKey) throws IOException {
+    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
+
+    int fetchSize = BlobstoreService.MAX_BLOB_FETCH_SIZE;
+    long currentByteIndex = 0;
+    boolean continueReading = true;
+    while (continueReading) {
+      // end index is inclusive, so we have to subtract 1 to get fetchSize bytes
+      byte[] b =
+          blobstoreService.fetchData(blobKey, currentByteIndex, currentByteIndex + fetchSize - 1);
+      outputBytes.write(b);
+
+      // if we read fewer bytes than we requested, then we reached the end
+      if (b.length < fetchSize) {
+        continueReading = false;
+      }
+
+      currentByteIndex += fetchSize;
+    }
+
+    ByteString byteString = ByteString.copyFrom(outputBytes.toByteArray());
+    return byteString;
   }
 
   /** Detects and retrieves text in the provided image. */
