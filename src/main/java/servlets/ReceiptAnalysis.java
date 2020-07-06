@@ -66,6 +66,8 @@ public class ReceiptAnalysis {
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
       BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
       AnnotateImageResponse response = Iterables.getOnlyElement(batchResponse.getResponsesList());
+
+      // First element has the entire raw text from the image
       EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
 
       description = annotation.getDescription();
