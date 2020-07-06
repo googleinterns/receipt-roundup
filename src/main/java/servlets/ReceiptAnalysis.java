@@ -22,6 +22,7 @@ import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class ReceiptAnalysis {
 
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
       BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
-      AnnotateImageResponse response = batchResponse.getResponsesList().get(0);
+      AnnotateImageResponse response = Iterables.getOnlyElement(batchResponse.getResponsesList());
       EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
 
       description = annotation.getDescription();
