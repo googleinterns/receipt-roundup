@@ -82,11 +82,13 @@ public class UploadReceiptServlet extends HttpServlet {
       receipt = createReceiptEntity(request);
     } catch (FileNotSelectedException | InvalidFileException e) {
       logger.warning(e.toString());
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.toString());
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(e.toString());
       return;
     } catch (ReceiptAnalysisException e) {
       logger.warning(e.toString());
-      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.getWriter().println(e.toString());
       return;
     }
 

@@ -36,14 +36,14 @@ async function uploadReceipt(event) {
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
 
-  if (response.status === 413) {
-    alert('The maximum file size is 5 MB.');
-  } else if (response.status === 400) {
-    alert('A JPEG file was not uploaded.');
-  } else {
-    // TODO: Redirect to receipt analysis page for MVP
-    window.location.href = '/';
+  // Create an alert if there is an error.
+  if (response.status !== 200) {
+    alert(await response.text());
+    return;
   }
+
+  // TODO: Redirect to receipt analysis page for MVP
+  window.location.href = '/';
 }
 
 /**
