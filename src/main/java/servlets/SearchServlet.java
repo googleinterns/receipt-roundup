@@ -65,21 +65,27 @@ public class SearchServlet extends HttpServlet {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     // Convert matching receipt entities to receipt objects and add to return list.
-    return ImmutableList.copyOf(datastore.prepare(query).asList(FetchOptions.Builder.withDefaults()).stream()
-        .map(entity -> {
-          long id = entity.getKey().getId();
-          long userId = (long) entity.getProperty("userId");
-          long timestamp = (long) entity.getProperty("timestamp");
-          BlobKey blobKey = (BlobKey) entity.getProperty("blobKey");
-          String imageUrl = (String) entity.getProperty("imageUrl");
-          double price = (double) entity.getProperty("price");
-          String store = (String) entity.getProperty("store");
-          String label = (String) entity.getProperty("label");
-          ImmutableSet<String> categories = ImmutableSet.copyOf((ArrayList) entity.getProperty("categories"));
-          String rawText = (String) entity.getProperty("rawText");
-          return new Receipt(
-              id, userId, timestamp, blobKey, imageUrl, price, store, label, categories, rawText);
-        })
-        .collect(Collectors.toList()));
+    return ImmutableList.copyOf(datastore.prepare(query)
+                                    .asList(FetchOptions.Builder.withDefaults())
+                                    .stream()
+                                    .map(entity -> { return createReceiptFromEntity(entity); })
+                                    .collect(Collectors.toList()));
+  }
+
+  /** Create and return a java Receipt object from a datastore Receipt entity. */
+  private Receipt createReceiptFromEntity(Entity entity) {
+    long id = entity.getKey().getId();
+    long userId = (long) entity.getProperty("userId");
+    long timestamp = (long) entity.getProperty("timestamp");
+    BlobKey blobKey = (BlobKey) entity.getProperty("blobKey");
+    String imageUrl = (String) entity.getProperty("imageUrl");
+    double price = (double) entity.getProperty("price");
+    String store = (String) entity.getProperty("store");
+    String label = (String) entity.getProperty("label");
+    ImmutableSet<String> categories =
+        ImmutableSet.copyOf((ArrayList) entity.getProperty("categories"));
+    String rawText = (String) entity.getProperty("rawText");
+    return new Receipt(
+        id, userId, timestamp, blobKey, imageUrl, price, store, label, categories, rawText);
   }
 }

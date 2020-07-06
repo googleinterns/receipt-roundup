@@ -24,30 +24,29 @@ async function searchReceipts() {
 }
 
 /**
- * Clear out existing receipts display. 
+ * Clear out existing receipts display.
  *
- * Note: 3 childNodes make up a receipt card. 
+ * Note: 3 childNodes make up a receipt card.
  * The first 3 nodes are the template receipt card and each subsequent
- * 3 are clones of the template. The template must never be deleted or 
+ * 3 are clones of the template. The template must never be deleted or
  * it'll be unusable in the future.
  */
 function clearExistingReceipts() {
-  var receiptsDisplay = document.getElementById('receipts-display');
-  var numChildNodes = receiptsDisplay.childNodes.length;
+  const receiptsDisplay = document.getElementById('receipts-display');
+  const numChildNodes = receiptsDisplay.childNodes.length;
 
   // Make sure not to delete first 3 childNodes
-  for (var i = numChildNodes; i > 3; i--) {
+  for (let i = numChildNodes; i > 3; i--) {
     receiptsDisplay.removeChild(receiptsDisplay.lastChild);
   }
 }
 
 /**
- * Populate receipt display with newly queried receipts. 
+ * Populate receipt display with newly queried receipts.
  * @param {string} label User-entered label.
  * @param {JSON Object} receipts Receipts returned from search query.
  */
 function displayReceipts(label, receipts) {
-
   // If no receipts returned, display an error message. Else, display receipts.
   if (Object.keys(receipts).length == 0) {
     createErrorMessageElement(label);
@@ -68,29 +67,32 @@ function createReceiptCardElement(receipt) {
   const categories = Array.from(receipt.categories);
 
   // Fill in template fields with correct information.
-  var templateScope = document.querySelector('#receipt-card-template');
-  templateScope.content.querySelector('#timestamp').innerText = receipt.timestamp;
+  const templateScope = document.querySelector('#receipt-card-template');
+  templateScope.content.querySelector('#timestamp').innerText =
+      receipt.timestamp;
   templateScope.content.querySelector('#store-name').innerText = receipt.store;
-  templateScope.content.querySelector('#total').innerText = "Total: $" + receipt.price;
+  templateScope.content.querySelector('#total').innerText =
+      'Total: $' + receipt.price;
   templateScope.content.querySelector('#c1').innerText = categories[0];
   templateScope.content.querySelector('#c2').innerText = categories[1];
   templateScope.content.querySelector('#c3').innerText = categories[2];
   templateScope.content.querySelector('img').src = receipt.imageUrl;
 
   // Clone and attach receipt card to parent div.
-  var receiptCardClone = document.importNode(templateScope.content, true);
+  const receiptCardClone = document.importNode(templateScope.content, true);
   document.getElementById('receipts-display').appendChild(receiptCardClone);
 }
 
-/** 
+/**
  * Create and display error message when no matching receipts were found.
  * @param {string} label User-entered label.
  */
 function createErrorMessageElement(label) {
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   div.setAttribute('class', 'col-md-12 text-center error-message');
-  var h3 = document.createElement('h3');
-  h3.textContent = 'Sorry, no results found for "' + label + '". Please try your search again or try a different query.';
+  const h3 = document.createElement('h3');
+  h3.textContent = 'Sorry, no results found for "' + label +
+      '". Please try your search again or try a different query.';
   div.appendChild(h3);
   document.getElementById('receipts-display').appendChild(div);
 }
