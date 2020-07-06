@@ -38,7 +38,6 @@ public class ReceiptAnalysis {
   /** Returns the text of the image at the requested URL. */
   public static AnalysisResults serveImageText(String url) throws IOException {
     ByteString imgBytes = readImageBytes(url);
-
     return retrieveText(imgBytes);
   }
 

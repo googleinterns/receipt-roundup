@@ -26,8 +26,11 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -110,6 +113,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(imageUrl, request);
+
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("imageUrl", imageUrl);
     receipt.setProperty("timestamp", timestamp);

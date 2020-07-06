@@ -27,7 +27,18 @@
   <input id="store-input" class="form-control" type="text" name="store" placeholder="Store" required />
 
   <label for="price">Enter the total price:</label>
-  <input id="price-input" class="form-control" type="text" name="price" value="0.00" min="0" step="0.01" onfocus="convertPricetoValue(event)" onblur="formatCurrency(event)" required />
+  <input
+    id="price-input"
+    class="form-control"
+    type="text"
+    name="price"
+    value="0.00"
+    min="0"
+    step="0.01"
+    onfocus="convertPricetoValue(event)"
+    onblur="formatCurrency(event)"
+    required
+  />
 
   <label for="receipt-image-input">Upload a receipt image:</label>
   <input
