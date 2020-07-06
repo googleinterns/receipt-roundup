@@ -40,16 +40,19 @@
     required
   />
 
-  <label for="receipt-image-input">Upload a receipt image:</label>
-  <input
-    id="receipt-image-input"
-    class="btn btn-default"
-    type="file"
-    name="receipt-image"
-    accept="image/jpeg"
-    onchange="checkFileSize()"
-    required
-  />
+  <label id="receipt-image-label" for="receipt-image-input">Upload a receipt image:</label>
+  <div class="custom-file">
+    <input
+      id="receipt-image-input"
+      class="custom-file-input"
+      type="file"
+      name="receipt-image"
+      accept="image/jpeg"
+      onchange="displayFileName()"
+      required
+    />
+    <label class="custom-file-label" for="receipt-image-input">Choose file</label>
+  </div>
   <small class="form-text text-muted">Only JPEG images under 5 MB are accepted.</small>
   <br />
 

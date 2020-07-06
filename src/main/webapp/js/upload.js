@@ -92,15 +92,40 @@ function formatCurrency(event) {
 }
 
 /**
+ * Add the selected file name to the input label and check that the size of the
+ * uploaded file is within the limit.
+ */
+function displayFileName() {
+  const fileLabel = document.getElementsByClassName('custom-file-label')[0];
+  const DEFAULT_FILE_LABEL = 'Choose file';
+
+  if (checkFileSize()) {
+    const fileInput = document.getElementById('receipt-image-input');
+    const fileName = fileInput.value.split('\\').pop();
+    fileLabel.innerHTML = fileName;
+  } else {
+    fileLabel.innerHTML = DEFAULT_FILE_LABEL;
+  }
+}
+
+/**
  * Displays an error message if the user selects a file larger than 5 MB.
+ * Returns true if the user selected a file with a smaller size.
  */
 function checkFileSize() {
   const fileInput = document.getElementById('receipt-image-input');
   const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-  if (fileInput.files.length > 0 &&
-      fileInput.files[0].size > MAX_FILE_SIZE_BYTES) {
+  // Return if the user did not select a file.
+  if (fileInput.files.length === 0) {
+    return false;
+  }
+
+  if (fileInput.files[0].size > MAX_FILE_SIZE_BYTES) {
     alert('The selected file exceeds the maximum file size of 5 MB.');
     fileInput.value = '';
+    return false;
   }
+
+  return true;
 }

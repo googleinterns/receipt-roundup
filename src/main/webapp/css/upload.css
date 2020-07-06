@@ -34,9 +34,20 @@ input {
   width: 7em;
 }
 
+.custom-file {
+  font-size: 0.5rem;
+}
+
+#receipt-image-label {
+  margin: 0;
+}
+
 #receipt-image-input {
-  display: block;
-  padding: 0;
+  display: none;
+}
+
+.custom-file-label {
+  font-size: 1rem;
 }
 
 small {
@@ -75,9 +86,14 @@ small {
     font-size: 20px;
   }
 
-  #receipt-image-input {
+  .custom-file {
+    height: 1rem;
+  }
+
+  .custom-file-label {
     font-size: 20px;
-    margin: auto;
-    padding: 0 0 0 10%;
+    position: relative;
+    text-align: left;
+    width: 24em;
   }
 }
