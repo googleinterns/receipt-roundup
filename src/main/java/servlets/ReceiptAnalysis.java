@@ -21,13 +21,12 @@ import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -55,14 +54,13 @@ public class ReceiptAnalysis {
 
   /** Detects and retrieves text in the provided image. */
   private static AnalysisResults retrieveText(ByteString imageBytes) throws IOException {
-    List<AnnotateImageRequest> requests = new ArrayList<>();
     String description = "";
 
     Image image = Image.newBuilder().setContent(imageBytes).build();
     Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
     AnnotateImageRequest request =
         AnnotateImageRequest.newBuilder().addFeatures(feature).setImage(image).build();
-    requests.add(request);
+    ImmutableList<AnnotateImageRequest> requests = ImmutableList.of(request);
 
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
       BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
