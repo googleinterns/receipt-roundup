@@ -18,7 +18,7 @@ import com.google.appengine.api.blobstore.BlobKey;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/* Class to represent a receipt and its properties.*/
+/* Class to represent a receipt and its properties. */
 public class Receipt {
   private long id;
   private long userId;

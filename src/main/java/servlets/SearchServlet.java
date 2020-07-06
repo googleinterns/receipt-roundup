@@ -52,7 +52,7 @@ public class SearchServlet extends HttpServlet {
     response.getWriter().println(gson.toJson(receipts));
   }
 
-  /* Return a list of receipts from datastore with the same label as desiredLabel.*/
+  /* Return a list of receipts from datastore with the same label as desiredLabel. */
   private List<Receipt> getReceiptsWithMatchingLabel(String desiredLabel) {
     // Set filter to retrieve only receipts with label equal to desiredLabel.
     Filter matchingLabels = new FilterPredicate("label", FilterOperator.EQUAL, desiredLabel);
