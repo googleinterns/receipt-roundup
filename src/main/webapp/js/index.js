@@ -12,81 +12,92 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 /** Fetch receipts from the server and add them to the DOM. */
 async function searchReceipts() {
   const label = document.getElementById('search-input').value;
   const response = await fetch(`/search-receipts?label=${label}`);
   const receipts = await response.json();
 
+  clearExistingReceipts();
   displayReceipts(label, receipts);
 }
 
-/* Clear out old receipt display and populate with new queried receipts. */
+/**
+ * Clear out existing receipts display. 
+ *
+ * Note: 3 childNodes make up a receipt card. 
+ * The first 3 nodes are the template receipt card and each subsequent
+ * 3 are clones of the template. The template must never be deleted or 
+ * it'll be unusable in the future.
+ */
+function clearExistingReceipts() {
+  var receiptsDisplay = document.getElementById('receipts-display');
+  var numChildNodes = receiptsDisplay.childNodes.length;
+
+  // Make sure not to delete first 3 childNodes
+  for (var i = numChildNodes; i > 3; i--) {
+    receiptsDisplay.removeChild(receiptsDisplay.lastChild);
+  }
+}
+
+/**
+ * Populate receipt display with newly queried receipts. 
+ * @param {string} label User-entered label.
+ * @param {JSON Object} receipts Receipts returned from search query.
+ */
 function displayReceipts(label, receipts) {
-  const receiptsDisplayed = document.getElementById('receipt-list');
-  receiptsDisplayed.innerHTML = '';
 
   // If no receipts returned, display an error message. Else, display receipts.
-  if (Object.keys(receipts).length === 0) {
-    receiptsDisplayed.innerHTML =
-        '<div class="col-md-12 text-center error-message"><h3>' +
-        'Sorry, no results found for "' + label +
-        '". Please try your search again or try a different query.</h3></div>';
+  if (Object.keys(receipts).length == 0) {
+    createErrorMessageElement(label);
   } else {
     receipts.forEach((receipt) => {
-      receiptsDisplayed.innerHTML += createReceiptCardElement(receipt);
+      createReceiptCardElement(receipt);
     });
   }
 }
 
-
 /**
- * Returns an HTML string that represents a receipt card.
+ * Create receipt card based on existing HTML template.
  * This card displays transaction date, store name, trasaction total,
  * categories, receipt photo, and view/edit/delete buttons.
+ * @param {Receipt} receipt A Receipt object.
  */
 function createReceiptCardElement(receipt) {
   const categories = Array.from(receipt.categories);
-  const formattedHTML = '<div class="col-md-6">' +
-      '<div class="card mb-4 box-shadow">' +
-      '<p class="card-text align-self-end">' + receipt.timestamp + '</p>' +
-      '<p class="card-text">' + receipt.store + '</p>' +
-      '<p class="card-text">Total: $' + receipt.price + '</p>' +
-      '<div class="row">' +
-      '<div class="col-4 d-flex justify-content-center">' +
-      '<h4><span class="badge badge-pill badge-secondary">' + categories[0] +
-      '</span></h4>' +
-      '</div>' +
-      '<div class="col-4 d-flex justify-content-center">' +
-      '<h4><span class="badge badge-pill badge-secondary">' + categories[1] +
-      '</span></h4>' +
-      '</div>' +
-      '<div class="col-4 d-flex justify-content-center">' +
-      '<h4><span class="badge badge-pill badge-secondary">' + categories[2] +
-      '</span></h4>' +
-      '</div>' +
-      '</div>' +
-      '<img src=' + receipt.imageUrl +
-      ' alt="Receipt image" class="img-fluid receipt-img" />' +
-      '<div class="card-body">' +
-      '<div class="d-flex justify-content-between align-items-center">' +
-      '<div class="btn-group">' +
-      '<button type="button" class="btn btn-sm btn-outline-secondary">' +
-      'View</button' +
-      '><button type="button" class="btn btn-sm btn-outline-secondary">' +
-      'Edit</button' +
-      '><button type="button" class="btn btn-sm btn-outline-secondary">' +
-      'Delete</button>' +
-      '</div>' +
-      '</div>' +
-      '</div>' +
-      '</div>' +
-      '</div>';
-  return formattedHTML;
+
+  // Fill in template fields with correct information.
+  var templateScope = document.querySelector('#receipt-card-template');
+  templateScope.content.querySelector('#timestamp').innerText = receipt.timestamp;
+  templateScope.content.querySelector('#store-name').innerText = receipt.store;
+  templateScope.content.querySelector('#total').innerText = "Total: $" + receipt.price;
+  templateScope.content.querySelector('#c1').innerText = categories[0];
+  templateScope.content.querySelector('#c2').innerText = categories[1];
+  templateScope.content.querySelector('#c3').innerText = categories[2];
+  templateScope.content.querySelector('img').src = receipt.imageUrl;
+
+  // Clone and attach receipt card to parent div.
+  var receiptCardClone = document.importNode(templateScope.content, true);
+  document.getElementById('receipts-display').appendChild(receiptCardClone);
 }
 
-/* Date range picker handler:
- * https://www.daterangepicker.com/
+/** 
+ * Create and display error message when no matching receipts were found.
+ * @param {string} label User-entered label.
+ */
+function createErrorMessageElement(label) {
+  var div = document.createElement('div');
+  div.setAttribute('class', 'col-md-12 text-center error-message');
+  var h3 = document.createElement('h3');
+  h3.textContent = 'Sorry, no results found for "' + label + '". Please try your search again or try a different query.';
+  div.appendChild(h3);
+  document.getElementById('receipts-display').appendChild(div);
+}
+
+/**
+ * Date range picker handler:
+ * https://www.daterangepicker.com/.
  */
 $(function() {
   const start = moment().subtract(29, 'days');

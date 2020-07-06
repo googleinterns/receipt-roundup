@@ -18,6 +18,7 @@ import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
@@ -64,9 +65,7 @@ public class SearchServlet extends HttpServlet {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     // Convert matching receipt entities to receipt objects and add to return list.
-    Spliterator<Entity> spliterator = datastore.prepare(query).asIterable().spliterator();
-    Stream<Entity> entities = StreamSupport.stream(spliterator, false);
-    return ImmutableList.copyOf(entities
+    return ImmutableList.copyOf(datastore.prepare(query).asList(FetchOptions.Builder.withDefaults()).stream()
         .map(entity -> {
           long id = entity.getKey().getId();
           long userId = (long) entity.getProperty("userId");
