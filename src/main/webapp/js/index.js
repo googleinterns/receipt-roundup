@@ -78,17 +78,21 @@ function createReceiptCardElement(receipt) {
 }
 
 /**
- * Creates and displays error message when no matching receipts were found.
+ * Creates error message based on existing HTML template.
  * @param {string} label User-entered label.
  */
 function createErrorMessageElement(label) {
-  const div = document.createElement('div');
-  div.setAttribute('class', 'col-md-12 text-center error-message');
-  const h3 = document.createElement('h3');
-  h3.textContent = 'Sorry, no results found for "' + label +
+  // Clone error message from template.
+  const errorMessageClone =
+      document.querySelector('#error-message-template').content.cloneNode(true);
+
+  // Fill in template fields with correct information.
+  errorMessageClone.querySelector('h3').innerText =
+      'Sorry, no results found for "' + label +
       '". Please try your search again or try a different query.';
-  div.appendChild(h3);
-  document.getElementById('receipts-display').appendChild(div);
+
+  // Attach error message clone to parent div.
+  document.getElementById('receipts-display').appendChild(errorMessageClone);
 }
 
 /**
