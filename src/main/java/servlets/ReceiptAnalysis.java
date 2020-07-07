@@ -64,6 +64,7 @@ public class ReceiptAnalysis {
     ImmutableList<AnnotateImageRequest> requests = ImmutableList.of(request);
 
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
+      // TODO: Throw custom exception if response has an error or is missing
       BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
       AnnotateImageResponse response = Iterables.getOnlyElement(batchResponse.getResponsesList());
 
