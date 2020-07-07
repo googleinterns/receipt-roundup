@@ -68,7 +68,7 @@ public class SearchServlet extends HttpServlet {
     return ImmutableList.copyOf(datastore.prepare(query)
                                     .asList(FetchOptions.Builder.withDefaults())
                                     .stream()
-                                    .map(entity -> { return createReceiptFromEntity(entity); })
+                                    .map(this::createReceiptFromEntity)
                                     .collect(Collectors.toList()));
   }
 

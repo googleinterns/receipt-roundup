@@ -40,8 +40,7 @@ public class Receipt {
     this.price = price;
     this.store = store;
     this.label = label;
-    this.categories = ImmutableSet.copyOf(categories);
-    ; // creates a deep copy
+    this.categories = ImmutableSet.copyOf(categories); // creates a deep copy
     this.rawText = rawText;
   }
 }
