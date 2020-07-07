@@ -72,7 +72,7 @@ public class SearchServlet extends HttpServlet {
                                     .collect(Collectors.toList()));
   }
 
-  /** Creates and returns a java Receipt object from a datastore Receipt entity. */
+  /** Creates and returns a {@link Receipt} from an {@link Entity}. */
   private Receipt createReceiptFromEntity(Entity entity) {
     long id = entity.getKey().getId();
     long userId = (long) entity.getProperty("userId");
