@@ -17,7 +17,7 @@ package com.google.sps.data;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.common.collect.ImmutableSet;
 
-/* Class to represent a receipt and its properties. */
+/** Class to represent a receipt and its properties. */
 public class Receipt {
   private final long id;
   private final long userId;
