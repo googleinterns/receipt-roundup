@@ -24,6 +24,7 @@ import com.google.appengine.api.blobstore.UploadOptions.Builder;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -190,7 +191,8 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("imageUrl", imageUrl);
     receipt.setProperty("price", price);
     receipt.setProperty("store", store);
-    receipt.setUnindexedProperty("rawText", results.getRawText());
+    // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
+    receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
 
     return receipt;
   }
