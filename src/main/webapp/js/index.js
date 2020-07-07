@@ -27,7 +27,8 @@ async function searchReceipts() {
  * Clears out receipts display including old receipts and error messages.
  */
 function clearExistingDisplay() {
-  var elements = document.querySelectorAll('.col-md-6, .col-md-12.text-center.error-message');
+  const elements = document.querySelectorAll(
+      '.col-md-6, .col-md-12.text-center.error-message');
   elements.forEach(function(element) {
     element.parentNode.removeChild(element);
   });
@@ -58,20 +59,21 @@ function displayReceipts(label, receipts) {
 function createReceiptCardElement(receipt) {
   const categories = Array.from(receipt.categories);
 
-  // Fill in template fields with correct information.
-  const templateScope = document.querySelector('#receipt-card-template');
-  templateScope.content.querySelector('#timestamp').innerText =
-      receipt.timestamp;
-  templateScope.content.querySelector('#store-name').innerText = receipt.store;
-  templateScope.content.querySelector('#total').innerText =
-      'Total: $' + receipt.price;
-  templateScope.content.querySelector('#c1').innerText = categories[0];
-  templateScope.content.querySelector('#c2').innerText = categories[1];
-  templateScope.content.querySelector('#c3').innerText = categories[2];
-  templateScope.content.querySelector('img').src = receipt.imageUrl;
+  // Clone receipt card from template.
+  const receiptCardClone =
+      document.querySelector('#receipt-card-template').content.cloneNode(true);
 
-  // Clone and attach receipt card to parent div.
-  const receiptCardClone = document.importNode(templateScope.content, true);
+  // Fill in template fields with correct information.
+  receiptCardClone.querySelector('#timestamp').innerText = receipt.timestamp;
+  receiptCardClone.querySelector('#store-name').innerText = receipt.store;
+  receiptCardClone.querySelector('#total').innerText =
+      'Total: $' + receipt.price;
+  receiptCardClone.querySelector('#c1').innerText = categories[0];
+  receiptCardClone.querySelector('#c2').innerText = categories[1];
+  receiptCardClone.querySelector('#c3').innerText = categories[2];
+  receiptCardClone.querySelector('img').src = receipt.imageUrl;
+
+  // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
 }
 
