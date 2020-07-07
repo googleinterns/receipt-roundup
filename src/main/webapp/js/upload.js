@@ -54,6 +54,7 @@ async function uploadReceipt(event) {
 
 /**
  * Gets a Blobstore upload URL for uploading a receipt image.
+ * @return {string} A Blobstore upload URL.
  */
 async function fetchBlobstoreUrl() {
   const response = await fetch('/upload-receipt');
@@ -116,7 +117,7 @@ function displayFileName() {
 
 /**
  * Displays an error message if the user selects a file larger than 5 MB.
- * Returns true if the user selected a file with a smaller size.
+ * @return {boolean} Whether a file is selected and has size less than 5 MB.
  */
 function checkFileSize() {
   const fileInput = document.getElementById('receipt-image-input');
