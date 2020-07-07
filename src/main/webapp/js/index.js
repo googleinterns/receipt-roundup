@@ -19,26 +19,18 @@ async function searchReceipts() {
   const response = await fetch(`/search-receipts?label=${label}`);
   const receipts = await response.json();
 
-  clearExistingReceipts();
+  clearExistingDisplay();
   displayReceipts(label, receipts);
 }
 
 /**
- * Clears out existing receipts display.
- *
- * Note: 3 childNodes make up a receipt card.
- * The first 3 nodes are the template receipt card and each subsequent
- * 3 are clones of the template. The template must never be deleted or
- * it'll be unusable in the future.
+ * Clears out receipts display including old receipts and error messages.
  */
-function clearExistingReceipts() {
-  const receiptsDisplay = document.getElementById('receipts-display');
-  const numChildNodes = receiptsDisplay.childNodes.length;
-
-  // Make sure not to delete first 3 childNodes
-  for (let i = numChildNodes; i > 3; i--) {
-    receiptsDisplay.removeChild(receiptsDisplay.lastChild);
-  }
+function clearExistingDisplay() {
+  var elements = document.querySelectorAll('.col-md-6, .col-md-12.text-center.error-message');
+  elements.forEach(function(element) {
+    element.parentNode.removeChild(element);
+  });
 }
 
 /**
