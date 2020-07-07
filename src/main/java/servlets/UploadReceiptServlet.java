@@ -30,6 +30,7 @@ import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,26 +56,27 @@ public class UploadReceiptServlet extends HttpServlet {
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
   // Logs to System.err by default.
   private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
-  private BlobstoreService blobstoreService;
-  private DatastoreService datastore;
+  private static BlobstoreService blobstoreService;
+  private static BlobInfoFactory blobInfoFactory;
+  private static DatastoreService datastore;
+  private static Clock clock;
 
-  public UploadReceiptServlet() {
+  public UploadReceiptServlet() {}
 
-  }
-
-  public UploadReceiptServlet(BlobstoreService blobstoreService) {
+  public UploadReceiptServlet(BlobstoreService blobstoreService, BlobInfoFactory blobInfoFactory,
+      DatastoreService datastore, Clock clock) {
     this.blobstoreService = blobstoreService;
-  }
-
-  public UploadReceiptServlet(BlobstoreService blobstoreService, DatastoreService datastore) {
-    this.blobstoreService = blobstoreService;
+    this.blobInfoFactory = blobInfoFactory;
     this.datastore = datastore;
+    this.clock = clock;
   }
 
   @Override
   public void init() {
     blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    blobInfoFactory = new BlobInfoFactory();
     datastore = DatastoreServiceFactory.getDatastoreService();
+    clock = Clock.systemDefaultZone();
   }
 
   /**
@@ -127,7 +129,7 @@ public class UploadReceiptServlet extends HttpServlet {
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
-    long timestamp = System.currentTimeMillis();
+    long timestamp = clock.instant().toEpochMilli();
     String label = request.getParameter("label");
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
@@ -156,7 +158,7 @@ public class UploadReceiptServlet extends HttpServlet {
     BlobKey blobKey = blobKeys.get(0);
 
     // User submitted the form without selecting a file. (live server)
-    BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
+    BlobInfo blobInfo = blobInfoFactory.loadBlobInfo(blobKey);
     if (blobInfo.getSize() == 0) {
       blobstoreService.delete(blobKey);
       throw new FileNotSelectedException("No file was uploaded by the user (live server).");
