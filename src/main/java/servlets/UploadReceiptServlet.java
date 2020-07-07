@@ -104,14 +104,12 @@ public class UploadReceiptServlet extends HttpServlet {
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
-    String imageUrl = getBlobServingUrl(blobKey);
     long timestamp = System.currentTimeMillis();
     String label = request.getParameter("label");
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
-    receipt.setProperty("imageUrl", imageUrl);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
 
@@ -159,23 +157,26 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
-   * Gets a URL that serves the blob file using the blob key.
-   */
-  private String getBlobServingUrl(BlobKey blobKey) {
-    return "/serve-image?blob-key=" + blobKey.getKeyString();
-  }
-
-  /**
    * Extracts the raw text from the image with the Cloud Vision API. Returns a receipt
    * entity populated with the extracted fields.
    */
   private Entity analyzeReceiptImage(BlobKey blobKey, HttpServletRequest request)
       throws ReceiptAnalysisException {
-    // String absoluteUrl = getBaseUrl(request) + imageUrl;
+    String imageUrl = getBlobServingUrl(blobKey);
+    String baseUrl = getBaseUrl(request);
+    String DEV_SERVER_BASE_URL = "http://0.0.0.0:80";
+
     AnalysisResults results = null;
 
     try {
-      results = ReceiptAnalysis.serveImageText(blobKey);
+      // For the dev server, authentication is required to access the image served at the URL, so
+      // fetch the bytes directly from Blobstore instead.
+      if (baseUrl.equals(DEV_SERVER_BASE_URL)) {
+        results = ReceiptAnalysis.serveImageText(blobKey);
+      } else {
+        String absoluteUrl = baseUrl + imageUrl;
+        results = ReceiptAnalysis.serveImageText(absoluteUrl);
+      }
     } catch (IOException e) {
       throw new ReceiptAnalysisException("Receipt analysis failed.", e);
     }
@@ -186,6 +187,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
+    receipt.setProperty("imageUrl", imageUrl);
     receipt.setProperty("price", price);
     receipt.setProperty("store", store);
     receipt.setUnindexedProperty("rawText", results.getRawText());
@@ -194,16 +196,18 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
-   * Get the base URL of the application for either the dev server or deployment.
+   * Gets a URL that serves the blob file using the blob key.
+   */
+  private String getBlobServingUrl(BlobKey blobKey) {
+    return "/serve-image?blob-key=" + blobKey.getKeyString();
+  }
+
+  /**
+   * Get the base URL of the web application.
    */
   private String getBaseUrl(HttpServletRequest request) {
     String baseUrl = request.getScheme() + "://" + request.getServerName() + ":"
         + request.getServerPort() + request.getContextPath();
-
-    // URL for dev server.
-    if (baseUrl.equals("http://0.0.0.0:80")) {
-      return "https://8080-9333ac09-1dd5-4f7f-8a7a-34f16c364c6b.us-east1.cloudshell.dev";
-    }
 
     return baseUrl;
   }
