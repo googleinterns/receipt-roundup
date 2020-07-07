@@ -56,6 +56,7 @@ public class UploadReceiptServlet extends HttpServlet {
   // Logs to System.err by default.
   private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
   private BlobstoreService blobstoreService;
+  private DatastoreService datastore;
 
   public UploadReceiptServlet() {
 
@@ -65,9 +66,15 @@ public class UploadReceiptServlet extends HttpServlet {
     this.blobstoreService = blobstoreService;
   }
 
+  public UploadReceiptServlet(BlobstoreService blobstoreService, DatastoreService datastore) {
+    this.blobstoreService = blobstoreService;
+    this.datastore = datastore;
+  }
+
   @Override
   public void init() {
     blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    datastore = DatastoreServiceFactory.getDatastoreService();
   }
 
   /**
@@ -110,7 +117,6 @@ public class UploadReceiptServlet extends HttpServlet {
     }
 
     // Store the receipt entity in Datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(receipt);
   }
 

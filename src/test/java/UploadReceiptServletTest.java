@@ -14,6 +14,7 @@
 
 package com.google.sps;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Before;
@@ -29,6 +30,8 @@ import java.util.Calendar;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.UploadOptions;
 import com.google.appengine.api.blobstore.UploadOptions.Builder;
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.gson.Gson;
 import com.google.sps.servlets.UploadReceiptServlet;
 import java.io.*;
@@ -41,11 +44,19 @@ public final class UploadReceiptServletTest {
   @Mock private BlobstoreService blobstoreService;
   @Mock private HttpServletRequest request;
   @Mock private HttpServletResponse response;
+  private final LocalServiceTestHelper helper =
+      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    helper.setUp();
     servlet = new UploadReceiptServlet(blobstoreService);
+  }
+
+  @After
+  public void tearDown() {
+    helper.tearDown();
   }
 
   @Test
