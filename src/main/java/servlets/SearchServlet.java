@@ -55,7 +55,7 @@ public class SearchServlet extends HttpServlet {
     response.getWriter().println(gson.toJson(receipts));
   }
 
-  /* Return ImmutableList of receipts from datastore with the same label as desiredLabel. */
+  /* Returns ImmutableList of receipts from datastore with the same label as desiredLabel. */
   private ImmutableList<Receipt> getReceiptsWithMatchingLabel(String desiredLabel) {
     // Set filter to retrieve only receipts with label equal to desiredLabel.
     Filter matchingLabels = new FilterPredicate("label", FilterOperator.EQUAL, desiredLabel);
@@ -72,7 +72,7 @@ public class SearchServlet extends HttpServlet {
                                     .collect(Collectors.toList()));
   }
 
-  /** Create and return a java Receipt object from a datastore Receipt entity. */
+  /** Creates and returns a java Receipt object from a datastore Receipt entity. */
   private Receipt createReceiptFromEntity(Entity entity) {
     long id = entity.getKey().getId();
     long userId = (long) entity.getProperty("userId");

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 
-/** Fetch receipts from the server and add them to the DOM. */
+/** Fetches receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
   const label = document.getElementById('search-input').value;
   const response = await fetch(`/search-receipts?label=${label}`);
@@ -24,7 +24,7 @@ async function searchReceipts() {
 }
 
 /**
- * Clear out existing receipts display.
+ * Clears out existing receipts display.
  *
  * Note: 3 childNodes make up a receipt card.
  * The first 3 nodes are the template receipt card and each subsequent
@@ -42,7 +42,7 @@ function clearExistingReceipts() {
 }
 
 /**
- * Populate receipt display with newly queried receipts.
+ * Populates receipt display with newly queried receipts.
  * @param {string} label User-entered label.
  * @param {JSON Object} receipts Receipts returned from search query.
  */
@@ -58,7 +58,7 @@ function displayReceipts(label, receipts) {
 }
 
 /**
- * Create receipt card based on existing HTML template.
+ * Creates receipt card based on existing HTML template.
  * This card displays transaction date, store name, trasaction total,
  * categories, receipt photo, and view/edit/delete buttons.
  * @param {Receipt} receipt A Receipt object.
@@ -84,7 +84,7 @@ function createReceiptCardElement(receipt) {
 }
 
 /**
- * Create and display error message when no matching receipts were found.
+ * Creates and displays error message when no matching receipts were found.
  * @param {string} label User-entered label.
  */
 function createErrorMessageElement(label) {
