@@ -55,6 +55,20 @@ public class UploadReceiptServlet extends HttpServlet {
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
   // Logs to System.err by default.
   private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
+  private BlobstoreService blobstoreService;
+
+  public UploadReceiptServlet() {
+
+  }
+
+  public UploadReceiptServlet(BlobstoreService blobstoreService) {
+    this.blobstoreService = blobstoreService;
+  }
+
+  @Override
+  public void init() {
+    blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+  }
 
   /**
    * Creates a URL that uploads the receipt image to Blobstore when the user submits the upload
@@ -64,7 +78,6 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     UploadOptions uploadOptions =
         UploadOptions.Builder.withMaxUploadSizeBytesPerBlob(MAX_UPLOAD_SIZE_BYTES);
     String uploadUrl = blobstoreService.createUploadUrl("/upload-receipt", uploadOptions);
@@ -125,7 +138,6 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private BlobKey getUploadedBlobKey(HttpServletRequest request, String formInputElementName)
       throws FileNotSelectedException, InvalidFileException {
-    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(request);
     List<BlobKey> blobKeys = blobs.get(formInputElementName);
 
