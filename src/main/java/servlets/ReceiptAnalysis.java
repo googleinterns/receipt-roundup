@@ -110,4 +110,10 @@ public class ReceiptAnalysis {
 
     return new AnalysisResults(description);
   }
+
+  public static class ReceiptAnalysisException extends Exception {
+    public ReceiptAnalysisException(String errorMessage, Throwable err) {
+      super(errorMessage, err);
+    }
+  }
 }

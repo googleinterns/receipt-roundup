@@ -26,6 +26,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import com.google.sps.data.AnalysisResults;
+import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -214,21 +215,15 @@ public class UploadReceiptServlet extends HttpServlet {
     return baseUrl;
   }
 
-  public class InvalidFileException extends Exception {
+  public static class InvalidFileException extends Exception {
     public InvalidFileException(String errorMessage) {
       super(errorMessage);
     }
   }
 
-  public class FileNotSelectedException extends Exception {
+  public static class FileNotSelectedException extends Exception {
     public FileNotSelectedException(String errorMessage) {
       super(errorMessage);
-    }
-  }
-
-  public class ReceiptAnalysisException extends Exception {
-    public ReceiptAnalysisException(String errorMessage, Throwable err) {
-      super(errorMessage, err);
     }
   }
 }
