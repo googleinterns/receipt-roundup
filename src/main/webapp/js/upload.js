@@ -26,9 +26,15 @@ async function uploadReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
+  const fileInput = document.getElementById('receipt-image-input');
+  if (fileInput.files.length === 0) {
+    alert('A JPEG image is required.');
+    return;
+  }
+
   const uploadUrl = await fetchBlobstoreUrl();
   const label = document.getElementById('label-input').value;
-  const image = document.getElementById('receipt-image-input').files[0];
+  const image = fileInput.files[0];
 
   const formData = new FormData();
   formData.append('label', label);
@@ -96,15 +102,15 @@ function formatCurrency(event) {
  * uploaded file is within the limit.
  */
 function displayFileName() {
-  const fileLabel = document.getElementsByClassName('custom-file-label')[0];
+  const fileLabel = document.getElementById('receipt-filename-label');
   const DEFAULT_FILE_LABEL = 'Choose file';
 
   if (checkFileSize()) {
     const fileInput = document.getElementById('receipt-image-input');
     const fileName = fileInput.value.split('\\').pop();
-    fileLabel.innerHTML = fileName;
+    fileLabel.innerText = fileName;
   } else {
-    fileLabel.innerHTML = DEFAULT_FILE_LABEL;
+    fileLabel.innerText = DEFAULT_FILE_LABEL;
   }
 }
 
