@@ -23,4 +23,8 @@ public class AnalysisResults {
   public AnalysisResults(String rawText) {
     this.rawText = rawText;
   }
+
+  public String getRawText() {
+    return rawText;
+  }
 }

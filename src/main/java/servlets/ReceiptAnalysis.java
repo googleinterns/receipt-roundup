@@ -14,6 +14,11 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.blobstore.BlobInfo;
+import com.google.appengine.api.blobstore.BlobInfoFactory;
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
@@ -25,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -42,6 +48,13 @@ public class ReceiptAnalysis {
     return retrieveText(imageBytes);
   }
 
+  /** Returns the text of the image at the requested blob key. */
+  public static AnalysisResults serveImageText(BlobKey blobKey) throws IOException {
+    ByteString imageBytes = readImageBytes(blobKey);
+
+    return retrieveText(imageBytes);
+  }
+
   /** Reads the image bytes from the URL. */
   private static ByteString readImageBytes(String url) throws IOException {
     ByteString imageBytes;
@@ -51,6 +64,31 @@ public class ReceiptAnalysis {
     }
 
     return imageBytes;
+  }
+
+  /** Retrieves the binary data stored at the given blob key. */
+  private static ByteString readImageBytes(BlobKey blobKey) throws IOException {
+    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
+    long blobSize = blobInfo.getSize();
+
+    ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
+    int fetchSize = BlobstoreService.MAX_BLOB_FETCH_SIZE;
+    long currentByteIndex = 0;
+
+    // Fetch all the bytes from the blob in fragments of the maximum fetch size.
+    while (currentByteIndex < blobSize) {
+      // End index is inclusive, so subtract 1 to get fetchSize bytes.
+      // Get data starting at currentByteIndex until either the fetch size or
+      // the end of the blob is reached.
+      byte[] bytes =
+          blobstoreService.fetchData(blobKey, currentByteIndex, currentByteIndex + fetchSize - 1);
+      outputBytes.write(bytes);
+
+      currentByteIndex += fetchSize;
+    }
+
+    return ByteString.copyFrom(outputBytes.toByteArray());
   }
 
   /** Detects and retrieves text in the provided image. */
@@ -75,5 +113,11 @@ public class ReceiptAnalysis {
     }
 
     return new AnalysisResults(description);
+  }
+
+  public static class ReceiptAnalysisException extends Exception {
+    public ReceiptAnalysisException(String errorMessage, Throwable err) {
+      super(errorMessage, err);
+    }
   }
 }
