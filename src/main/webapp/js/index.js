@@ -27,11 +27,7 @@ async function searchReceipts() {
  * Clears out receipts display including old receipts and error messages.
  */
 function clearExistingDisplay() {
-  const elements = document.querySelectorAll(
-      '.col-md-6, .col-md-12.text-center.error-message');
-  elements.forEach(function(element) {
-    element.parentNode.removeChild(element);
-  });
+  document.getElementById('receipts-display').innerHTML = '';
 }
 
 /**
@@ -68,9 +64,9 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('#store-name').innerText = receipt.store;
   receiptCardClone.querySelector('#total').innerText =
       'Total: $' + receipt.price;
-  receiptCardClone.querySelector('#c1').innerText = categories[0];
-  receiptCardClone.querySelector('#c2').innerText = categories[1];
-  receiptCardClone.querySelector('#c3').innerText = categories[2];
+  receiptCardClone.querySelector('#c0').innerText = categories[0];
+  receiptCardClone.querySelector('#c1').innerText = categories[1];
+  receiptCardClone.querySelector('#c2').innerText = categories[2];
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
 
   // Attach receipt card clone to parent div.
