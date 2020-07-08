@@ -79,6 +79,8 @@ public class ReceiptAnalysis {
     // Fetch all the bytes from the blob in fragments of the maximum fetch size.
     while (currentByteIndex < blobSize) {
       // End index is inclusive, so subtract 1 to get fetchSize bytes.
+      // Get data starting at currentByteIndex until either the fetch size or
+      // the end of the blob is reached.
       byte[] bytes =
           blobstoreService.fetchData(blobKey, currentByteIndex, currentByteIndex + fetchSize - 1);
       outputBytes.write(bytes);
