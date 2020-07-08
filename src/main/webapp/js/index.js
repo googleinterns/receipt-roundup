@@ -23,9 +23,7 @@ async function searchReceipts() {
   displayReceipts(label, receipts);
 }
 
-/**
- * Clears out receipts display including old receipts and error messages.
- */
+/** Clears out receipts display including old receipts and error messages. */
 function clearExistingDisplay() {
   document.getElementById('receipts-display').innerHTML = '';
 }
@@ -53,8 +51,6 @@ function displayReceipts(label, receipts) {
  * @param {Receipt} receipt A Receipt object.
  */
 function createReceiptCardElement(receipt) {
-  const categories = Array.from(receipt.categories);
-
   // Clone receipt card from template.
   const receiptCardClone =
       document.querySelector('#receipt-card-template').content.cloneNode(true);
@@ -64,9 +60,12 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('#store-name').innerText = receipt.store;
   receiptCardClone.querySelector('#total').innerText =
       'Total: $' + receipt.price;
-  receiptCardClone.querySelector('#c0').innerText = categories[0];
-  receiptCardClone.querySelector('#c1').innerText = categories[1];
-  receiptCardClone.querySelector('#c2').innerText = categories[2];
+
+  const categories = Array.from(receipt.categories);
+  for (let i = 0; i < categories.length && i < 3; i++) {
+    receiptCardClone.querySelector('#c' + i).innerText = categories[i];
+  }
+
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
 
   // Attach receipt card clone to parent div.
