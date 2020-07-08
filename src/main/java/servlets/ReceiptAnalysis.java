@@ -26,14 +26,14 @@ import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -43,9 +43,9 @@ import javax.servlet.http.HttpServletResponse;
 public class ReceiptAnalysis {
   /** Returns the text of the image at the requested URL. */
   public static AnalysisResults serveImageText(String url) throws IOException {
-    ByteString imgBytes = readImageBytes(url);
+    ByteString imageBytes = readImageBytes(url);
 
-    return retrieveText(imgBytes);
+    return retrieveText(imageBytes);
   }
 
   /** Returns the text of the image at the requested blob key. */
@@ -57,13 +57,13 @@ public class ReceiptAnalysis {
 
   /** Reads the image bytes from the URL. */
   private static ByteString readImageBytes(String url) throws IOException {
-    ByteString imgBytes;
+    ByteString imageBytes;
 
-    try (InputStream imgInputStream = new URL(url).openStream()) {
-      imgBytes = ByteString.readFrom(imgInputStream);
+    try (InputStream imageInputStream = new URL(url).openStream()) {
+      imageBytes = ByteString.readFrom(imageInputStream);
     }
 
-    return imgBytes;
+    return imageBytes;
   }
 
   /** Retrieves the binary data stored at the given blob key. */
@@ -92,19 +92,21 @@ public class ReceiptAnalysis {
   }
 
   /** Detects and retrieves text in the provided image. */
-  private static AnalysisResults retrieveText(ByteString imgBytes) throws IOException {
-    List<AnnotateImageRequest> requests = new ArrayList<>();
+  private static AnalysisResults retrieveText(ByteString imageBytes) throws IOException {
     String description = "";
 
-    Image img = Image.newBuilder().setContent(imgBytes).build();
-    Feature feat = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
+    Image image = Image.newBuilder().setContent(imageBytes).build();
+    Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
     AnnotateImageRequest request =
-        AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
-    requests.add(request);
+        AnnotateImageRequest.newBuilder().addFeatures(feature).setImage(image).build();
+    ImmutableList<AnnotateImageRequest> requests = ImmutableList.of(request);
 
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
+      // TODO: Throw custom exception from PR #12 if response has an error or is missing
       BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
-      AnnotateImageResponse response = batchResponse.getResponsesList().get(0);
+      AnnotateImageResponse response = Iterables.getOnlyElement(batchResponse.getResponsesList());
+
+      // First element has the entire raw text from the image
       EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
 
       description = annotation.getDescription();
