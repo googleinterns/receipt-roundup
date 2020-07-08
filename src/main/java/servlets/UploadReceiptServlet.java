@@ -54,8 +54,8 @@ public class UploadReceiptServlet extends HttpServlet {
   private static final String DEV_SERVER_BASE_URL = "http://0.0.0.0:80";
   // Matches JPEG image filenames.
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
-  // Logs to System.err by default.
-  private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
+
+  private static Logger logger;
   private static BlobstoreService blobstoreService;
   private static BlobInfoFactory blobInfoFactory;
   private static DatastoreService datastore;
@@ -63,8 +63,9 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public UploadReceiptServlet() {}
 
-  public UploadReceiptServlet(BlobstoreService blobstoreService, BlobInfoFactory blobInfoFactory,
-      DatastoreService datastore, Clock clock) {
+  public UploadReceiptServlet(Logger logger, BlobstoreService blobstoreService,
+      BlobInfoFactory blobInfoFactory, DatastoreService datastore, Clock clock) {
+    this.logger = logger;
     this.blobstoreService = blobstoreService;
     this.blobInfoFactory = blobInfoFactory;
     this.datastore = datastore;
@@ -73,6 +74,8 @@ public class UploadReceiptServlet extends HttpServlet {
 
   @Override
   public void init() {
+    // Logs to System.err by default.
+    logger = Logger.getLogger(UploadReceiptServlet.class.getName());
     blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     blobInfoFactory = new BlobInfoFactory();
     datastore = DatastoreServiceFactory.getDatastoreService();
