@@ -99,7 +99,7 @@ function formatCurrency(event) {
 }
 
 /**
- * Add the selected file name to the input label and check that the size of the
+ * Adds the selected file name to the input label and checks that the size of the
  * uploaded file is within the limit.
  */
 function displayFileName() {
