@@ -108,6 +108,7 @@ public final class UploadReceiptServletTest {
   private static final String IMAGE_URL = "/serve-image?blob-key=" + BLOB_KEY.getKeyString();
   private static final String LIVE_SERVER_BASE_URL =
       "https://capstone-receipt-step-2020.uc.r.appspot.com:80";
+  private static final String LIVE_SERVER_ABSOLUTE_URL = LIVE_SERVER_BASE_URL + IMAGE_URL;
   private static final String LIVE_SERVER_SCHEME = "https";
   private static final String LIVE_SERVER_NAME = "capstone-receipt-step-2020.uc.r.appspot.com";
   private static final int LIVE_SERVER_PORT = 80;
@@ -166,11 +167,10 @@ public final class UploadReceiptServletTest {
     when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
     when(request.getServerPort()).thenReturn(LIVE_SERVER_PORT);
     when(request.getContextPath()).thenReturn(LIVE_SERVER_CONTEXT_PATH);
-    String absoluteUrl = LIVE_SERVER_BASE_URL + IMAGE_URL;
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(absoluteUrl)).thenReturn(ANALYSIS_RESULTS);
+    when(ReceiptAnalysis.serveImageText(LIVE_SERVER_ABSOLUTE_URL)).thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
 
@@ -314,11 +314,10 @@ public final class UploadReceiptServletTest {
     when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
     when(request.getServerPort()).thenReturn(LIVE_SERVER_PORT);
     when(request.getContextPath()).thenReturn(LIVE_SERVER_CONTEXT_PATH);
-    String absoluteUrl = LIVE_SERVER_BASE_URL + IMAGE_URL;
 
     // Mock receipt analysis exception.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(absoluteUrl)).thenThrow(IOException.class);
+    when(ReceiptAnalysis.serveImageText(LIVE_SERVER_ABSOLUTE_URL)).thenThrow(IOException.class);
 
     servlet.doPost(request, response);
     writer.flush();
