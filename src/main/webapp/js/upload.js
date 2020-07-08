@@ -99,8 +99,8 @@ function formatCurrency(event) {
 }
 
 /**
- * Adds the selected file name to the input label and checks that the size of the
- * uploaded file is within the limit.
+ * Adds the selected file name to the input label and checks that the size of
+ * the uploaded file is within the limit.
  */
 function displayFileName() {
   const fileLabel = document.getElementById('receipt-filename-label');
