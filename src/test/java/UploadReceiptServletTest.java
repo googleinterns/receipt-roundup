@@ -14,7 +14,8 @@
 
 package com.google.sps;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import com.google.appengine.api.blobstore.BlobInfo;
