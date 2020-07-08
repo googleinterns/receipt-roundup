@@ -204,6 +204,7 @@ public class UploadReceiptServlet extends HttpServlet {
         results = ReceiptAnalysis.serveImageText(absoluteUrl);
       }
     } catch (IOException e) {
+      blobstoreService.delete(blobKey);
       throw new ReceiptAnalysisException("Receipt analysis failed.", e);
     }
 
