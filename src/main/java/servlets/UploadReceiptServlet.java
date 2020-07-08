@@ -49,6 +49,8 @@ import javax.servlet.http.HttpServletResponse;
 public class UploadReceiptServlet extends HttpServlet {
   // Max upload size of 5 MB.
   private static final long MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+  // Base URL for the web app running on the Cloud Shell dev server.
+  private static final String DEV_SERVER_BASE_URL = "http://0.0.0.0:80";
   // Matches JPEG image filenames.
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
   // Logs to System.err by default.
@@ -166,7 +168,6 @@ public class UploadReceiptServlet extends HttpServlet {
       throws ReceiptAnalysisException {
     String imageUrl = getBlobServingUrl(blobKey);
     String baseUrl = getBaseUrl(request);
-    String DEV_SERVER_BASE_URL = "http://0.0.0.0:80";
 
     AnalysisResults results = null;
 
