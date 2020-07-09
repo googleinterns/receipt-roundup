@@ -42,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ReceiptAnalysis {
   /** Returns the text of the image at the requested URL. */
-  public static AnalysisResults serveImageText(String url) throws IOException {
+  public static AnalysisResults serveImageText(URL url) throws IOException {
     ByteString imageBytes = readImageBytes(url);
 
     return retrieveText(imageBytes);
@@ -56,10 +56,10 @@ public class ReceiptAnalysis {
   }
 
   /** Reads the image bytes from the URL. */
-  private static ByteString readImageBytes(String url) throws IOException {
+  private static ByteString readImageBytes(URL url) throws IOException {
     ByteString imageBytes;
 
-    try (InputStream imageInputStream = new URL(url).openStream()) {
+    try (InputStream imageInputStream = url.openStream()) {
       imageBytes = ByteString.readFrom(imageInputStream);
     }
 
