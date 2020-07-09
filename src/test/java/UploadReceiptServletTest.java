@@ -69,19 +69,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ReceiptAnalysis.class)
 public final class UploadReceiptServletTest {
-  private UploadReceiptServlet servlet;
-  private DatastoreService datastore;
-  private Clock clock;
-  // Uses local Datastore.
-  private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
-
-  @Mock private Logger logger;
-  @Mock private BlobstoreService blobstoreService;
-  @Mock private BlobInfoFactory blobInfoFactory;
-  @Mock private HttpServletRequest request;
-  @Mock private HttpServletResponse response;
-
   private static final String FILE_NOT_SELECTED_LIVE_SERVER_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$FileNotSelectedException: No file was uploaded by the user (live server).";
   private static final String FILE_NOT_SELECTED_DEV_SERVER_WARNING =
@@ -121,6 +108,20 @@ public final class UploadReceiptServletTest {
   private static final String DEV_SERVER_NAME = "0.0.0.0";
   private static final int DEV_SERVER_PORT = 80;
   private static final String DEV_SERVER_CONTEXT_PATH = "";
+
+  // Uses local Datastore.
+  private final LocalServiceTestHelper helper =
+      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+
+  @Mock private Logger logger;
+  @Mock private BlobstoreService blobstoreService;
+  @Mock private BlobInfoFactory blobInfoFactory;
+  @Mock private HttpServletRequest request;
+  @Mock private HttpServletResponse response;
+
+  private UploadReceiptServlet servlet;
+  private DatastoreService datastore;
+  private Clock clock;
 
   @Before
   public void setUp() {
