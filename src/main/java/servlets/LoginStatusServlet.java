@@ -29,10 +29,21 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet("/login-status")
 public class LoginStatusServlet extends HttpServlet {
-  private UserService userService = UserServiceFactory.getUserService();
+  private UserService userService;
 
   private static final String HOME_PAGE_URL = "/";
   private static final String LOGIN_PAGE_URL = "/login.html";
+
+  public LoginStatusServlet() {}
+
+  public LoginStatusServlet(UserService userService) {
+    this.userService = userService;
+  }
+
+  @Override
+  public void init() {
+    userService = UserServiceFactory.getUserService();
+  }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
