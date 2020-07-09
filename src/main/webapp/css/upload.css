@@ -1,9 +1,99 @@
-h1,
-form {
+#cancel-button {
+  margin: 8px 0 0;
+}
+
+h1 {
+  font-size: 40px;
+  margin: 20px 0 0;
   text-align: center;
 }
 
-#submit-receipt {
-  font-size: 1.33em;
+label {
+  font-size: 20px;
+}
+
+#upload-form,
+input {
+  font-size: 40px;
+}
+
+#upload-form {
+  background: linear-gradient(#e3ffe7 0%, #d9e7ff 100%);
+  border: solid 2px transparent;
+  border-radius: 30px;
   margin: 10px;
+  padding: 4px;
+}
+
+#submit-receipt {
+  display: block;
+  margin: auto;
+}
+
+#price-input {
+  width: 7em;
+}
+
+.custom-file {
+  font-size: 0.5rem;
+}
+
+#receipt-image-label {
+  margin: 0;
+}
+
+#receipt-image-input {
+  display: none;
+}
+
+.custom-file-label {
+  font-size: 1rem;
+}
+
+small {
+  font-size: 12px;
+}
+
+@media screen and (min-width: 480px) {
+  h1 {
+    font-size: 50px;
+  }
+
+  #upload-form {
+    text-align: center;
+  }
+
+  input {
+    margin: auto;
+  }
+
+  label {
+    font-size: 23px;
+  }
+
+  #upload-form {
+    margin: 0 5%;
+    padding: 1.5%;
+  }
+
+  #label-input,
+  #store-input {
+    font-size: 20px;
+    width: 20em;
+  }
+
+  #price-input {
+    font-size: 20px;
+  }
+
+  .custom-file {
+    height: 1rem;
+  }
+
+  .custom-file-label {
+    font-size: 20px;
+    position: relative;
+    text-align: left;
+    width: 24em;
+  }
 }
