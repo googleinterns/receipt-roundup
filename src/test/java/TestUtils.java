@@ -22,14 +22,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 
-
 /** Class that contains helpful methods used for testing. */
 public final class TestUtils {
-  // Private constructor to prevent instantiation.
+  /** Private constructor to prevent instantiation. */
   private TestUtils() {
     throw new UnsupportedOperationException();
   }
 
+  /** Adds a test receipt to the mock datastore and returns the id of that entity. */
   public static long addReceiptToMockDatastore(DatastoreService datastore) throws IOException {
     // Set entity fields.
     Entity receiptEntity = new Entity("Receipt");
@@ -40,7 +40,8 @@ public final class TestUtils {
     receiptEntity.setProperty("price", 26.12);
     receiptEntity.setProperty("store", "Walmart");
     receiptEntity.setProperty("label", "test");
-    receiptEntity.setProperty("categories", new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch")));
+    receiptEntity.setProperty(
+        "categories", new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch")));
     receiptEntity.setProperty("rawText", "");
 
     // Add receipt to datastore and return ID.

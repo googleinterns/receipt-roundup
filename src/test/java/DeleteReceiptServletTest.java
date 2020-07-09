@@ -40,8 +40,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PowerMockIgnore("jdk.internal.reflect.*")
 @RunWith(PowerMockRunner.class)
 public final class DeleteReceiptServletTest {
-  
-  // Uses local Datastore.
+  // Local Datastore
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
           .setEnvIsAdmin(true)
@@ -71,18 +70,17 @@ public final class DeleteReceiptServletTest {
     // Add mock receipt to datastore.
     long id = TestUtils.addReceiptToMockDatastore(datastore);
 
-    when(request.getParameter("id")).thenReturn(String.valueOf(id));
-
-    // Check that receipt is added
+    // Make sure receipt is added by checking if there is one entity returned.
     Query query = new Query("Receipt");
     PreparedQuery results = datastore.prepare(query);
-    Assert.assertEquals(results.countEntities(FetchOptions.Builder.withDefaults()), 1);
+    Assert.assertEquals(1, results.countEntities(FetchOptions.Builder.withDefaults()));
 
     // Perform doPost - this should delete the receipt.
+    when(request.getParameter("id")).thenReturn(String.valueOf(id));
     servlet.doPost(request, response);
 
-    // Make sure receipt is deleted.
+    // Make sure receipt is deleted by checking if there are no entities returned.
     results = datastore.prepare(query);
-    Assert.assertEquals(results.countEntities(FetchOptions.Builder.withDefaults()), 0);
+    Assert.assertEquals(0, results.countEntities(FetchOptions.Builder.withDefaults()));
   }
 }
