@@ -44,7 +44,7 @@ public class ReceiptAnalysis {
   /** Returns the text of the image at the requested URL. */
   public static AnalysisResults serveImageText(URL url) throws IOException {
     ByteString imageBytes = readImageBytes(url);
-  
+
     String rawText = retrieveText(imageBytes);
     AnalysisResults results = new AnalysisResults(rawText);
 
@@ -54,7 +54,7 @@ public class ReceiptAnalysis {
   /** Returns the text of the image at the requested blob key. */
   public static AnalysisResults serveImageText(BlobKey blobKey) throws IOException {
     ByteString imageBytes = readImageBytes(blobKey);
-  
+
     String rawText = retrieveText(imageBytes);
     AnalysisResults results = new AnalysisResults(rawText);
 
