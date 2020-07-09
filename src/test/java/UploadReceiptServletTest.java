@@ -151,6 +151,7 @@ public final class UploadReceiptServletTest {
 
     servlet.doGet(request, response);
     writer.flush();
+
     Assert.assertTrue(stringWriter.toString().contains(UPLOAD_URL));
   }
 
