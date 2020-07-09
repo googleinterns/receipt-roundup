@@ -14,9 +14,6 @@
 
 package com.google.sps.data;
 
-import com.google.appengine.api.blobstore.BlobKey;
-import com.google.common.collect.ImmutableSet;
-
 /** Information about the logged-in user. */
 public class AuthenticationInformation {
   // Note: types cannot be Optional due to JSON conversion.
@@ -25,12 +22,16 @@ public class AuthenticationInformation {
   private String logoutUrl;
   private String email;
 
-  // Logged out user.
+  /**
+   * Creates a logged out user with a URL to log in.
+   */
   public AuthenticationInformation(String loginUrl) {
     this.loginUrl = loginUrl;
   }
 
-  // Logged in user.
+  /**
+   * Creates a logged in user with an email and a URL to log out.
+   */
   public AuthenticationInformation(String logoutUrl, String email) {
     this.loggedIn = true;
     this.logoutUrl = logoutUrl;
