@@ -113,7 +113,6 @@ public final class UploadReceiptServletTest {
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
 
-  @Mock private Logger logger;
   @Mock private BlobstoreService blobstoreService;
   @Mock private BlobInfoFactory blobInfoFactory;
   @Mock private HttpServletRequest request;
@@ -132,7 +131,7 @@ public final class UploadReceiptServletTest {
     // Create a fixed time clock that always returns the same instant.
     clock = Clock.fixed(Instant.parse(INSTANT), ZoneId.systemDefault());
 
-    servlet = new UploadReceiptServlet(logger, blobstoreService, blobInfoFactory, datastore, clock);
+    servlet = new UploadReceiptServlet(blobstoreService, blobInfoFactory, datastore, clock);
   }
 
   @After
@@ -252,7 +251,6 @@ public final class UploadReceiptServletTest {
     writer.flush();
 
     Assert.assertTrue(stringWriter.toString().contains(FILE_NOT_SELECTED_LIVE_SERVER_WARNING));
-    verify(logger).warning(FILE_NOT_SELECTED_LIVE_SERVER_WARNING);
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
     verify(blobstoreService).delete(BLOB_KEY);
@@ -271,7 +269,6 @@ public final class UploadReceiptServletTest {
     writer.flush();
 
     Assert.assertTrue(stringWriter.toString().contains(FILE_NOT_SELECTED_DEV_SERVER_WARNING));
-    verify(logger).warning(FILE_NOT_SELECTED_DEV_SERVER_WARNING);
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
@@ -293,7 +290,6 @@ public final class UploadReceiptServletTest {
     writer.flush();
 
     Assert.assertTrue(stringWriter.toString().contains(INVALID_FILE_WARNING));
-    verify(logger).warning(INVALID_FILE_WARNING);
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
     verify(blobstoreService).delete(BLOB_KEY);
@@ -329,7 +325,6 @@ public final class UploadReceiptServletTest {
     writer.flush();
 
     Assert.assertTrue(stringWriter.toString().contains(RECEIPT_ANALYSIS_FAILED_WARNING));
-    verify(logger).warning(RECEIPT_ANALYSIS_FAILED_WARNING);
     verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
     verify(blobstoreService).delete(BLOB_KEY);

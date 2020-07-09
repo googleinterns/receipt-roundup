@@ -55,24 +55,22 @@ public class UploadReceiptServlet extends HttpServlet {
   // Matches JPEG image filenames.
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
 
-  private final Logger logger;
+  // Logs to System.err by default.
+  private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
   private final BlobstoreService blobstoreService;
   private final BlobInfoFactory blobInfoFactory;
   private final DatastoreService datastore;
   private final Clock clock;
 
   public UploadReceiptServlet() {
-    // Logs to System.err by default.
-    this.logger = Logger.getLogger(UploadReceiptServlet.class.getName());
     this.blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     this.blobInfoFactory = new BlobInfoFactory();
     this.datastore = DatastoreServiceFactory.getDatastoreService();
     this.clock = Clock.systemDefaultZone();
   }
 
-  public UploadReceiptServlet(Logger logger, BlobstoreService blobstoreService,
-      BlobInfoFactory blobInfoFactory, DatastoreService datastore, Clock clock) {
-    this.logger = logger;
+  public UploadReceiptServlet(BlobstoreService blobstoreService, BlobInfoFactory blobInfoFactory,
+      DatastoreService datastore, Clock clock) {
     this.blobstoreService = blobstoreService;
     this.blobInfoFactory = blobInfoFactory;
     this.datastore = datastore;
