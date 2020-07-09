@@ -55,13 +55,20 @@ public class UploadReceiptServlet extends HttpServlet {
   // Matches JPEG image filenames.
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
 
-  private static Logger logger;
-  private static BlobstoreService blobstoreService;
-  private static BlobInfoFactory blobInfoFactory;
-  private static DatastoreService datastore;
-  private static Clock clock;
+  private final Logger logger;
+  private final BlobstoreService blobstoreService;
+  private final BlobInfoFactory blobInfoFactory;
+  private final DatastoreService datastore;
+  private final Clock clock;
 
-  public UploadReceiptServlet() {}
+  public UploadReceiptServlet() {
+    // Logs to System.err by default.
+    this.logger = Logger.getLogger(UploadReceiptServlet.class.getName());
+    this.blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    this.blobInfoFactory = new BlobInfoFactory();
+    this.datastore = DatastoreServiceFactory.getDatastoreService();
+    this.clock = Clock.systemDefaultZone();
+  }
 
   public UploadReceiptServlet(Logger logger, BlobstoreService blobstoreService,
       BlobInfoFactory blobInfoFactory, DatastoreService datastore, Clock clock) {
@@ -70,16 +77,6 @@ public class UploadReceiptServlet extends HttpServlet {
     this.blobInfoFactory = blobInfoFactory;
     this.datastore = datastore;
     this.clock = clock;
-  }
-
-  @Override
-  public void init() {
-    // Logs to System.err by default.
-    logger = Logger.getLogger(UploadReceiptServlet.class.getName());
-    blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
-    blobInfoFactory = new BlobInfoFactory();
-    datastore = DatastoreServiceFactory.getDatastoreService();
-    clock = Clock.systemDefaultZone();
   }
 
   /**
