@@ -45,10 +45,28 @@ function displayReceipts(label, receipts) {
 }
 
 /**
+ * Creates error message based on existing HTML template.
+ * @param {string} label User-entered label.
+ */
+function createErrorMessageElement(label) {
+  // Clone error message from template.
+  const errorMessageClone =
+      document.querySelector('#error-message-template').content.cloneNode(true);
+
+  // Fill in template fields with correct information.
+  errorMessageClone.querySelector('h3').innerText =
+      'Sorry, no results found for "' + label +
+      '". Please try your search again or try a different query.';
+
+  // Attach error message clone to parent div.
+  document.getElementById('receipts-display').appendChild(errorMessageClone);
+}
+
+/**
  * Creates receipt card based on existing HTML template.
  * This card displays transaction date, store name, trasaction total,
  * categories, receipt photo, and view/edit/delete buttons.
- * @param {Receipt} receipt A Receipt object.
+ * @param {Receipt} receipt A Receipt datastore object.
  */
 function createReceiptCardElement(receipt) {
   // Clone receipt card from template.
@@ -68,31 +86,33 @@ function createReceiptCardElement(receipt) {
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
 
-  // Attach a listener to trigger the deletion of this receipt.
-  receiptCardClone.querySelector('#delete').addEventListener('click', () => {
-    deleteReceipt(receipt);
-  });
-
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
+
+  // Attach listener to trigger the deletion of this receipt.
+  attachDeleteButtonEventListener(receipt);
 }
 
 /**
- * Creates error message based on existing HTML template.
- * @param {string} label User-entered label.
+ * Attaches event listener to delete button.
+ * @param {Receipt} receipt A Receipt datastore object.
  */
-function createErrorMessageElement(label) {
-  // Clone error message from template.
-  const errorMessageClone =
-      document.querySelector('#error-message-template').content.cloneNode(true);
+function attachDeleteButtonEventListener(receipt) {
+  // Get all delete buttons; most recently attached will be at the end.
+  const allDeleteButtons =
+      document.querySelector('#receipts-display').querySelectorAll('#delete');
+  const mostRecentDeleteButton = allDeleteButtons[allDeleteButtons.length - 1];
 
-  // Fill in template fields with correct information.
-  errorMessageClone.querySelector('h3').innerText =
-      'Sorry, no results found for "' + label +
-      '". Please try your search again or try a different query.';
-
-  // Attach error message clone to parent div.
-  document.getElementById('receipts-display').appendChild(errorMessageClone);
+  mostRecentDeleteButton.addEventListener('click', () => {
+    // Display a pop-up to the user confirming the deletion of the receipt.
+    const selection = confirm(
+        'Are you sure you want to delete this receipt? This cannot be undone.');
+    if (selection) {
+      deleteReceipt(receipt);
+      // Locate the entire receipt card div and remove from the DOM.
+      mostRecentDeleteButton.closest('.col-md-6').remove();
+    }
+  });
 }
 
 /** Tells the server to delete the receipt. */

@@ -47,6 +47,7 @@ import javax.servlet.http.HttpServletResponse;
 public class SearchServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // addTestReceipts();
     String desiredLabel = request.getParameter("label");
     ImmutableList<Receipt> receipts = getReceiptsWithMatchingLabel(desiredLabel);
 
@@ -87,5 +88,47 @@ public class SearchServlet extends HttpServlet {
     String rawText = (String) entity.getProperty("rawText");
     return new Receipt(
         id, userId, timestamp, blobKey, imageUrl, price, store, label, categories, rawText);
+  }
+
+  /* Add receipts to database for testing purposes. */
+  private void addTestReceipts() {
+    addTestReceipt(1, 123, 6292020, new BlobKey("Test"), "img/walmart-receipt.jpg", 26.12,
+        "Walmart", "hello", new HashSet<>(Arrays.asList("Candy", "Drink", "Personal")), "");
+
+    addTestReceipt(2, 123, 4042014, new BlobKey("Test"), "img/canes-receipt.jpg", 32.38,
+        "Raising Cane's Chicken Fingers", "hello",
+        new HashSet<>(Arrays.asList("Chicken", "Drink", "Lunch")), "");
+
+    addTestReceipt(3, 123, 6102019, new BlobKey("Test"), "img/contoso-receipt.jpg", 14.50,
+        "Contoso", "test", new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch")), "");
+
+    addTestReceipt(4, 123, 4072017, new BlobKey("Test"), "img/restaurant-receipt.jpeg", 29.01,
+        "Main Street Restaurant", "test", new HashSet<>(Arrays.asList("Food", "Meal", "Lunch")),
+        "");
+
+    addTestReceipt(5, 123, 3012019, new BlobKey("Test"), "img/target-receipt.jpg", 118.94, "Target",
+        "test", new HashSet<>(Arrays.asList("Disney", "Lion", "Personal")), "");
+
+    addTestReceipt(5, 123, 11122005, new BlobKey("Test"), "img/trader-joes-receipt.jpg", 4.32,
+        "Trader Joe's", "test", new HashSet<>(Arrays.asList("Cat", "Food", "Random")), "");
+  }
+
+  /* Add mock receipt to datastore. */
+  private void addTestReceipt(long id, long userId, long timestamp, BlobKey blobkey,
+      String imageUrl, double price, String store, String label, Set<String> categories,
+      String rawText) {
+    Entity receiptEntity = new Entity("Receipt");
+    receiptEntity.setProperty("userId", userId);
+    receiptEntity.setProperty("timestamp", timestamp);
+    receiptEntity.setProperty("blobkey", blobkey);
+    receiptEntity.setProperty("imageUrl", imageUrl);
+    receiptEntity.setProperty("price", price);
+    receiptEntity.setProperty("store", store);
+    receiptEntity.setProperty("label", label);
+    receiptEntity.setProperty("categories", categories);
+    receiptEntity.setProperty("rawText", rawText);
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.put(receiptEntity);
   }
 }
