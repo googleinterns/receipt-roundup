@@ -16,10 +16,8 @@ package com.google.sps.servlets;
 
 import static org.mockito.Mockito.when;
 
-import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
@@ -27,8 +25,6 @@ import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestC
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.sps.servlets.DeleteReceiptServlet;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
@@ -44,13 +40,15 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PowerMockIgnore("jdk.internal.reflect.*")
 @RunWith(PowerMockRunner.class)
 public final class DeleteReceiptServletTest {
-  private DeleteReceiptServlet servlet;
-  private DatastoreService datastore;
   
   // Uses local Datastore.
   private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
+          .setEnvIsAdmin(true)
+          .setEnvIsLoggedIn(true);
 
+  @Mock private DatastoreService datastore;
+  @Mock private DeleteReceiptServlet servlet;
   @Mock private HttpServletRequest request;
   @Mock private HttpServletResponse response;
 
@@ -71,18 +69,7 @@ public final class DeleteReceiptServletTest {
   @Test
   public void doPostDeletesReceiptFromDatastore() throws IOException {
     // Add mock receipt to datastore.
-    Entity receiptEntity = new Entity("Receipt");
-    receiptEntity.setProperty("userId", 1);
-    receiptEntity.setProperty("timestamp", 6292020);
-    receiptEntity.setProperty("blobkey", new BlobKey("Test"));
-    receiptEntity.setProperty("imageUrl", "img/walmart-receipt.jpg");
-    receiptEntity.setProperty("price", 26.12);
-    receiptEntity.setProperty("store", "Walmart");
-    receiptEntity.setProperty("label", "test");
-    receiptEntity.setProperty("categories", new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch")));
-    receiptEntity.setProperty("rawText", "");
-
-    long id = datastore.put(receiptEntity).getId();
+    long id = TestUtils.addReceiptToMockDatastore(datastore);
 
     when(request.getParameter("id")).thenReturn(String.valueOf(id));
 

@@ -60,7 +60,7 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('#store-name').innerText = receipt.store;
   receiptCardClone.querySelector('#total').innerText =
       'Total: $' + receipt.price;
-  
+
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length && i < 3; i++) {
     receiptCardClone.querySelector('#c' + i).innerText = categories[i];

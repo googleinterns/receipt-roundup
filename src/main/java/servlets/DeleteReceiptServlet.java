@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet responsible for deleting a single receipt. */
 @WebServlet("/delete-receipt")
 public class DeleteReceiptServlet extends HttpServlet {
-
   private static DatastoreService datastore;
 
   public DeleteReceiptServlet() {}
@@ -40,7 +39,7 @@ public class DeleteReceiptServlet extends HttpServlet {
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
-    
+
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     long id = Long.parseLong(request.getParameter("id"));

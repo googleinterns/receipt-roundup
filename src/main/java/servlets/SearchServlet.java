@@ -66,7 +66,7 @@ public class SearchServlet extends HttpServlet {
 
     // Convert matching receipt entities to receipt objects and add to return list.
     return datastore.prepare(query)
-        .asList(FetchOptions.Builder.withDefaults())
+        .asList()
         .stream()
         .map(this::createReceiptFromEntity)
         .collect(ImmutableList.toImmutableList());
