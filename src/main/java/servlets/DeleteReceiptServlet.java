@@ -27,13 +27,25 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet responsible for deleting a single receipt. */
 @WebServlet("/delete-receipt")
 public class DeleteReceiptServlet extends HttpServlet {
+
+  private static DatastoreService datastore;
+
+  public DeleteReceiptServlet() {}
+
+  public DeleteReceiptServlet(DatastoreService datastore) {
+    this.datastore = datastore;
+  }
+
+  @Override
+  public void init() {
+    datastore = DatastoreServiceFactory.getDatastoreService();
+  }
     
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     long id = Long.parseLong(request.getParameter("id"));
 
     Key receiptEntityKey = KeyFactory.createKey("Receipt", id);
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.delete(receiptEntityKey);
   }
 }
