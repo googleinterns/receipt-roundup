@@ -48,7 +48,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PowerMockIgnore("jdk.internal.reflect.*")
 @RunWith(PowerMockRunner.class)
 public final class DeleteReceiptServletTest {
-  private static final String INVALID_ID_MESSAGE = "Invalid ID: Receipt unable to be deleted at this time, please try again.";
+  private static final String INVALID_ID_MESSAGE =
+      "Invalid ID: Receipt unable to be deleted at this time, please try again.";
 
   // Local Datastore
   private final LocalServiceTestHelper helper =
@@ -98,7 +99,7 @@ public final class DeleteReceiptServletTest {
     Assert.assertEquals(0, results.countEntities(FetchOptions.Builder.withDefaults()));
   }
 
-   @Test
+  @Test
   public void checkNumberFormatExceptionIsThrown() throws IOException {
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
@@ -115,7 +116,7 @@ public final class DeleteReceiptServletTest {
     Assert.assertTrue(stringWriter.toString().contains(INVALID_ID_MESSAGE));
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
-    // Check that our original receipt is still in datastore. 
+    // Check that our original receipt is still in datastore.
     Key desiredKey = KeyFactory.createKey("Receipt", id);
     Query query = new Query("Receipt");
     Filter matchingKeys = new FilterPredicate("__key__", FilterOperator.EQUAL, desiredKey);

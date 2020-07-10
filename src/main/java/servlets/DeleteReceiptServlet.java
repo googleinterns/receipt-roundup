@@ -50,17 +50,12 @@ public class DeleteReceiptServlet extends HttpServlet {
       id = Long.parseLong(request.getParameter("id"));
     } catch (NumberFormatException exception) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println("Invalid ID: Receipt unable to be deleted at this time, please try again.");
+      response.getWriter().println(
+          "Invalid ID: Receipt unable to be deleted at this time, please try again.");
       return;
     }
 
     Key key = KeyFactory.createKey("Receipt", id);
-
-    try {
-      datastore.delete(key);
-    } catch (DatastoreFailureException exception) {
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      response.getWriter().println("Internal Datastore Error: Receipt unable to be deleted at this time, please try again.");
-    }
+    datastore.delete(key);
   }
 }

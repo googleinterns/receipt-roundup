@@ -31,7 +31,8 @@ public final class TestUtils {
   private static final double PRICE = 26.12;
   private static final String STORE = "Walmart";
   private static final String LABEL = "test";
-  private static final HashSet<String> CATEGORIES = new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch"));
+  private static final HashSet<String> CATEGORIES =
+      new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch"));
   private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
 
   /** Private constructor to prevent instantiation. */
