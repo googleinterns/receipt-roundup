@@ -34,6 +34,10 @@ input {
   width: 7em;
 }
 
+#date-input {
+  width: 12em;
+}
+
 .custom-file {
   font-size: 0.5rem;
 }
@@ -82,7 +86,8 @@ small {
     width: 20em;
   }
 
-  #price-input {
+  #price-input,
+  #date-input {
     font-size: 20px;
   }
 
