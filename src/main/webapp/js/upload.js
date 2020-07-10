@@ -32,12 +32,17 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const uploadUrl = await fetchBlobstoreUrl();
+  const uploadUrl = fetchBlobstoreUrl();
   const label = document.getElementById('label-input').value;
+  const store = document.getElementById('store-input').value;
+  const price =
+      convertStringToNumber(document.getElementById('price-input').value);
   const image = fileInput.files[0];
 
   const formData = new FormData();
   formData.append('label', label);
+  formData.append('store', store);
+  formData.append('price', price);
   formData.append('receipt-image', image);
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
