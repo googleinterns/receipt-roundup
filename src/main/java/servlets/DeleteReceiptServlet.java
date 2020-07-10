@@ -14,11 +14,13 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.datastore.DatastoreFailureException;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import java.io.IOException;
+import java.lang.NumberFormatException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -42,9 +44,23 @@ public class DeleteReceiptServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    long id = Long.parseLong(request.getParameter("id"));
+    long id = 0;
+
+    try {
+      id = Long.parseLong(request.getParameter("id"));
+    } catch (NumberFormatException exception) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println("Invalid ID: Receipt unable to be deleted at this time, please try again.");
+      return;
+    }
 
     Key key = KeyFactory.createKey("Receipt", id);
-    datastore.delete(key);
+
+    try {
+      datastore.delete(key);
+    } catch (DatastoreFailureException exception) {
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.getWriter().println("Internal Datastore Error: Receipt unable to be deleted at this time, please try again.");
+    }
   }
 }

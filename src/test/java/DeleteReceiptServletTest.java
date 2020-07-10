@@ -14,6 +14,7 @@
 
 package com.google.sps;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.appengine.api.datastore.DatastoreService;
@@ -30,6 +31,8 @@ import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestC
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.sps.servlets.DeleteReceiptServlet;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
@@ -45,6 +48,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PowerMockIgnore("jdk.internal.reflect.*")
 @RunWith(PowerMockRunner.class)
 public final class DeleteReceiptServletTest {
+  private static final String INVALID_ID_MESSAGE = "Invalid ID: Receipt unable to be deleted at this time, please try again.";
+
   // Local Datastore
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
@@ -91,5 +96,31 @@ public final class DeleteReceiptServletTest {
     query.setFilter(matchingKeys);
     results = datastore.prepare(query);
     Assert.assertEquals(0, results.countEntities(FetchOptions.Builder.withDefaults()));
+  }
+
+   @Test
+  public void checkNumberFormatExceptionIsThrown() throws IOException {
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    // Add mock receipt to datastore.
+    long id = TestUtils.addReceiptToMockDatastore(datastore);
+
+    // Pass in an String id instead of a long.
+    when(request.getParameter("id")).thenReturn(String.valueOf(id) + "this should fail");
+    servlet.doPost(request, response);
+    writer.flush();
+
+    Assert.assertTrue(stringWriter.toString().contains(INVALID_ID_MESSAGE));
+    verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+    // Check that our original receipt is still in datastore. 
+    Key desiredKey = KeyFactory.createKey("Receipt", id);
+    Query query = new Query("Receipt");
+    Filter matchingKeys = new FilterPredicate("__key__", FilterOperator.EQUAL, desiredKey);
+    query.setFilter(matchingKeys);
+    PreparedQuery results = datastore.prepare(query);
+    Assert.assertEquals(1, results.countEntities(FetchOptions.Builder.withDefaults()));
   }
 }
