@@ -31,8 +31,12 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis;
@@ -109,9 +113,18 @@ public final class UploadReceiptServletTest {
   private static final int DEV_SERVER_PORT = 80;
   private static final String DEV_SERVER_CONTEXT_PATH = "";
 
+  private static final String DOMAIN_NAME = "gmail.com";
+  private static final String USER_EMAIL = "test@gmail.com";
+  private static final String USER_ID = "testID";
+
   // Uses local Datastore.
   private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+      new LocalServiceTestHelper(
+          new LocalDatastoreServiceTestConfig(), new LocalUserServiceTestConfig())
+          .setEnvEmail(USER_EMAIL)
+          .setEnvAuthDomain(DOMAIN_NAME)
+          .setEnvAttributes(new HashMap(
+              ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", USER_ID)));
 
   @Mock private BlobstoreService blobstoreService;
   @Mock private BlobInfoFactory blobInfoFactory;
@@ -120,6 +133,7 @@ public final class UploadReceiptServletTest {
 
   private UploadReceiptServlet servlet;
   private DatastoreService datastore;
+  private UserService userService;
   private Clock clock;
 
   @Before
@@ -127,11 +141,13 @@ public final class UploadReceiptServletTest {
     MockitoAnnotations.initMocks(this);
     helper.setUp();
     datastore = DatastoreServiceFactory.getDatastoreService();
+    userService = UserServiceFactory.getUserService();
 
     // Create a fixed time clock that always returns the same instant.
     clock = Clock.fixed(Instant.parse(INSTANT), ZoneId.systemDefault());
 
-    servlet = new UploadReceiptServlet(blobstoreService, blobInfoFactory, datastore, clock);
+    servlet =
+        new UploadReceiptServlet(blobstoreService, blobInfoFactory, datastore, userService, clock);
   }
 
   @After
@@ -157,6 +173,8 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     // Add mock blob to Blobstore.
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
@@ -192,10 +210,13 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
     Assert.assertEquals(receipt.getProperty("timestamp"), timestamp);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
+    Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
   }
 
   @Test
   public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     // Add mock blob to Blobstore.
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
@@ -231,10 +252,13 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
     Assert.assertEquals(receipt.getProperty("timestamp"), timestamp);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
+    Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
   }
 
   @Test
   public void doPostThrowsIfFileNotSelectedLiveServer() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -258,6 +282,8 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfFileNotSelectedDevServer() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -274,6 +300,8 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfInvalidFile() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -297,6 +325,8 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfReceiptAnalysisFails() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
