@@ -55,8 +55,8 @@ function createErrorMessageElement(label) {
 
   // Fill in template fields with correct information.
   errorMessageClone.querySelector('h3').innerText =
-      'Sorry, no results found for "' + label +
-      '". Please try your search again or try a different query.';
+      `Sorry, no results found for "${label}". ` +
+      `Please try your search again or try a different query.`;
 
   // Attach error message clone to parent div.
   document.getElementById('receipts-display').appendChild(errorMessageClone);
