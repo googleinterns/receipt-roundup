@@ -93,6 +93,8 @@ public final class UploadReceiptServletTest {
   private static final String LABEL = "Label";
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
+  private static final double PRICE_THREE_DECIMAL_PLACES = 17.236;
+  private static final double PRICE_THREE_DECIMAL_PLACES_ROUNDED = 17.24;
   private static final String STORE = "McDonald's";
   private static final AnalysisResults ANALYSIS_RESULTS = new AnalysisResults(RAW_TEXT.getValue());
 
@@ -166,6 +168,8 @@ public final class UploadReceiptServletTest {
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
     when(request.getParameter("label")).thenReturn(LABEL);
+    when(request.getParameter("store")).thenReturn(STORE);
+    when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
 
     // Stub request with URL components.
     when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
@@ -205,6 +209,8 @@ public final class UploadReceiptServletTest {
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
     when(request.getParameter("label")).thenReturn(LABEL);
+    when(request.getParameter("store")).thenReturn(STORE);
+    when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
 
     // Stub request with dev server URL components.
     when(request.getScheme()).thenReturn(DEV_SERVER_SCHEME);
@@ -310,6 +316,8 @@ public final class UploadReceiptServletTest {
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
     when(request.getParameter("label")).thenReturn(LABEL);
+    when(request.getParameter("store")).thenReturn(STORE);
+    when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
 
     // Stub request with URL components.
     when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
@@ -328,5 +336,46 @@ public final class UploadReceiptServletTest {
     verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
     verify(blobstoreService).delete(BLOB_KEY);
+  }
+
+  @Test
+  public void doPostRoundPrice() throws IOException {
+    // Add mock blob to Blobstore.
+    Map<String, List<BlobKey>> blobs = new HashMap<>();
+    blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
+    when(blobstoreService.getUploads(request)).thenReturn(blobs);
+    BlobInfo blobInfo = new BlobInfo(
+        BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
+    when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
+
+    when(request.getParameter("label")).thenReturn(LABEL);
+    when(request.getParameter("store")).thenReturn(STORE);
+    when(request.getParameter("price")).thenReturn(String.valueOf(PRICE_THREE_DECIMAL_PLACES));
+
+    // Stub request with URL components.
+    when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
+    when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
+    when(request.getServerPort()).thenReturn(LIVE_SERVER_PORT);
+    when(request.getContextPath()).thenReturn(LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.serveImageText(LIVE_SERVER_ABSOLUTE_URL)).thenReturn(ANALYSIS_RESULTS);
+
+    servlet.doPost(request, response);
+
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    long timestamp = clock.instant().toEpochMilli();
+
+    Assert.assertEquals(receipt.getProperty("imageUrl"), IMAGE_URL);
+    Assert.assertEquals(receipt.getProperty("price"), PRICE_THREE_DECIMAL_PLACES_ROUNDED);
+    Assert.assertEquals(receipt.getProperty("store"), STORE);
+    Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
+    Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
+    Assert.assertEquals(receipt.getProperty("timestamp"), timestamp);
+    Assert.assertEquals(receipt.getProperty("label"), LABEL);
   }
 }
