@@ -45,7 +45,7 @@ public final class TestUtils {
     receiptEntity.setProperty("rawText", "");
 
     // Add receipt to datastore and return ID.
-    Key receiptKey = datastore.put(receiptEntity);
-    return receiptKey.getId();
+    Key key = datastore.put(receiptEntity);
+    return key.getId();
   }
 }

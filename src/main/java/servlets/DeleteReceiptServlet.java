@@ -44,7 +44,7 @@ public class DeleteReceiptServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     long id = Long.parseLong(request.getParameter("id"));
 
-    Key receiptEntityKey = KeyFactory.createKey("Receipt", id);
-    datastore.delete(receiptEntityKey);
+    Key key = KeyFactory.createKey("Receipt", id);
+    datastore.delete(key);
   }
 }
