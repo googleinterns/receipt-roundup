@@ -45,6 +45,24 @@ function displayReceipts(label, receipts) {
 }
 
 /**
+ * Creates error message based on existing HTML template.
+ * @param {string} label User-entered label.
+ */
+function createErrorMessageElement(label) {
+  // Clone error message from template.
+  const errorMessageClone =
+      document.querySelector('#error-message-template').content.cloneNode(true);
+
+  // Fill in template fields with correct information.
+  errorMessageClone.querySelector('h3').innerText =
+      'Sorry, no results found for "' + label +
+      '". Please try your search again or try a different query.';
+
+  // Attach error message clone to parent div.
+  document.getElementById('receipts-display').appendChild(errorMessageClone);
+}
+
+/**
  * Creates receipt card based on existing HTML template.
  * This card displays transaction date, store name, trasaction total,
  * categories, receipt photo, and view/edit/delete buttons.
@@ -70,24 +88,6 @@ function createReceiptCardElement(receipt) {
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
-}
-
-/**
- * Creates error message based on existing HTML template.
- * @param {string} label User-entered label.
- */
-function createErrorMessageElement(label) {
-  // Clone error message from template.
-  const errorMessageClone =
-      document.querySelector('#error-message-template').content.cloneNode(true);
-
-  // Fill in template fields with correct information.
-  errorMessageClone.querySelector('h3').innerText =
-      'Sorry, no results found for "' + label +
-      '". Please try your search again or try a different query.';
-
-  // Attach error message clone to parent div.
-  document.getElementById('receipts-display').appendChild(errorMessageClone);
 }
 
 /**
@@ -126,4 +126,46 @@ $(function() {
 
           cb);
   cb(start, end);
+});
+
+/** Copyright (c) 2020 by Dima (https://codepen.io/dimaZubkov/pen/KgBqdA) */
+$(document).ready(function() {
+  var parent = document.querySelector('.range-slider');
+  if (!parent) return;
+
+  var rangeS = parent.querySelectorAll('input[type=range]'),
+      numberS = parent.querySelectorAll('input[type=number]');
+
+  rangeS.forEach(function(el) {
+    el.oninput = function() {
+      var slide1 = parseFloat(rangeS[0].value),
+          slide2 = parseFloat(rangeS[1].value);
+
+      if (slide1 > slide2) {
+        [slide1, slide2] = [slide2, slide1];
+        // var tmp = slide2;
+        // slide2 = slide1;
+        // slide1 = tmp;
+      }
+
+      numberS[0].value = slide1;
+      numberS[1].value = slide2;
+    }
+  });
+
+  numberS.forEach(function(el) {
+    el.oninput = function() {
+      var number1 = parseFloat(numberS[0].value),
+          number2 = parseFloat(numberS[1].value);
+
+      if (number1 > number2) {
+        var tmp = number1;
+        numberS[0].value = number2;
+        numberS[1].value = tmp;
+      }
+
+      rangeS[0].value = number1;
+      rangeS[1].value = number2;
+    }
+  });
 });
