@@ -129,12 +129,16 @@ public class UploadReceiptServlet extends HttpServlet {
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
     long timestamp = clock.instant().toEpochMilli();
     String label = request.getParameter("label");
+    String store = request.getParameter("store");
+    double price = roundPrice(request.getParameter("price"));
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
+    receipt.setProperty("store", store);
+    receipt.setProperty("price", price);
 
     return receipt;
   }
@@ -179,6 +183,13 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
+   * Converts a price string into a double rounded to 2 decimal places.
+   */
+  private static double roundPrice(String price) {
+    return Math.round(Double.parseDouble(price) * 100.0) / 100.0;
+  }
+
+  /**
    * Extracts the raw text from the image with the Cloud Vision API. Returns a receipt
    * entity populated with the extracted fields.
    */
@@ -203,15 +214,9 @@ public class UploadReceiptServlet extends HttpServlet {
       throw new ReceiptAnalysisException("Receipt analysis failed.", e);
     }
 
-    // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
-    double price = 5.89;
-    String store = "McDonald's";
-
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
     receipt.setProperty("imageUrl", imageUrl);
-    receipt.setProperty("price", price);
-    receipt.setProperty("store", store);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
 
