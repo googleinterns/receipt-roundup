@@ -12,15 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.sps.servlets;
+package com.google.sps;
 
 import static org.mockito.Mockito.when;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.sps.servlets.DeleteReceiptServlet;
@@ -46,10 +51,11 @@ public final class DeleteReceiptServletTest {
           .setEnvIsAdmin(true)
           .setEnvIsLoggedIn(true);
 
-  @Mock private DatastoreService datastore;
   @Mock private DeleteReceiptServlet servlet;
   @Mock private HttpServletRequest request;
   @Mock private HttpServletResponse response;
+
+  private DatastoreService datastore;
 
   @Before
   public void setUp() {
@@ -80,6 +86,9 @@ public final class DeleteReceiptServletTest {
     servlet.doPost(request, response);
 
     // Make sure receipt is deleted by checking if there are no entities returned.
+    Key desiredKey = KeyFactory.createKey("Receipt", id);
+    Filter matchingKeys = new FilterPredicate("__key__", FilterOperator.EQUAL, desiredKey);
+    query.setFilter(matchingKeys);
     results = datastore.prepare(query);
     Assert.assertEquals(0, results.countEntities(FetchOptions.Builder.withDefaults()));
   }
