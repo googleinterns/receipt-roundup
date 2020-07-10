@@ -21,6 +21,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
+import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,14 +37,15 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(
-    {AnnotateImageRequest.class, ByteString.class, Feature.class, Image.class, URL.class})
+@PrepareForTest({AnnotateImageRequest.class, ByteString.class, Feature.class, Image.class,
+    ImageAnnotatorClient.class, URL.class})
 public final class ReceiptAnalysisTest {
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
 
   @Mock private AnnotateImageRequest request;
   @Mock private Feature feature;
   @Mock private Image image;
+  @Mock private ImageAnnotatorClient client;
 
   @Mock(answer = Answers.RETURNS_SELF) private AnnotateImageRequest.Builder requestBuilder;
   @Mock(answer = Answers.RETURNS_SELF) private Feature.Builder featureBuilder;
@@ -74,5 +76,8 @@ public final class ReceiptAnalysisTest {
     when(requestBuilder.build()).thenReturn(request);
     mockStatic(AnnotateImageRequest.class);
     when(AnnotateImageRequest.newBuilder()).thenReturn(requestBuilder);
+
+    mockStatic(ImageAnnotatorClient.class);
+    when(ImageAnnotatorClient.create()).thenReturn(client);
   }
 }
