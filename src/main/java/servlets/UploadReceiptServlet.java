@@ -30,6 +30,7 @@ import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,8 +54,28 @@ public class UploadReceiptServlet extends HttpServlet {
   private static final String DEV_SERVER_BASE_URL = "http://0.0.0.0:80";
   // Matches JPEG image filenames.
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
+
   // Logs to System.err by default.
   private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
+  private final BlobstoreService blobstoreService;
+  private final BlobInfoFactory blobInfoFactory;
+  private final DatastoreService datastore;
+  private final Clock clock;
+
+  public UploadReceiptServlet() {
+    this.blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    this.blobInfoFactory = new BlobInfoFactory();
+    this.datastore = DatastoreServiceFactory.getDatastoreService();
+    this.clock = Clock.systemDefaultZone();
+  }
+
+  public UploadReceiptServlet(BlobstoreService blobstoreService, BlobInfoFactory blobInfoFactory,
+      DatastoreService datastore, Clock clock) {
+    this.blobstoreService = blobstoreService;
+    this.blobInfoFactory = blobInfoFactory;
+    this.datastore = datastore;
+    this.clock = clock;
+  }
 
   /**
    * Creates a URL that uploads the receipt image to Blobstore when the user submits the upload
@@ -64,7 +85,6 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     UploadOptions uploadOptions =
         UploadOptions.Builder.withMaxUploadSizeBytesPerBlob(MAX_UPLOAD_SIZE_BYTES);
     String uploadUrl = blobstoreService.createUploadUrl("/upload-receipt", uploadOptions);
@@ -97,7 +117,6 @@ public class UploadReceiptServlet extends HttpServlet {
     }
 
     // Store the receipt entity in Datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(receipt);
   }
 
@@ -108,7 +127,7 @@ public class UploadReceiptServlet extends HttpServlet {
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
-    long timestamp = System.currentTimeMillis();
+    long timestamp = clock.instant().toEpochMilli();
     String label = request.getParameter("label");
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
@@ -125,7 +144,6 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private BlobKey getUploadedBlobKey(HttpServletRequest request, String formInputElementName)
       throws FileNotSelectedException, InvalidFileException {
-    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(request);
     List<BlobKey> blobKeys = blobs.get(formInputElementName);
 
@@ -138,7 +156,7 @@ public class UploadReceiptServlet extends HttpServlet {
     BlobKey blobKey = blobKeys.get(0);
 
     // User submitted the form without selecting a file. (live server)
-    BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
+    BlobInfo blobInfo = blobInfoFactory.loadBlobInfo(blobKey);
     if (blobInfo.getSize() == 0) {
       blobstoreService.delete(blobKey);
       throw new FileNotSelectedException("No file was uploaded by the user (live server).");
@@ -181,6 +199,7 @@ public class UploadReceiptServlet extends HttpServlet {
         results = ReceiptAnalysis.serveImageText(absoluteUrl);
       }
     } catch (IOException e) {
+      blobstoreService.delete(blobKey);
       throw new ReceiptAnalysisException("Receipt analysis failed.", e);
     }
 
