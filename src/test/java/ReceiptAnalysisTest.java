@@ -27,10 +27,13 @@ import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
+import com.google.sps.data.AnalysisResults;
+import com.google.sps.servlets.ReceiptAnalysis;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +47,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({AnnotateImageResponse.class, AnnotateImageRequest.class,
     BatchAnnotateImagesResponse.class, ByteString.class, EntityAnnotation.class, Feature.class,
-    Image.class, ImageAnnotatorClient.class, URL.class})
+    Image.class, ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
 public final class ReceiptAnalysisTest {
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
@@ -100,5 +103,9 @@ public final class ReceiptAnalysisTest {
     when(response.getTextAnnotationsList()).thenReturn(annotations);
 
     when(annotation.getDescription()).thenReturn(RAW_TEXT);
+
+    AnalysisResults results = ReceiptAnalysis.serveImageText(url);
+
+    Assert.assertEquals(results.getRawText(), RAW_TEXT);
   }
 }
