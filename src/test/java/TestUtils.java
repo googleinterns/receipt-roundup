@@ -24,6 +24,16 @@ import java.util.HashSet;
 
 /** Class that contains helpful methods used for testing. */
 public final class TestUtils {
+  private static final long USER_ID = 1;
+  private static final long TIMESTAMP = 6292020;
+  private static final BlobKey BLOB_KEY = new BlobKey("Test");
+  private static final String IMAGE_URL = "img/walmart-receipt.jpg";
+  private static final double PRICE = 26.12;
+  private static final String STORE = "Walmart";
+  private static final String LABEL = "test";
+  private static final HashSet<String> CATEGORIES = new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch"));
+  private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
+
   /** Private constructor to prevent instantiation. */
   private TestUtils() {
     throw new UnsupportedOperationException();
@@ -33,16 +43,15 @@ public final class TestUtils {
   public static long addReceiptToMockDatastore(DatastoreService datastore) throws IOException {
     // Set entity fields.
     Entity receiptEntity = new Entity("Receipt");
-    receiptEntity.setProperty("userId", 1);
-    receiptEntity.setProperty("timestamp", 6292020);
-    receiptEntity.setProperty("blobkey", new BlobKey("Test"));
-    receiptEntity.setProperty("imageUrl", "img/walmart-receipt.jpg");
-    receiptEntity.setProperty("price", 26.12);
-    receiptEntity.setProperty("store", "Walmart");
-    receiptEntity.setProperty("label", "test");
-    receiptEntity.setProperty(
-        "categories", new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch")));
-    receiptEntity.setProperty("rawText", "");
+    receiptEntity.setProperty("userId", USER_ID);
+    receiptEntity.setProperty("timestamp", TIMESTAMP);
+    receiptEntity.setProperty("blobkey", BLOB_KEY);
+    receiptEntity.setProperty("imageUrl", IMAGE_URL);
+    receiptEntity.setProperty("price", PRICE);
+    receiptEntity.setProperty("store", STORE);
+    receiptEntity.setProperty("label", LABEL);
+    receiptEntity.setProperty("categories", CATEGORIES);
+    receiptEntity.setProperty("rawText", RAW_TEXT);
 
     // Add receipt to datastore and return ID.
     Key key = datastore.put(receiptEntity);
