@@ -128,44 +128,76 @@ $(function() {
   cb(start, end);
 });
 
-/** Copyright (c) 2020 by Dima (https://codepen.io/dimaZubkov/pen/KgBqdA) */
 $(document).ready(function() {
-  var parent = document.querySelector('.range-slider');
-  if (!parent) return;
+  const keypressSlider = document.querySelector('.slider-keypress');
+  const input0 = document.querySelector('.input-with-keypress-0');
+  const input1 = document.querySelector('.input-with-keypress-1');
+  const inputs = [input0, input1];
 
-  var rangeS = parent.querySelectorAll('input[type=range]'),
-      numberS = parent.querySelectorAll('input[type=number]');
+  noUiSlider.create(
+      keypressSlider,
+      {start: [20, 80], connect: true, step: 1, range: {min: [1], max: [250]}});
 
-  rangeS.forEach(function(el) {
-    el.oninput = function() {
-      var slide1 = parseFloat(rangeS[0].value),
-          slide2 = parseFloat(rangeS[1].value);
+  /* begin Inputs  */
 
-      if (slide1 > slide2) {
-        [slide1, slide2] = [slide2, slide1];
-        // var tmp = slide2;
-        // slide2 = slide1;
-        // slide1 = tmp;
-      }
+  /* end Inputs  */
+  keypressSlider.noUiSlider.on('update', function(values, handle) {
+    inputs[handle].value = values[handle];
 
-      numberS[0].value = slide1;
-      numberS[1].value = slide2;
+    /* begin Listen to keypress on the input */
+    function setSliderHandle(i, value) {
+      const r = [null, null];
+      r[i] = value;
+      keypressSlider.noUiSlider.set(r);
     }
-  });
 
-  numberS.forEach(function(el) {
-    el.oninput = function() {
-      var number1 = parseFloat(numberS[0].value),
-          number2 = parseFloat(numberS[1].value);
+    // Listen to keydown events on the input field.
+    inputs.forEach(function(input, handle) {
+      input.addEventListener('change', function() {
+        setSliderHandle(handle, this.value);
+      });
 
-      if (number1 > number2) {
-        var tmp = number1;
-        numberS[0].value = number2;
-        numberS[1].value = tmp;
-      }
+      input.addEventListener('keydown', function(e) {
+        const values = keypressSlider.noUiSlider.get();
+        const value = Number(values[handle]);
+        const steps = keypressSlider.noUiSlider.steps();
+        const step = steps[handle];
+        let position;
 
-      rangeS[0].value = number1;
-      rangeS[1].value = number2;
-    }
+        // 13 is enter, 38 is key up, 40 is key down.
+        switch (e.which) {
+          case 13:
+            setSliderHandle(handle, this.value);
+            break;
+          case 38:
+            // Get step to go increase slider value (up)
+            position = step[1];
+
+            // false = no step is set
+            if (position === false) {
+              position = 1;
+            }
+
+            // null = edge of slider
+            if (position !== null) {
+              setSliderHandle(handle, value + position);
+            }
+
+            break;
+          case 40:
+            position = step[0];
+
+            if (position === false) {
+              position = 1;
+            }
+
+            if (position !== null) {
+              setSliderHandle(handle, value - position);
+            }
+            break;
+        }
+      });
+    });
+    /* end Listen to keypress on the input */
   });
 });

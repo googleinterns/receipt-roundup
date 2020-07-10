@@ -41,6 +41,11 @@
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
+<!-- noUiSlider-->
+<script src="https://unpkg.com/nouislider@10.0.0/distribute/nouislider.min.js"></script>
+<script src="https://unpkg.com/wnumb@1.1.0"></script>
+<link rel="stylesheet" href="https://unpkg.com/nouislider@10.0.0/distribute/nouislider.min.css" />
+
 <!-- Custom -->
 <link rel="stylesheet" href="css/home.css" />
 <script src="js/index.js"></script>
@@ -61,7 +66,7 @@
     </div>
   </div>
   <h1 class="text-center">Home</h1>
-    <form onsubmit="return false">
+  <form onsubmit="return false">
     <div class="row mb-4 search-bar">
       <div class="col-md-2 d-flex justify-content-center pt-2">
         <input
@@ -82,23 +87,23 @@
       <div class="col-md-2 d-flex justify-content-center pt-2">
         <input class="form-control mr-sm-2" name="store-name" id="store-name-input" placeholder="Store" type="text" />
       </div>
-      <div class="col-md-5">
-        <div class="row pl-3 pt-2">
-          <div class="range-slider mr-3">
-            <span
-              >Min Total $ <input type="number" value="10" min="0" max="100" /> Max Total $
-              <input type="number" value="25" min="0" max="100"
-            /></span>
-
-            <input value="10" min="0" max="100" step="1" type="range" />
-            <input value="25" min="0" max="100" step="1" type="range" />
-          </div>
-          <div class="col-md-2">
-            <button type="submit" class="btn btn-outline-success my-2 my-sm-0" onclick="searchReceipts()">
-              Search
-            </button>
+      <div class="col-md-4 pt-2">
+        <div class="style-2 wrapper m-b-50 p-l-r">
+          <div class="slider-keypress m-b-20"></div>
+          <div class="row">
+            <div class="col-md-6 pt-2">
+              <input type="text" class="input-with-keypress-0 form-control mr-sm-2" />
+            </div>
+            <div class="col-md-6 pt-2">
+              <input type="text" class="input-with-keypress-1 form-control mr-sm-2" />
+            </div>
           </div>
         </div>
+      </div>
+      <div class="col-md-1">
+        <button type="submit" class="btn btn-outline-success my-2 my-sm-0" onclick="searchReceipts()">
+          Search
+        </button>
       </div>
     </div>
   </form>
