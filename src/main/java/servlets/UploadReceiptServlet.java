@@ -151,7 +151,7 @@ public class UploadReceiptServlet extends HttpServlet {
     try {
       transactionTimestamp = Long.parseLong(request.getParameter("date"));
     } catch (NumberFormatException e) {
-      throw new InvalidDateException("Transaction date must a long.");
+      throw new InvalidDateException("Transaction date must be a long.");
     }
 
     if (transactionTimestamp > currentTimestamp) {

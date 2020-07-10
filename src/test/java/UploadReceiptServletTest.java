@@ -78,7 +78,7 @@ public final class UploadReceiptServletTest {
   private static final String INVALID_DATE_RANGE_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be in the past.";
   private static final String INVALID_DATE_FORMAT_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must a long.";
+      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be a long.";
   private static final String RECEIPT_ANALYSIS_FAILED_WARNING =
       "com.google.sps.servlets.ReceiptAnalysis$ReceiptAnalysisException: Receipt analysis failed.";
 
