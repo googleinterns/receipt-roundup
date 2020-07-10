@@ -128,6 +128,11 @@ $(function() {
   cb(start, end);
 });
 
+
+/**
+ * Price range slider setup:
+ * https://refreshless.com/nouislider/.
+ */
 $(document).ready(function() {
   const keypressSlider = document.querySelector('.slider-keypress');
   const input0 = document.querySelector('.input-with-keypress-0');
@@ -136,11 +141,8 @@ $(document).ready(function() {
 
   noUiSlider.create(
       keypressSlider,
-      {start: [20, 80], connect: true, step: 1, range: {min: [1], max: [250]}});
+      {start: [20, 80], connect: true, step: 1, range: {min: [0], max: [250]}});
 
-  /* begin Inputs  */
-
-  /* end Inputs  */
   keypressSlider.noUiSlider.on('update', function(values, handle) {
     inputs[handle].value = values[handle];
 

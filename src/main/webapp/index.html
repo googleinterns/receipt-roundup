@@ -67,7 +67,7 @@
   </div>
   <h1 class="text-center">Home</h1>
   <form onsubmit="return false">
-    <div class="row mb-4 search-bar">
+    <div class="row mb-4 search-bar vertical-center">
       <div class="col-md-2 d-flex justify-content-center pt-2">
         <input
           class="form-control mr-sm-2"
@@ -88,15 +88,19 @@
         <input class="form-control mr-sm-2" name="store-name" id="store-name-input" placeholder="Store" type="text" />
       </div>
       <div class="col-md-4 pt-2">
-        <div class="style-2 wrapper m-b-50 p-l-r">
-          <div class="slider-keypress m-b-20"></div>
-          <div class="row">
-            <div class="col-md-6 pt-2">
-              <input type="text" class="input-with-keypress-0 form-control mr-sm-2" />
-            </div>
-            <div class="col-md-6 pt-2">
-              <input type="text" class="input-with-keypress-1 form-control mr-sm-2" />
-            </div>
+        <div class="slider-keypress"></div>
+        <div class="row d-flex justify-content-center">
+          <div class="col-auto no-padding">
+            <p>Min $</p>
+          </div>
+          <div class="col-4 no-padding">
+            <input type="text" class="input-with-keypress-0 form-control mr-sm-2" />
+          </div>
+          <div class="col-auto no-padding">
+            <p>Max $</p>
+          </div>
+          <div class="col-4 no-padding">
+            <input type="text" class="input-with-keypress-1 form-control mr-sm-2" />
           </div>
         </div>
       </div>
