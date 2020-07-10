@@ -25,6 +25,8 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
@@ -60,20 +62,23 @@ public class UploadReceiptServlet extends HttpServlet {
   private final BlobstoreService blobstoreService;
   private final BlobInfoFactory blobInfoFactory;
   private final DatastoreService datastore;
+  private final UserService userService;
   private final Clock clock;
 
   public UploadReceiptServlet() {
     this.blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     this.blobInfoFactory = new BlobInfoFactory();
     this.datastore = DatastoreServiceFactory.getDatastoreService();
+    this.userService = UserServiceFactory.getUserService();
     this.clock = Clock.systemDefaultZone();
   }
 
   public UploadReceiptServlet(BlobstoreService blobstoreService, BlobInfoFactory blobInfoFactory,
-      DatastoreService datastore, Clock clock) {
+      DatastoreService datastore, UserService userService, Clock clock) {
     this.blobstoreService = blobstoreService;
     this.blobInfoFactory = blobInfoFactory;
     this.datastore = datastore;
+    this.userService = userService;
     this.clock = clock;
   }
 
@@ -129,12 +134,14 @@ public class UploadReceiptServlet extends HttpServlet {
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
     long timestamp = clock.instant().toEpochMilli();
     String label = request.getParameter("label");
+    String userId = userService.getCurrentUser().getUserId();
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
+    receipt.setProperty("userId", userId);
 
     return receipt;
   }
