@@ -104,7 +104,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
     try {
       receipt = createReceiptEntity(request);
-    } catch (FileNotSelectedException | InvalidFileException e) {
+    } catch (FileNotSelectedException | InvalidFileException | InvalidDateException e) {
       logger.warning(e.toString());
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().println(e.toString());
@@ -125,9 +125,10 @@ public class UploadReceiptServlet extends HttpServlet {
    * information about the receipt.
    */
   private Entity createReceiptEntity(HttpServletRequest request)
-      throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
+      throws FileNotSelectedException, InvalidFileException, InvalidDateException,
+             ReceiptAnalysisException {
+    long timestamp = getDate(request);
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
-    long timestamp = clock.instant().toEpochMilli();
     String label = request.getParameter("label");
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
@@ -137,6 +138,27 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("label", label);
 
     return receipt;
+  }
+
+  /**
+   * Converts the date parameter from the request to a long and verifies that the date is in the
+   * past.
+   */
+  private long getDate(HttpServletRequest request) throws InvalidDateException {
+    long currentTimestamp = clock.instant().toEpochMilli();
+    long transactionTimestamp;
+
+    try {
+      transactionTimestamp = Long.parseLong(request.getParameter("date"));
+    } catch (NumberFormatException e) {
+      throw new InvalidDateException("Transaction date must a long.");
+    }
+
+    if (transactionTimestamp > currentTimestamp) {
+      throw new InvalidDateException("Transaction date must be in the past.");
+    }
+
+    return transactionTimestamp;
   }
 
   /**
@@ -243,6 +265,12 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class FileNotSelectedException extends Exception {
     public FileNotSelectedException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class InvalidDateException extends Exception {
+    public InvalidDateException(String errorMessage) {
       super(errorMessage);
     }
   }
