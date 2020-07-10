@@ -95,8 +95,8 @@ public final class LoginStatusServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    String actual = getJsonResponse(stringWriter);
-    String expected = new Gson().toJson(LOGGED_OUT_INFORMATION);
+    String actual = stringWriter.toString();
+    String expected = getExpectedJsonResponse(LOGGED_OUT_INFORMATION);
     Assert.assertEquals(expected, actual);
   }
 
@@ -111,15 +111,16 @@ public final class LoginStatusServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    String actual = getJsonResponse(stringWriter);
-    String expected = new Gson().toJson(LOGGED_IN_INFORMATION);
+    String actual = stringWriter.toString();
+    String expected = getExpectedJsonResponse(LOGGED_IN_INFORMATION);
     Assert.assertEquals(expected, actual);
   }
 
   /**
-   * Removes the new line at the end of the response to compare to the expected String.
+   * Converts the expected authentication information object into a JSON string and adds a new line
+   * at the end to compare to the actual response.
    */
-  private String getJsonResponse(StringWriter stringWriter) {
-    return stringWriter.toString().replace("\n", "");
+  private String getExpectedJsonResponse(AuthenticationInformation authenticationInformation) {
+    return new Gson().toJson(authenticationInformation) + "\n";
   }
 }
