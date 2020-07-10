@@ -19,9 +19,13 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import com.google.cloud.vision.v1.AnnotateImageRequest;
+import com.google.cloud.vision.v1.AnnotateImageResponse;
+import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
+import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,20 +36,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({AnnotateImageRequest.class, ByteString.class, Feature.class, Image.class,
-    ImageAnnotatorClient.class, URL.class})
+@PrepareForTest({AnnotateImageResponse.class, AnnotateImageRequest.class,
+    BatchAnnotateImagesResponse.class, ByteString.class, EntityAnnotation.class, Feature.class,
+    Image.class, ImageAnnotatorClient.class, URL.class})
 public final class ReceiptAnalysisTest {
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
+  private static final String RAW_TEXT = "raw text";
 
   @Mock private AnnotateImageRequest request;
   @Mock private Feature feature;
   @Mock private Image image;
-  @Mock private ImageAnnotatorClient client;
 
   @Mock(answer = Answers.RETURNS_SELF) private AnnotateImageRequest.Builder requestBuilder;
   @Mock(answer = Answers.RETURNS_SELF) private Feature.Builder featureBuilder;
@@ -77,7 +83,22 @@ public final class ReceiptAnalysisTest {
     mockStatic(AnnotateImageRequest.class);
     when(AnnotateImageRequest.newBuilder()).thenReturn(requestBuilder);
 
+    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
     mockStatic(ImageAnnotatorClient.class);
     when(ImageAnnotatorClient.create()).thenReturn(client);
+
+    BatchAnnotateImagesResponse batchResponse = mock(BatchAnnotateImagesResponse.class);
+    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
+        .thenReturn(batchResponse);
+
+    AnnotateImageResponse response = mock(AnnotateImageResponse.class);
+    ImmutableList<AnnotateImageResponse> responses = ImmutableList.of(response);
+    when(batchResponse.getResponsesList()).thenReturn(responses);
+
+    EntityAnnotation annotation = mock(EntityAnnotation.class);
+    ImmutableList<EntityAnnotation> annotations = ImmutableList.of(annotation);
+    when(response.getTextAnnotationsList()).thenReturn(annotations);
+
+    when(annotation.getDescription()).thenReturn(RAW_TEXT);
   }
 }
