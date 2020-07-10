@@ -75,6 +75,10 @@ public final class UploadReceiptServletTest {
       "com.google.sps.servlets.UploadReceiptServlet$FileNotSelectedException: No file was uploaded by the user (dev server).";
   private static final String INVALID_FILE_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$InvalidFileException: Uploaded file must be a JPEG image.";
+  private static final String INVALID_DATE_RANGE_WARNING =
+      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be in the past.";
+  private static final String INVALID_DATE_FORMAT_WARNING =
+      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must a long.";
   private static final String RECEIPT_ANALYSIS_FAILED_WARNING =
       "com.google.sps.servlets.ReceiptAnalysis$ReceiptAnalysisException: Receipt analysis failed.";
 
@@ -94,6 +98,7 @@ public final class UploadReceiptServletTest {
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
   private static final String STORE = "McDonald's";
+  private static final String INVALID_DATE_TYPE = "2020-05-20";
   private static final AnalysisResults ANALYSIS_RESULTS = new AnalysisResults(RAW_TEXT.getValue());
 
   private static final String IMAGE_URL = "/serve-image?blob-key=" + BLOB_KEY.getKeyString();
@@ -167,6 +172,10 @@ public final class UploadReceiptServletTest {
 
     when(request.getParameter("label")).thenReturn(LABEL);
 
+    long timestamp = clock.millis() - 1234;
+    String date = Long.toString(timestamp);
+    when(request.getParameter("date")).thenReturn(date);
+
     // Stub request with URL components.
     when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
     when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
@@ -182,8 +191,6 @@ public final class UploadReceiptServletTest {
     Query query = new Query("Receipt");
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
-
-    long timestamp = clock.instant().toEpochMilli();
 
     Assert.assertEquals(receipt.getProperty("imageUrl"), IMAGE_URL);
     Assert.assertEquals(receipt.getProperty("price"), PRICE);
@@ -206,6 +213,10 @@ public final class UploadReceiptServletTest {
 
     when(request.getParameter("label")).thenReturn(LABEL);
 
+    long timestamp = clock.millis() - 1234;
+    String date = Long.toString(timestamp);
+    when(request.getParameter("date")).thenReturn(date);
+
     // Stub request with dev server URL components.
     when(request.getScheme()).thenReturn(DEV_SERVER_SCHEME);
     when(request.getServerName()).thenReturn(DEV_SERVER_NAME);
@@ -221,8 +232,6 @@ public final class UploadReceiptServletTest {
     Query query = new Query("Receipt");
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
-
-    long timestamp = clock.instant().toEpochMilli();
 
     Assert.assertEquals(receipt.getProperty("imageUrl"), IMAGE_URL);
     Assert.assertEquals(receipt.getProperty("price"), PRICE);
@@ -247,6 +256,10 @@ public final class UploadReceiptServletTest {
         BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_0MB, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
+    long timestamp = clock.millis() - 1234;
+    String date = Long.toString(timestamp);
+    when(request.getParameter("date")).thenReturn(date);
+
     servlet.doPost(request, response);
     writer.flush();
 
@@ -264,6 +277,10 @@ public final class UploadReceiptServletTest {
 
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
+
+    long timestamp = clock.millis() - 1234;
+    String date = Long.toString(timestamp);
+    when(request.getParameter("date")).thenReturn(date);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -286,6 +303,10 @@ public final class UploadReceiptServletTest {
         BLOB_KEY, "image/png", new Date(), INVALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
+    long timestamp = clock.millis() - 1234;
+    String date = Long.toString(timestamp);
+    when(request.getParameter("date")).thenReturn(date);
+
     servlet.doPost(request, response);
     writer.flush();
 
@@ -293,6 +314,37 @@ public final class UploadReceiptServletTest {
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
     verify(blobstoreService).delete(BLOB_KEY);
+  }
+
+  @Test
+  public void doPostThrowsIfDateIsInTheFuture() throws IOException {
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    String futureDate = Long.toString(clock.millis() + 1234);
+    when(request.getParameter("date")).thenReturn(futureDate);
+
+    servlet.doPost(request, response);
+    writer.flush();
+
+    Assert.assertTrue(stringWriter.toString().contains(INVALID_DATE_RANGE_WARNING));
+    verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void doPostThrowsIfInvalidDateFormat() throws IOException {
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    when(request.getParameter("date")).thenReturn(INVALID_DATE_TYPE);
+
+    servlet.doPost(request, response);
+    writer.flush();
+
+    Assert.assertTrue(stringWriter.toString().contains(INVALID_DATE_FORMAT_WARNING));
+    verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
   @Test
@@ -310,6 +362,10 @@ public final class UploadReceiptServletTest {
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
     when(request.getParameter("label")).thenReturn(LABEL);
+
+    long timestamp = clock.millis() - 1234;
+    String date = Long.toString(timestamp);
+    when(request.getParameter("date")).thenReturn(date);
 
     // Stub request with URL components.
     when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
