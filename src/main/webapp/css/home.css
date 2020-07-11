@@ -19,12 +19,11 @@
 
 .search-bar {
   background-color: #f7f7f7;
-  padding-bottom: 0.8%;
-  padding-top: 0.3%;
+  padding: 0.3% 0 0.8%;
 }
 
 .no-padding {
-  padding: 2% 0px 0px 0px !important;
+  padding: 2% 0 0 !important;
   margin: 0 !important;
 }
 
