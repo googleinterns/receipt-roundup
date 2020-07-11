@@ -131,7 +131,7 @@ $(function() {
 
 /**
  * Price range slider setup:
- * https://refreshless.com/nouislider/.
+ * https://refreshless.com/nouislider/examples/#section-steps-api.
  */
 $(document).ready(function() {
   const keypressSlider = document.querySelector('.slider-keypress');
@@ -146,11 +146,11 @@ $(document).ready(function() {
   keypressSlider.noUiSlider.on('update', function(values, handle) {
     inputs[handle].value = values[handle];
 
-    /* begin Listen to keypress on the input */
-    function setSliderHandle(i, value) {
-      const r = [null, null];
-      r[i] = value;
-      keypressSlider.noUiSlider.set(r);
+    /* Begins listening to keypress on the input. */
+    function setSliderHandle(which, value) {
+      const handle = [null, null];
+      handle[which] = value;
+      keypressSlider.noUiSlider.set(handle);
     }
 
     // Listen to keydown events on the input field.
@@ -159,34 +159,36 @@ $(document).ready(function() {
         setSliderHandle(handle, this.value);
       });
 
-      input.addEventListener('keydown', function(e) {
+      input.addEventListener('keydown', function(event) {
         const values = keypressSlider.noUiSlider.get();
         const value = Number(values[handle]);
         const steps = keypressSlider.noUiSlider.steps();
         const step = steps[handle];
         let position;
 
-        // 13 is enter, 38 is key up, 40 is key down.
-        switch (e.which) {
-          case 13:
+        const enter = 13;
+        const up = 38;
+        const down = 40;
+
+        switch (event.which) {
+          case enter:
             setSliderHandle(handle, this.value);
             break;
-          case 38:
-            // Get step to go increase slider value (up)
+          case up:
+            // Get step to go increase slider value (up).
             position = step[1];
 
-            // false = no step is set
+            // false = no step is set.
             if (position === false) {
               position = 1;
             }
 
-            // null = edge of slider
+            // null = edge of slider.
             if (position !== null) {
               setSliderHandle(handle, value + position);
             }
-
             break;
-          case 40:
+          case down:
             position = step[0];
 
             if (position === false) {
@@ -200,6 +202,5 @@ $(document).ready(function() {
         }
       });
     });
-    /* end Listen to keypress on the input */
   });
 });
