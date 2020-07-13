@@ -83,6 +83,10 @@ public final class UploadReceiptServletTest {
       "com.google.sps.servlets.ReceiptAnalysis$ReceiptAnalysisException: Receipt analysis failed.";
 
   private static final String INSTANT = "2020-06-22T10:15:30Z";
+  private static final long PAST_TIMESTAMP =
+      Instant.parse(INSTANT).minusMillis(1234).toEpochMilli();
+  private static final long FUTURE_TIMESTAMP =
+      Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
 
   private static final long MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
   private static final String UPLOAD_URL = "/blobstore/upload-receipt";
@@ -164,10 +168,7 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
     createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
-
-    long timestamp = clock.millis() - 1234;
-    String date = Long.toString(timestamp);
-    when(request.getParameter("date")).thenReturn(date);
+    setTransactionDate(request, PAST_TIMESTAMP);
 
     // Stub request with URL components.
     when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
@@ -190,7 +191,7 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("store"), STORE);
     Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
-    Assert.assertEquals(receipt.getProperty("timestamp"), timestamp);
+    Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
   }
 
@@ -198,10 +199,7 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
     createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
-
-    long timestamp = clock.millis() - 1234;
-    String date = Long.toString(timestamp);
-    when(request.getParameter("date")).thenReturn(date);
+    setTransactionDate(request, PAST_TIMESTAMP);
 
     // Stub request with dev server URL components.
     when(request.getScheme()).thenReturn(DEV_SERVER_SCHEME);
@@ -224,7 +222,7 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("store"), STORE);
     Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
-    Assert.assertEquals(receipt.getProperty("timestamp"), timestamp);
+    Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
   }
 
@@ -235,10 +233,7 @@ public final class UploadReceiptServletTest {
     when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_0MB);
-
-    long timestamp = clock.millis() - 1234;
-    String date = Long.toString(timestamp);
-    when(request.getParameter("date")).thenReturn(date);
+    setTransactionDate(request, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -258,9 +253,7 @@ public final class UploadReceiptServletTest {
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
 
-    long timestamp = clock.millis() - 1234;
-    String date = Long.toString(timestamp);
-    when(request.getParameter("date")).thenReturn(date);
+    setTransactionDate(request, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -276,10 +269,7 @@ public final class UploadReceiptServletTest {
     when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, "image/png", INVALID_FILENAME, IMAGE_SIZE_1MB);
-
-    long timestamp = clock.millis() - 1234;
-    String date = Long.toString(timestamp);
-    when(request.getParameter("date")).thenReturn(date);
+    setTransactionDate(request, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -296,8 +286,7 @@ public final class UploadReceiptServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    String futureDate = Long.toString(clock.millis() + 1234);
-    when(request.getParameter("date")).thenReturn(futureDate);
+    setTransactionDate(request, FUTURE_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -328,12 +317,8 @@ public final class UploadReceiptServletTest {
     when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
-
     when(request.getParameter("label")).thenReturn(LABEL);
-
-    long timestamp = clock.millis() - 1234;
-    String date = Long.toString(timestamp);
-    when(request.getParameter("date")).thenReturn(date);
+    setTransactionDate(request, PAST_TIMESTAMP);
 
     // Stub request with URL components.
     when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
@@ -364,5 +349,13 @@ public final class UploadReceiptServletTest {
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
     BlobInfo blobInfo = new BlobInfo(BLOB_KEY, contentType, new Date(), filename, size, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
+  }
+
+  /**
+   * Stubs the request with a transaction date corresponding to the given timestamp.
+   */
+  private void setTransactionDate(HttpServletRequest request, long timestamp) {
+    String date = Long.toString(timestamp);
+    when(request.getParameter("date")).thenReturn(date);
   }
 }
