@@ -120,6 +120,10 @@ public class ReceiptAnalysis {
 
       AnnotateImageResponse response = Iterables.getOnlyElement(batchResponse.getResponsesList());
 
+      if (response.hasError()) {
+        throw new ReceiptAnalysisException("Received image annotation response with error.");
+      }
+
       // First element has the entire raw text from the image
       EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
 
