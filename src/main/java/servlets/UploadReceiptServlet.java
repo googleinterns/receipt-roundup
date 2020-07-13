@@ -36,9 +36,11 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -281,8 +283,8 @@ public class UploadReceiptServlet extends HttpServlet {
   /**
    * Gets the list of user-assigned categories from the request.
    */
-  private Collection<String> getCategories(HttpServletRequest request) {
-    return Arrays.asList(request.getParameterValues("categories"));
+  private Set<String> getCategories(HttpServletRequest request) {
+    return new HashSet<>(Arrays.asList(request.getParameterValues("categories")));
   }
 
   public static class InvalidFileException extends Exception {
