@@ -74,9 +74,8 @@ public final class LoginStatusServletTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     helper.setUp();
-    userService = UserServiceFactory.getUserService();
 
-    servlet = new LoginStatusServlet(userService);
+    servlet = new LoginStatusServlet();
   }
 
   @After

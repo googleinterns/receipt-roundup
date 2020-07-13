@@ -32,15 +32,7 @@ public class LoginStatusServlet extends HttpServlet {
   private static final String HOME_PAGE_URL = "/";
   private static final String LOGIN_PAGE_URL = "/login.html";
 
-  private final UserService userService;
-
-  public LoginStatusServlet() {
-    userService = UserServiceFactory.getUserService();
-  }
-
-  public LoginStatusServlet(UserService userService) {
-    this.userService = userService;
-  }
+  private final UserService userService = UserServiceFactory.getUserService();
 
   /**
    * Retrieves the login status of the user. If they are logged in, their email and a URL
