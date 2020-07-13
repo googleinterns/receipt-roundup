@@ -162,14 +162,7 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
-    // Add mock blob to Blobstore.
-    Map<String, List<BlobKey>> blobs = new HashMap<>();
-    blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
-    when(blobstoreService.getUploads(request)).thenReturn(blobs);
-    BlobInfo blobInfo = new BlobInfo(
-        BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
-    when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
-
+    createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
 
     long timestamp = clock.millis() - 1234;
@@ -203,14 +196,7 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
-    // Add mock blob to Blobstore.
-    Map<String, List<BlobKey>> blobs = new HashMap<>();
-    blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
-    when(blobstoreService.getUploads(request)).thenReturn(blobs);
-    BlobInfo blobInfo = new BlobInfo(
-        BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
-    when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
-
+    createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
 
     long timestamp = clock.millis() - 1234;
@@ -248,13 +234,7 @@ public final class UploadReceiptServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    // Add mock blob of size 0 to Blobstore.
-    Map<String, List<BlobKey>> blobs = new HashMap<>();
-    blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
-    when(blobstoreService.getUploads(request)).thenReturn(blobs);
-    BlobInfo blobInfo = new BlobInfo(
-        BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_0MB, HASH, null);
-    when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
+    createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_0MB);
 
     long timestamp = clock.millis() - 1234;
     String date = Long.toString(timestamp);
@@ -295,13 +275,7 @@ public final class UploadReceiptServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    // Add mock blob with PNG filename to Blobstore.
-    Map<String, List<BlobKey>> blobs = new HashMap<>();
-    blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
-    when(blobstoreService.getUploads(request)).thenReturn(blobs);
-    BlobInfo blobInfo = new BlobInfo(
-        BLOB_KEY, "image/png", new Date(), INVALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
-    when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
+    createMockBlob(request, "image/png", INVALID_FILENAME, IMAGE_SIZE_1MB);
 
     long timestamp = clock.millis() - 1234;
     String date = Long.toString(timestamp);
@@ -353,13 +327,7 @@ public final class UploadReceiptServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    // Add mock blob to Blobstore.
-    Map<String, List<BlobKey>> blobs = new HashMap<>();
-    blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
-    when(blobstoreService.getUploads(request)).thenReturn(blobs);
-    BlobInfo blobInfo = new BlobInfo(
-        BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
-    when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
+    createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
 
     when(request.getParameter("label")).thenReturn(LABEL);
 
@@ -384,5 +352,17 @@ public final class UploadReceiptServletTest {
     verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
     verify(blobstoreService).delete(BLOB_KEY);
+  }
+
+  /**
+   * Adds a mock blob with the given content type, filename, and size to the mocked Blobstore.
+   */
+  private void createMockBlob(
+      HttpServletRequest request, String contentType, String filename, long size) {
+    Map<String, List<BlobKey>> blobs = new HashMap<>();
+    blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
+    when(blobstoreService.getUploads(request)).thenReturn(blobs);
+    BlobInfo blobInfo = new BlobInfo(BLOB_KEY, contentType, new Date(), filename, size, HASH, null);
+    when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
   }
 }
