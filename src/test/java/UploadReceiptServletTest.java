@@ -167,10 +167,7 @@ public final class UploadReceiptServletTest {
         BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
-    when(request.getParameter("label")).thenReturn(LABEL);
-    when(request.getParameter("store")).thenReturn(STORE);
-    when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
-
+    stubRequestBody(request, LABEL, STORE, PRICE);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -205,10 +202,7 @@ public final class UploadReceiptServletTest {
         BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
-    when(request.getParameter("label")).thenReturn(LABEL);
-    when(request.getParameter("store")).thenReturn(STORE);
-    when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
-
+    stubRequestBody(request, LABEL, STORE, PRICE);
     stubUrlComponents(
         request, DEV_SERVER_SCHEME, DEV_SERVER_NAME, DEV_SERVER_PORT, DEV_SERVER_CONTEXT_PATH);
 
@@ -309,10 +303,7 @@ public final class UploadReceiptServletTest {
         BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
-    when(request.getParameter("label")).thenReturn(LABEL);
-    when(request.getParameter("store")).thenReturn(STORE);
-    when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
-
+    stubRequestBody(request, LABEL, STORE, PRICE);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -339,10 +330,7 @@ public final class UploadReceiptServletTest {
         BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
-    when(request.getParameter("label")).thenReturn(LABEL);
-    when(request.getParameter("store")).thenReturn(STORE);
-    when(request.getParameter("price")).thenReturn(String.valueOf(PRICE_THREE_DECIMAL_PLACES));
-
+    stubRequestBody(request, LABEL, STORE, PRICE_THREE_DECIMAL_PLACES);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -365,6 +353,16 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
     Assert.assertEquals(receipt.getProperty("timestamp"), timestamp);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
+  }
+
+  /**
+   * Stubs the request with the given label, store, and price parameters.
+   */
+  private void stubRequestBody(
+      HttpServletRequest request, String label, String store, double price) {
+    when(request.getParameter("label")).thenReturn(label);
+    when(request.getParameter("store")).thenReturn(store);
+    when(request.getParameter("price")).thenReturn(String.valueOf(price));
   }
 
   /**
