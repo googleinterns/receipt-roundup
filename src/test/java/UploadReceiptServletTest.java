@@ -94,6 +94,8 @@ public final class UploadReceiptServletTest {
   private static final BlobKey BLOB_KEY = new BlobKey("blobKey");
   private static final String VALID_FILENAME = "image.jpg";
   private static final String INVALID_FILENAME = "image.png";
+  private static final String VALID_CONTENT_TYPE = "image/jpeg";
+  private static final String INVALID_CONTENT_TYPE = "image/png";
   private static final long IMAGE_SIZE_1MB = 1024 * 1024;
   private static final long IMAGE_SIZE_0MB = 0;
   private static final String HASH = "35454B055CC325EA1AF2126E27707052";
@@ -166,7 +168,7 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
-    createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
     setTransactionDate(request, PAST_TIMESTAMP);
 
@@ -197,7 +199,7 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
-    createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
     setTransactionDate(request, PAST_TIMESTAMP);
 
@@ -232,7 +234,7 @@ public final class UploadReceiptServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_0MB);
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_0MB);
     setTransactionDate(request, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
@@ -268,7 +270,7 @@ public final class UploadReceiptServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    createMockBlob(request, "image/png", INVALID_FILENAME, IMAGE_SIZE_1MB);
+    createMockBlob(request, INVALID_CONTENT_TYPE, INVALID_FILENAME, IMAGE_SIZE_1MB);
     setTransactionDate(request, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
@@ -316,7 +318,7 @@ public final class UploadReceiptServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    createMockBlob(request, "image/jpeg", VALID_FILENAME, IMAGE_SIZE_1MB);
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
     setTransactionDate(request, PAST_TIMESTAMP);
 
