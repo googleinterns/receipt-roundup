@@ -20,8 +20,15 @@
 <br />
 
 <form id="upload-form" action="#" onsubmit="uploadReceipt(event)">
-  <label for="label">Enter a label for the receipt:</label>
-  <input id="label-input" class="form-control" type="text" name="label" placeholder="Receipt 1" required />
+  <label for="label">Enter tags for the receipt:</label>
+  <input
+    id="categories-input"
+    class="form-control"
+    type="text"
+    name="label"
+    placeholder="Category 1, Category 2, Category 3"
+    required
+  />
 
   <label for="store">Enter the store name:</label>
   <input id="store-input" class="form-control" type="text" name="store" placeholder="Store" required />
