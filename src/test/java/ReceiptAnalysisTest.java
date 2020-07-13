@@ -22,8 +22,6 @@ import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
-import com.google.cloud.vision.v1.Feature;
-import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
@@ -37,28 +35,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({AnnotateImageResponse.class, AnnotateImageRequest.class,
-    BatchAnnotateImagesResponse.class, EntityAnnotation.class, Feature.class, Image.class,
-    ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
+@PrepareForTest({AnnotateImageResponse.class, BatchAnnotateImagesResponse.class,
+    EntityAnnotation.class, ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
 public final class ReceiptAnalysisTest {
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
-
-  @Mock private AnnotateImageRequest request;
-  @Mock private Feature feature;
-  @Mock private Image image;
-
-  @Mock(answer = Answers.RETURNS_SELF) private AnnotateImageRequest.Builder requestBuilder;
-  @Mock(answer = Answers.RETURNS_SELF) private Feature.Builder featureBuilder;
-  @Mock(answer = Answers.RETURNS_SELF) private Image.Builder imageBuilder;
 
   @Before
   public void setUp() {
@@ -70,18 +57,6 @@ public final class ReceiptAnalysisTest {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
-
-    when(imageBuilder.build()).thenReturn(image);
-    mockStatic(Image.class);
-    when(Image.newBuilder()).thenReturn(imageBuilder);
-
-    when(featureBuilder.build()).thenReturn(feature);
-    mockStatic(Feature.class);
-    when(Feature.newBuilder()).thenReturn(featureBuilder);
-
-    when(requestBuilder.build()).thenReturn(request);
-    mockStatic(AnnotateImageRequest.class);
-    when(AnnotateImageRequest.newBuilder()).thenReturn(requestBuilder);
 
     ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
     mockStatic(ImageAnnotatorClient.class);
