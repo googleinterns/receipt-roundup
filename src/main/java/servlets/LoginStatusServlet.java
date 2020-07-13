@@ -17,7 +17,7 @@ package com.google.sps.servlets;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
-import com.google.sps.data.AuthenticationInformation;
+import com.google.sps.data.Account;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -41,19 +41,19 @@ public class LoginStatusServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     boolean loggedIn = userService.isUserLoggedIn();
-    AuthenticationInformation authentication;
+    Account account;
 
     if (loggedIn) {
       String logoutUrl = userService.createLogoutURL(LOGIN_PAGE_URL);
       String email = userService.getCurrentUser().getEmail();
-      authentication = new AuthenticationInformation(logoutUrl, email);
+      account = new Account(logoutUrl, email);
     } else {
       String loginUrl = userService.createLoginURL(HOME_PAGE_URL);
-      authentication = new AuthenticationInformation(loginUrl);
+      account = new Account(loginUrl);
     }
 
-    // Convert the authentication information to JSON.
-    String json = new Gson().toJson(authentication);
+    // Convert the account data to JSON.
+    String json = new Gson().toJson(account);
 
     // Send the JSON as the response.
     response.setContentType("application/json;");

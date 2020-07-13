@@ -22,7 +22,7 @@ import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import com.google.sps.data.AuthenticationInformation;
+import com.google.sps.data.Account;
 import com.google.sps.servlets.LoginStatusServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -51,10 +51,8 @@ public final class LoginStatusServletTest {
   private static final String LOGIN_URL = "/_ah/login?continue\u003d%2F";
   private static final String LOGOUT_URL = "/_ah/logout?continue\u003d%2Flogin.html";
 
-  private static final AuthenticationInformation LOGGED_OUT_INFORMATION =
-      new AuthenticationInformation(LOGIN_URL);
-  private static final AuthenticationInformation LOGGED_IN_INFORMATION =
-      new AuthenticationInformation(LOGOUT_URL, USER_EMAIL);
+  private static final Account LOGGED_OUT_ACCOUNT = new Account(LOGIN_URL);
+  private static final Account LOGGED_IN_ACCOUNT = new Account(LOGOUT_URL, USER_EMAIL);
 
   // Uses local UserService.
   private final LocalServiceTestHelper helper =
@@ -95,7 +93,7 @@ public final class LoginStatusServletTest {
     writer.flush();
 
     String actual = stringWriter.toString();
-    String expected = getExpectedJsonResponse(LOGGED_OUT_INFORMATION);
+    String expected = getExpectedJsonResponse(LOGGED_OUT_ACCOUNT);
     Assert.assertEquals(expected, actual);
   }
 
@@ -111,15 +109,15 @@ public final class LoginStatusServletTest {
     writer.flush();
 
     String actual = stringWriter.toString();
-    String expected = getExpectedJsonResponse(LOGGED_IN_INFORMATION);
+    String expected = getExpectedJsonResponse(LOGGED_IN_ACCOUNT);
     Assert.assertEquals(expected, actual);
   }
 
   /**
-   * Converts the expected authentication information object into a JSON string and adds a new line
+   * Converts the expected account object into a JSON string and adds a new line
    * at the end to compare to the actual response.
    */
-  private String getExpectedJsonResponse(AuthenticationInformation authenticationInformation) {
-    return new Gson().toJson(authenticationInformation) + "\n";
+  private String getExpectedJsonResponse(Account account) {
+    return new Gson().toJson(account) + "\n";
   }
 }

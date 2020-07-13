@@ -15,7 +15,7 @@
 package com.google.sps.data;
 
 /** Information about the logged-in user. */
-public class AuthenticationInformation {
+public class Account {
   // Note: types cannot be Optional due to JSON conversion.
   private final boolean loggedIn;
   private final String loginUrl;
@@ -25,7 +25,7 @@ public class AuthenticationInformation {
   /**
    * Creates a logged out user with a URL to log in.
    */
-  public AuthenticationInformation(String loginUrl) {
+  public Account(String loginUrl) {
     this.loggedIn = false;
     this.loginUrl = loginUrl;
 
@@ -35,7 +35,7 @@ public class AuthenticationInformation {
   /**
    * Creates a logged in user with an email and a URL to log out.
    */
-  public AuthenticationInformation(String logoutUrl, String email) {
+  public Account(String logoutUrl, String email) {
     this.loggedIn = true;
     this.logoutUrl = logoutUrl;
     this.email = email;
