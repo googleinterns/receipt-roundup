@@ -171,11 +171,8 @@ public final class UploadReceiptServletTest {
     when(request.getParameter("store")).thenReturn(STORE);
     when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
 
-    // Stub request with URL components.
-    when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
-    when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
-    when(request.getServerPort()).thenReturn(LIVE_SERVER_PORT);
-    when(request.getContextPath()).thenReturn(LIVE_SERVER_CONTEXT_PATH);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
@@ -212,11 +209,8 @@ public final class UploadReceiptServletTest {
     when(request.getParameter("store")).thenReturn(STORE);
     when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
 
-    // Stub request with dev server URL components.
-    when(request.getScheme()).thenReturn(DEV_SERVER_SCHEME);
-    when(request.getServerName()).thenReturn(DEV_SERVER_NAME);
-    when(request.getServerPort()).thenReturn(DEV_SERVER_PORT);
-    when(request.getContextPath()).thenReturn(DEV_SERVER_CONTEXT_PATH);
+    stubUrlComponents(
+        request, DEV_SERVER_SCHEME, DEV_SERVER_NAME, DEV_SERVER_PORT, DEV_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
@@ -319,11 +313,8 @@ public final class UploadReceiptServletTest {
     when(request.getParameter("store")).thenReturn(STORE);
     when(request.getParameter("price")).thenReturn(String.valueOf(PRICE));
 
-    // Stub request with URL components.
-    when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
-    when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
-    when(request.getServerPort()).thenReturn(LIVE_SERVER_PORT);
-    when(request.getContextPath()).thenReturn(LIVE_SERVER_CONTEXT_PATH);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis exception.
     mockStatic(ReceiptAnalysis.class);
@@ -352,11 +343,8 @@ public final class UploadReceiptServletTest {
     when(request.getParameter("store")).thenReturn(STORE);
     when(request.getParameter("price")).thenReturn(String.valueOf(PRICE_THREE_DECIMAL_PLACES));
 
-    // Stub request with URL components.
-    when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
-    when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
-    when(request.getServerPort()).thenReturn(LIVE_SERVER_PORT);
-    when(request.getContextPath()).thenReturn(LIVE_SERVER_CONTEXT_PATH);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
@@ -377,5 +365,16 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
     Assert.assertEquals(receipt.getProperty("timestamp"), timestamp);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
+  }
+
+  /**
+   * Stubs the request with the given scheme, server name, port, and context path URL components.
+   */
+  private void stubUrlComponents(
+      HttpServletRequest request, String scheme, String serverName, int port, String contextPath) {
+    when(request.getScheme()).thenReturn(scheme);
+    when(request.getServerName()).thenReturn(serverName);
+    when(request.getServerPort()).thenReturn(port);
+    when(request.getContextPath()).thenReturn(contextPath);
   }
 }
