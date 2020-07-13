@@ -112,6 +112,11 @@ public class UploadReceiptServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().println(e.toString());
       return;
+    } catch (UserNotLoggedInException e) {
+      logger.warning(e.toString());
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.getWriter().println(e.toString());
+      return;
     } catch (ReceiptAnalysisException e) {
       logger.warning(e.toString());
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -128,8 +133,15 @@ public class UploadReceiptServlet extends HttpServlet {
    * information about the receipt.
    */
   private Entity createReceiptEntity(HttpServletRequest request)
-      throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
+      throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
+             ReceiptAnalysisException {
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
+
+    if (!userService.isUserLoggedIn()) {
+      blobstoreService.delete(blobKey);
+      throw new UserNotLoggedInException("User must be logged in to upload a receipt.");
+    }
+
     long timestamp = clock.instant().toEpochMilli();
     String label = request.getParameter("label");
     String userId = userService.getCurrentUser().getUserId();
@@ -248,6 +260,12 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class FileNotSelectedException extends Exception {
     public FileNotSelectedException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class UserNotLoggedInException extends Exception {
+    public UserNotLoggedInException(String errorMessage) {
       super(errorMessage);
     }
   }

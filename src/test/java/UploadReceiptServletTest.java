@@ -79,6 +79,8 @@ public final class UploadReceiptServletTest {
       "com.google.sps.servlets.UploadReceiptServlet$FileNotSelectedException: No file was uploaded by the user (dev server).";
   private static final String INVALID_FILE_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$InvalidFileException: Uploaded file must be a JPEG image.";
+  private static final String USER_NOT_LOGGED_IN_WARNING =
+      "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.";
   private static final String RECEIPT_ANALYSIS_FAILED_WARNING =
       "com.google.sps.servlets.ReceiptAnalysis$ReceiptAnalysisException: Receipt analysis failed.";
 
@@ -316,6 +318,31 @@ public final class UploadReceiptServletTest {
 
     Assert.assertTrue(stringWriter.toString().contains(INVALID_FILE_WARNING));
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+    verify(blobstoreService).delete(BLOB_KEY);
+  }
+
+  @Test
+  public void doPostThrowsIfUserIsLoggedOut() throws IOException {
+    helper.setEnvIsLoggedIn(false);
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    // Add mock blob to Blobstore.
+    Map<String, List<BlobKey>> blobs = new HashMap<>();
+    blobs.put("receipt-image", Arrays.asList(BLOB_KEY));
+    when(blobstoreService.getUploads(request)).thenReturn(blobs);
+    BlobInfo blobInfo = new BlobInfo(
+        BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
+    when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
+
+    servlet.doPost(request, response);
+    writer.flush();
+
+    Assert.assertTrue(stringWriter.toString().contains(USER_NOT_LOGGED_IN_WARNING));
+    verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
 
     verify(blobstoreService).delete(BLOB_KEY);
   }
