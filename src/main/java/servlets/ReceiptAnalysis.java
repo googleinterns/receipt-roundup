@@ -42,7 +42,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ReceiptAnalysis {
   /** Returns the text of the image at the requested URL. */
-  public static AnalysisResults serveImageText(URL url) throws IOException {
+  public static AnalysisResults serveImageText(URL url)
+      throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(url);
 
     String rawText = retrieveText(imageBytes);
@@ -52,7 +53,8 @@ public class ReceiptAnalysis {
   }
 
   /** Returns the text of the image at the requested blob key. */
-  public static AnalysisResults serveImageText(BlobKey blobKey) throws IOException {
+  public static AnalysisResults serveImageText(BlobKey blobKey)
+      throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(blobKey);
 
     String rawText = retrieveText(imageBytes);
@@ -98,7 +100,8 @@ public class ReceiptAnalysis {
   }
 
   /** Detects and retrieves text in the provided image. */
-  private static String retrieveText(ByteString imageBytes) throws IOException {
+  private static String retrieveText(ByteString imageBytes)
+      throws IOException, ReceiptAnalysisException {
     String rawText = "";
 
     Image image = Image.newBuilder().setContent(imageBytes).build();
@@ -110,6 +113,11 @@ public class ReceiptAnalysis {
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
       // TODO: Throw custom exception from PR #12 if response has an error or is missing
       BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
+
+      if (batchResponse.getResponsesList().isEmpty()) {
+        throw new ReceiptAnalysisException("Received empty batch image annotation response.");
+      }
+
       AnnotateImageResponse response = Iterables.getOnlyElement(batchResponse.getResponsesList());
 
       // First element has the entire raw text from the image
@@ -124,6 +132,10 @@ public class ReceiptAnalysis {
   public static class ReceiptAnalysisException extends Exception {
     public ReceiptAnalysisException(String errorMessage, Throwable err) {
       super(errorMessage, err);
+    }
+
+    public ReceiptAnalysisException(String errorMessage) {
+      super(errorMessage);
     }
   }
 }
