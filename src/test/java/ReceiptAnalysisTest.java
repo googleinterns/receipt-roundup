@@ -26,13 +26,16 @@ import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis;
+import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -42,6 +45,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
 public final class ReceiptAnalysisTest {
+  private static final String EMPTY_BATCH_RESPONSE_WARNING =
+      "Received empty batch image annotation response.";
+
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
 
@@ -50,8 +56,11 @@ public final class ReceiptAnalysisTest {
     MockitoAnnotations.initMocks(this);
   }
 
+  @Rule public ExpectedException expectedException = ExpectedException.none();
+
   @Test
-  public void serveImageTextUrlReturnsAnalysisResults() throws IOException {
+  public void serveImageTextUrlReturnsAnalysisResults()
+      throws IOException, ReceiptAnalysisException {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
@@ -71,5 +80,26 @@ public final class ReceiptAnalysisTest {
     AnalysisResults results = ReceiptAnalysis.serveImageText(url);
 
     Assert.assertEquals(results.getRawText(), RAW_TEXT);
+  }
+
+  @Test
+  public void serveImageTextThrowsIfEmptyBatchResponse()
+      throws IOException, ReceiptAnalysisException {
+    URL url = mock(URL.class);
+    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
+    when(url.openStream()).thenReturn(inputStream);
+
+    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
+    mockStatic(ImageAnnotatorClient.class);
+    when(ImageAnnotatorClient.create()).thenReturn(client);
+
+    BatchAnnotateImagesResponse batchResponse = BatchAnnotateImagesResponse.newBuilder().build();
+    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
+        .thenReturn(batchResponse);
+
+    expectedException.expect(ReceiptAnalysisException.class);
+    expectedException.expectMessage(EMPTY_BATCH_RESPONSE_WARNING);
+
+    ReceiptAnalysis.serveImageText(url);
   }
 }
