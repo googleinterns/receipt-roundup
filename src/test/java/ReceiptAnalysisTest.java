@@ -46,8 +46,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({AnnotateImageResponse.class, AnnotateImageRequest.class,
-    BatchAnnotateImagesResponse.class, ByteString.class, EntityAnnotation.class, Feature.class,
-    Image.class, ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
+    BatchAnnotateImagesResponse.class, EntityAnnotation.class, Feature.class, Image.class,
+    ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
 public final class ReceiptAnalysisTest {
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
@@ -70,9 +70,6 @@ public final class ReceiptAnalysisTest {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
-
-    mockStatic(ByteString.class);
-    when(ByteString.readFrom(inputStream)).thenReturn(IMAGE_BYTES);
 
     when(imageBuilder.build()).thenReturn(image);
     mockStatic(Image.class);
