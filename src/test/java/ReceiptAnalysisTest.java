@@ -23,7 +23,6 @@ import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis;
@@ -41,8 +40,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({AnnotateImageResponse.class, BatchAnnotateImagesResponse.class,
-    EntityAnnotation.class, ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
+@PrepareForTest({ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
 public final class ReceiptAnalysisTest {
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
@@ -62,19 +60,13 @@ public final class ReceiptAnalysisTest {
     mockStatic(ImageAnnotatorClient.class);
     when(ImageAnnotatorClient.create()).thenReturn(client);
 
-    BatchAnnotateImagesResponse batchResponse = mock(BatchAnnotateImagesResponse.class);
+    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
+    AnnotateImageResponse response =
+        AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
+    BatchAnnotateImagesResponse batchResponse =
+        BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
     when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
-
-    AnnotateImageResponse response = mock(AnnotateImageResponse.class);
-    ImmutableList<AnnotateImageResponse> responses = ImmutableList.of(response);
-    when(batchResponse.getResponsesList()).thenReturn(responses);
-
-    EntityAnnotation annotation = mock(EntityAnnotation.class);
-    ImmutableList<EntityAnnotation> annotations = ImmutableList.of(annotation);
-    when(response.getTextAnnotationsList()).thenReturn(annotations);
-
-    when(annotation.getDescription()).thenReturn(RAW_TEXT);
 
     AnalysisResults results = ReceiptAnalysis.serveImageText(url);
 
