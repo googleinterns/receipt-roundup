@@ -50,7 +50,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -105,7 +105,8 @@ public final class UploadReceiptServletTest {
   private static final long IMAGE_SIZE_0MB = 0;
   private static final String HASH = "35454B055CC325EA1AF2126E27707052";
 
-  private static final String LABEL = "Label";
+  private static final String[] CATEGORIES = new String[] {"Fast Food, Burger, Restaurant"};
+  private static final Collection<String> CATEGORIES_COLLECTION = Arrays.asList(CATEGORIES);
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
   private static final String STORE = "McDonald's";
@@ -185,7 +186,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
-    when(request.getParameter("label")).thenReturn(LABEL);
+    when(request.getParameterValues("categories")).thenReturn(CATEGORIES);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     // Stub request with URL components.
@@ -211,7 +212,7 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
-    Assert.assertEquals(receipt.getProperty("label"), LABEL);
+    Assert.assertEquals(receipt.getProperty("categories"), CATEGORIES_COLLECTION);
     Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
   }
 
@@ -220,7 +221,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
-    when(request.getParameter("label")).thenReturn(LABEL);
+    when(request.getParameterValues("categories")).thenReturn(CATEGORIES);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     // Stub request with dev server URL components.
@@ -244,8 +245,8 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("store"), STORE);
     Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
+    Assert.assertEquals(receipt.getProperty("categories"), CATEGORIES_COLLECTION);
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
-    Assert.assertEquals(receipt.getProperty("label"), LABEL);
     Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
   }
 
@@ -371,7 +372,7 @@ public final class UploadReceiptServletTest {
     when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    when(request.getParameter("label")).thenReturn(LABEL);
+    when(request.getParameterValues("categories")).thenReturn(CATEGORIES);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     // Stub request with URL components.
