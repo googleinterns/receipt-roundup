@@ -66,7 +66,6 @@ public final class LoginStatusServletTest {
   @Mock private HttpServletResponse response;
 
   private LoginStatusServlet servlet;
-  private UserService userService;
 
   @Before
   public void setUp() {
