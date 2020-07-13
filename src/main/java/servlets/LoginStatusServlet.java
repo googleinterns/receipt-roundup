@@ -53,19 +53,10 @@ public class LoginStatusServlet extends HttpServlet {
     }
 
     // Convert the authentication information to JSON.
-    String json = convertToJson(authentication);
+    String json = new Gson().toJson(authentication);
 
     // Send the JSON as the response.
     response.setContentType("application/json;");
     response.getWriter().println(json);
-  }
-
-  /**
-   * Converts an AuthenticationInformation object into a JSON string using the Gson library.
-   */
-  private static String convertToJson(AuthenticationInformation authenticationInformation) {
-    Gson gson = new Gson();
-    String json = gson.toJson(authenticationInformation);
-    return json;
   }
 }
