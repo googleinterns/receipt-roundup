@@ -195,7 +195,7 @@ public class UploadReceiptServlet extends HttpServlet {
       if (baseUrl.equals(DEV_SERVER_BASE_URL)) {
         results = ReceiptAnalysis.serveImageText(blobKey);
       } else {
-        String absoluteUrl = baseUrl + imageUrl;
+        URL absoluteUrl = new URL(baseUrl + imageUrl);
         results = ReceiptAnalysis.serveImageText(absoluteUrl);
       }
     } catch (IOException e) {

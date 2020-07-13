@@ -17,6 +17,7 @@ package com.google.sps.servlets;
 import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
 import java.io.IOException;
+import java.net.URL;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +39,7 @@ public class ReceiptAnalysisServlet extends HttpServlet {
       return;
     }
 
-    AnalysisResults results = ReceiptAnalysis.serveImageText(url);
+    AnalysisResults results = ReceiptAnalysis.serveImageText(new URL(url));
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
