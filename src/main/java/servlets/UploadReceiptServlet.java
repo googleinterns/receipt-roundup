@@ -62,23 +62,21 @@ public class UploadReceiptServlet extends HttpServlet {
   private final BlobstoreService blobstoreService;
   private final BlobInfoFactory blobInfoFactory;
   private final DatastoreService datastore;
-  private final UserService userService;
+  private final UserService userService = UserServiceFactory.getUserService();
   private final Clock clock;
 
   public UploadReceiptServlet() {
     this.blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     this.blobInfoFactory = new BlobInfoFactory();
     this.datastore = DatastoreServiceFactory.getDatastoreService();
-    this.userService = UserServiceFactory.getUserService();
     this.clock = Clock.systemDefaultZone();
   }
 
   public UploadReceiptServlet(BlobstoreService blobstoreService, BlobInfoFactory blobInfoFactory,
-      DatastoreService datastore, UserService userService, Clock clock) {
+      DatastoreService datastore, Clock clock) {
     this.blobstoreService = blobstoreService;
     this.blobInfoFactory = blobInfoFactory;
     this.datastore = datastore;
-    this.userService = userService;
     this.clock = clock;
   }
 

@@ -133,7 +133,6 @@ public final class UploadReceiptServletTest {
 
   private UploadReceiptServlet servlet;
   private DatastoreService datastore;
-  private UserService userService;
   private Clock clock;
 
   @Before
@@ -141,13 +140,11 @@ public final class UploadReceiptServletTest {
     MockitoAnnotations.initMocks(this);
     helper.setUp();
     datastore = DatastoreServiceFactory.getDatastoreService();
-    userService = UserServiceFactory.getUserService();
 
     // Create a fixed time clock that always returns the same instant.
     clock = Clock.fixed(Instant.parse(INSTANT), ZoneId.systemDefault());
 
-    servlet =
-        new UploadReceiptServlet(blobstoreService, blobInfoFactory, datastore, userService, clock);
+    servlet = new UploadReceiptServlet(blobstoreService, blobInfoFactory, datastore, clock);
   }
 
   @After
