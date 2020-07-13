@@ -33,12 +33,16 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -150,7 +154,6 @@ public class UploadReceiptServlet extends HttpServlet {
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
-    receipt.setProperty("label", label);
     receipt.setProperty("userId", userId);
 
     return receipt;
@@ -252,6 +255,8 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("store", store);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
+    // TODO: Add generated categories from Natural Language API.
+    receipt.setProperty("categories", getCategories(request));
 
     return receipt;
   }
@@ -271,6 +276,13 @@ public class UploadReceiptServlet extends HttpServlet {
         + request.getServerPort() + request.getContextPath();
 
     return baseUrl;
+  }
+
+  /**
+   * Gets the list of user-assigned categories from the request.
+   */
+  private Collection<String> getCategories(HttpServletRequest request) {
+    return Arrays.asList(request.getParameterValues("categories"));
   }
 
   public static class InvalidFileException extends Exception {
