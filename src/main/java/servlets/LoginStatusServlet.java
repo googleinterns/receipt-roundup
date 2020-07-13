@@ -42,6 +42,10 @@ public class LoginStatusServlet extends HttpServlet {
     this.userService = userService;
   }
 
+  /**
+   * Retrieves the login status of the user. If they are logged in, their email and a URL
+   * to log out will be returned. Otherwise, a URL to log in will be returned.
+   */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     boolean loggedIn = userService.isUserLoggedIn();
