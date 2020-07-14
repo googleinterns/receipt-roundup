@@ -85,8 +85,6 @@ public final class UploadReceiptServletTest {
   private static final String INSTANT = "2020-06-22T10:15:30Z";
   private static final long PAST_TIMESTAMP =
       Instant.parse(INSTANT).minusMillis(1234).toEpochMilli();
-  private static final long FUTURE_TIMESTAMP =
-      Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
 
   private static final long MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
   private static final String UPLOAD_URL = "/blobstore/upload-receipt";
@@ -170,7 +168,7 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
-    setTransactionDate(request, PAST_TIMESTAMP);
+    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     // Stub request with URL components.
     when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
@@ -201,7 +199,7 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
-    setTransactionDate(request, PAST_TIMESTAMP);
+    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     // Stub request with dev server URL components.
     when(request.getScheme()).thenReturn(DEV_SERVER_SCHEME);
@@ -235,7 +233,7 @@ public final class UploadReceiptServletTest {
     when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_0MB);
-    setTransactionDate(request, PAST_TIMESTAMP);
+    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     servlet.doPost(request, response);
     writer.flush();
@@ -255,7 +253,7 @@ public final class UploadReceiptServletTest {
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
 
-    setTransactionDate(request, PAST_TIMESTAMP);
+    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     servlet.doPost(request, response);
     writer.flush();
@@ -271,7 +269,7 @@ public final class UploadReceiptServletTest {
     when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, INVALID_CONTENT_TYPE, INVALID_FILENAME, IMAGE_SIZE_1MB);
-    setTransactionDate(request, PAST_TIMESTAMP);
+    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     servlet.doPost(request, response);
     writer.flush();
@@ -288,7 +286,8 @@ public final class UploadReceiptServletTest {
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    setTransactionDate(request, FUTURE_TIMESTAMP);
+    long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
+    when(request.getParameter("date")).thenReturn(Long.toString(futureTimestamp));
 
     servlet.doPost(request, response);
     writer.flush();
@@ -320,7 +319,7 @@ public final class UploadReceiptServletTest {
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("label")).thenReturn(LABEL);
-    setTransactionDate(request, PAST_TIMESTAMP);
+    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     // Stub request with URL components.
     when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
@@ -351,13 +350,5 @@ public final class UploadReceiptServletTest {
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
     BlobInfo blobInfo = new BlobInfo(BLOB_KEY, contentType, new Date(), filename, size, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
-  }
-
-  /**
-   * Stubs the request with a transaction date corresponding to the given timestamp.
-   */
-  private void setTransactionDate(HttpServletRequest request, long timestamp) {
-    String date = Long.toString(timestamp);
-    when(request.getParameter("date")).thenReturn(date);
   }
 }
