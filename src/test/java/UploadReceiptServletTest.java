@@ -93,8 +93,6 @@ public final class UploadReceiptServletTest {
   private static final String LABEL = "Label";
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
-  private static final double PRICE_THREE_DECIMAL_PLACES = 17.236;
-  private static final double PRICE_THREE_DECIMAL_PLACES_ROUNDED = 17.24;
   private static final String STORE = "McDonald's";
   private static final AnalysisResults ANALYSIS_RESULTS = new AnalysisResults(RAW_TEXT.getValue());
 
@@ -330,7 +328,9 @@ public final class UploadReceiptServletTest {
         BLOB_KEY, "image/jpeg", new Date(), VALID_FILENAME, IMAGE_SIZE_1MB, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
 
-    stubRequestBody(request, LABEL, STORE, PRICE_THREE_DECIMAL_PLACES);
+    double price = 17.236;
+    double roundedPrice = 17.24;
+    stubRequestBody(request, LABEL, STORE, price);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -347,7 +347,7 @@ public final class UploadReceiptServletTest {
     long timestamp = clock.instant().toEpochMilli();
 
     Assert.assertEquals(receipt.getProperty("imageUrl"), IMAGE_URL);
-    Assert.assertEquals(receipt.getProperty("price"), PRICE_THREE_DECIMAL_PLACES_ROUNDED);
+    Assert.assertEquals(receipt.getProperty("price"), roundedPrice);
     Assert.assertEquals(receipt.getProperty("store"), STORE);
     Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
