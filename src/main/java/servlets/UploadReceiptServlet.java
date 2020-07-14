@@ -27,6 +27,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
@@ -105,7 +106,7 @@ public class UploadReceiptServlet extends HttpServlet {
   /**
    * When the user submits the upload form, Blobstore processes the image and then forwards the
    * request to this servlet, which analyzes the receipt image and inserts information
-   * about the receipt into Datastore.
+   * about the receipt into Datastore. The JSON response contains the receipt that was added.
    */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -132,6 +133,13 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Store the receipt entity in Datastore.
     datastore.put(receipt);
+
+    // Convert the receipt to JSON.
+    String json = new Gson().toJson(receipt);
+
+    // Send the JSON as the response.
+    response.setContentType("application/json;");
+    response.getWriter().println(json);
   }
 
   /**
