@@ -56,78 +56,91 @@ public final class QueryInformationTest {
 
   @Test
   public void validTimeZoneIdSetsToCST() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(CST_TIMEZONE, queryInformation.getTimeZone());
   }
 
   @Test
   public void invalideTimeZoneIdSetsToGMT() throws ParseException {
     // Test with empty string.
-    QueryInformation queryInformation = new QueryInformation(EMPTY_STRING, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation =
+        new QueryInformation(EMPTY_STRING, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(GMT_TIMEZONE, queryInformation.getTimeZone());
   }
 
-    @Test
+  @Test
   public void validCategories() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EXPECTED_CATEGORIES, queryInformation.getCategories());
   }
 
   @Test
   public void categoriesLowercasedAndWhitespaceRemoved() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, EDGE_CASE_CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation = new QueryInformation(
+        CST_TIMEZONE_ID, EDGE_CASE_CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EXPECTED_CATEGORIES, queryInformation.getCategories());
   }
 
   @Test
   public void invalidCategories() throws ParseException {
     // Test with empty string.
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, EMPTY_STRING, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation = new QueryInformation(
+        CST_TIMEZONE_ID, EMPTY_STRING, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EMPTY_IMMUTABLE_SET, queryInformation.getCategories());
 
     // Test with null.
-    queryInformation = new QueryInformation(CST_TIMEZONE_ID, NULL_VALUE, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, NULL_VALUE, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EMPTY_IMMUTABLE_SET, queryInformation.getCategories());
   }
 
   @Test
   public void valideDateRangeParse() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(JUNE_1_2020_START_OF_DAY, queryInformation.getStartTimestamp());
     Assert.assertEquals(JUNE_30_2020_END_OF_DAY, queryInformation.getEndTimestamp());
   }
 
   @Test(expected = ParseException.class)
   public void invalidDateRangeEmptyString() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation = new QueryInformation(
+        CST_TIMEZONE_ID, CATEGORIES, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
   }
 
   @Test
   public void storeCorrectlySet() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EXPECTED_STORE, queryInformation.getStore());
   }
 
   @Test
   public void storeLowercasedAndWhitespaceRemoved() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, EDGE_CASE_STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation = new QueryInformation(
+        CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, EDGE_CASE_STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EXPECTED_STORE, queryInformation.getStore());
   }
 
   @Test
   public void pricesCorrectlySet() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EXPECTED_MIN_PRICE, queryInformation.getMinPrice(), ERROR_THRESHOLD);
     Assert.assertEquals(EXPECTED_MAX_PRICE, queryInformation.getMaxPrice(), ERROR_THRESHOLD);
   }
 
   @Test(expected = NumberFormatException.class)
   public void emptyStringPriceThrows() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, EMPTY_STRING, MAX_PRICE);
+    QueryInformation queryInformation = new QueryInformation(
+        CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, EMPTY_STRING, MAX_PRICE);
   }
 
   @Test(expected = NullPointerException.class)
   public void nullPriceThrows() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
+    QueryInformation queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
   }
 }
