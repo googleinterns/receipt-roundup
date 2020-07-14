@@ -16,7 +16,9 @@
 async function loadReceiptAnalysis() {
   const timestamp = new URLSearchParams(location.search).get('timestamp');
   const storeName = new URLSearchParams(location.search).get('store-name');
+  const total = new URLSearchParams(location.search).get('total');
 
   document.getElementById('timestamp').innerText = `Upload Date: ${timestamp}`;
   document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
+  document.getElementById('total').innerText = `Total Price: $${total}`;
 }
