@@ -80,4 +80,3 @@ public class SearchServlet extends HttpServlet {
     return new Receipt(id, userId, timestamp, blobKey, imageUrl, price, store, categories, rawText);
   }
 }
-}
