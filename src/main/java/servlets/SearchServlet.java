@@ -79,5 +79,5 @@ public class SearchServlet extends HttpServlet {
     String rawText = (String) entity.getProperty("rawText");
     return new Receipt(id, userId, timestamp, blobKey, imageUrl, price, store, categories, rawText);
   }
- }
+}
 }

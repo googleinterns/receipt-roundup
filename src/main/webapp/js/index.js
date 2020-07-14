@@ -15,12 +15,12 @@
 
 /** Fetches receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
-  const label = document.getElementById('search-input').value;
-  const response = await fetch(`/search-receipts?label=${label}`);
+  const categories = document.getElementById('category-input').value;
+  const response = await fetch(`/search-receipts?categories=${categories}`);
   const receipts = await response.json();
 
   clearExistingDisplay();
-  displayReceipts(label, receipts);
+  displayReceipts(receipts);
 }
 
 /** Clears out receipts display including old receipts and error messages. */
@@ -30,13 +30,12 @@ function clearExistingDisplay() {
 
 /**
  * Populates receipt display with newly queried receipts.
- * @param {string} label User-entered label.
  * @param {JSON Object} receipts Receipts returned from search query.
  */
-function displayReceipts(label, receipts) {
+function displayReceipts(receipts) {
   // If no receipts returned, display an error message. Else, display receipts.
   if (Object.keys(receipts).length == 0) {
-    createErrorMessageElement(label);
+    createErrorMessageElement();
   } else {
     receipts.forEach((receipt) => {
       createReceiptCardElement(receipt);
@@ -46,17 +45,15 @@ function displayReceipts(label, receipts) {
 
 /**
  * Creates error message based on existing HTML template.
- * @param {string} label User-entered label.
  */
-function createErrorMessageElement(label) {
+function createErrorMessageElement() {
   // Clone error message from template.
   const errorMessageClone =
       document.querySelector('#error-message-template').content.cloneNode(true);
 
   // Fill in template fields with correct information.
   errorMessageClone.querySelector('h3').innerText =
-      'Sorry, no results found for "' + label +
-      '". Please try your search again or try a different query.';
+      'Sorry, no results found. Please try again or refine your search.';
 
   // Attach error message clone to parent div.
   document.getElementById('receipts-display').appendChild(errorMessageClone);
