@@ -48,8 +48,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PowerMockIgnore("jdk.internal.reflect.*")
 @RunWith(PowerMockRunner.class)
 public final class SearchServletTest {
-  private static final String INVALID_ID_MESSAGE =
-      "Invalid ID: Receipt unable to be deleted at this time, please try again.";
+   // Values for a valid test.
+  private static final String CST_TIMEZONE_ID = "America/Chicago";
+  private static final String CATEGORIES = "drink";
+  private static final String DATE_RANGE = "February 1, 2003 - February 28, 2003";
+  private static final String STORE = "walmart";
+  private static final String MIN_PRICE = "21.30";
+  private static final String MAX_PRICE = "87.60";
 
   // Local Datastore
   private final LocalServiceTestHelper helper =
@@ -77,26 +82,27 @@ public final class SearchServletTest {
     helper.tearDown();
   }
 
-//   @Test
-//   public void retrieveOneMatchingReceipt() throws IOException {
-//     // Add mock receipts to datastore.
-//     long[] ids = TestUtils.addTestReceipts(datastore);
+  @Test
+  public void retrieveOneMatchingReceipt() throws IOException {
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
 
-//     // Make sure receipt is added by checking if there is one entity returned.
-//     Query query = new Query("Receipt");
-//     PreparedQuery results = datastore.prepare(query);
-//     Assert.assertEquals(1, results.countEntities(FetchOptions.Builder.withDefaults()));
+    // Add mock receipts to datastore.
+    long[] ids = TestUtils.addTestReceipts(datastore);
 
-//     // Perform doPost - this should delete the receipt.
-//     when(request.getParameter("id")).thenReturn(String.valueOf(id));
-//     servlet.doPost(request, response);
+    // Perform doGet - this should retrieve the receipt.
+    when(request.getParameter("timeZoneId")).thenReturn(CST_TIMEZONE_ID);
+    when(request.getParameter("categories")).thenReturn(CATEGORIES);
+    when(request.getParameter("dateRange")).thenReturn(DATE_RANGE);
+    when(request.getParameter("store")).thenReturn(STORE);
+    when(request.getParameter("min")).thenReturn(MIN_PRICE);
+    when(request.getParameter("max")).thenReturn(MAX_PRICE);
+    servlet.doGet(request, response);
+    writer.flush();
 
-//     // Make sure receipt is deleted by checking if there are no entities returned.
-//     Key desiredKey = KeyFactory.createKey("Receipt", id);
-//     Filter matchingKeys = new FilterPredicate("__key__", FilterOperator.EQUAL, desiredKey);
-//     query.setFilter(matchingKeys);
-//     results = datastore.prepare(query);
-//     Assert.assertEquals(0, results.countEntities(FetchOptions.Builder.withDefaults()));
-//   }
+    // Make sure receipt is retrieved by finding the store name in the writer.
+    Assert.assertTrue(stringWriter.toString().contains("walmart"));
+  }
 
 }
