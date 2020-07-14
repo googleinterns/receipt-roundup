@@ -184,6 +184,11 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
     helper.setEnvIsLoggedIn(true);
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
     when(request.getParameterValues("categories")).thenReturn(CATEGORIES);
@@ -214,11 +219,21 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("categories"), CATEGORIES_COLLECTION);
     Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
+
+    String response = stringWriter.toString();
+    String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
+        PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
+    Assert.assertTrue(response.contains(expectedResponse));
   }
 
   @Test
   public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
     helper.setEnvIsLoggedIn(true);
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
     when(request.getParameterValues("categories")).thenReturn(CATEGORIES);
@@ -248,6 +263,11 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("categories"), CATEGORIES_COLLECTION);
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
+
+    String response = stringWriter.toString();
+    String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
+        PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
+    Assert.assertTrue(response.contains(expectedResponse));
   }
 
   @Test
@@ -405,5 +425,26 @@ public final class UploadReceiptServletTest {
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
     BlobInfo blobInfo = new BlobInfo(BLOB_KEY, contentType, new Date(), filename, size, HASH, null);
     when(blobInfoFactory.loadBlobInfo(BLOB_KEY)).thenReturn(blobInfo);
+  }
+
+  /**
+   * Creates an entity with the given properties and converts it to JSON format.
+   */
+  private String createReceiptEntity(String imageUrl, double price, String store, Text rawText,
+      BlobKey blobKey, long timestamp, Collection<String> categories, String userId) {
+    Entity receipt = new Entity("Receipt");
+    receipt.setProperty("imageUrl", imageUrl);
+    receipt.setProperty("price", price);
+    receipt.setProperty("store", store);
+    receipt.setUnindexedProperty("rawText", rawText);
+    receipt.setProperty("blobKey", blobKey);
+    receipt.setProperty("timestamp", timestamp);
+    receipt.setProperty("categories", categories);
+    receipt.setProperty("userId", userId);
+
+    String json = new Gson().toJson(receipt);
+    // Remove the unique ID property from the JSON string so it can be compared with the expected
+    // response.
+    return json.substring(json.indexOf("propertyMap"));
   }
 }
