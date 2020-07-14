@@ -31,8 +31,12 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis;
@@ -40,6 +44,7 @@ import com.google.sps.servlets.UploadReceiptServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -75,6 +80,8 @@ public final class UploadReceiptServletTest {
       "com.google.sps.servlets.UploadReceiptServlet$FileNotSelectedException: No file was uploaded by the user (dev server).";
   private static final String INVALID_FILE_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$InvalidFileException: Uploaded file must be a JPEG image.";
+  private static final String USER_NOT_LOGGED_IN_WARNING =
+      "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.";
   private static final String INVALID_DATE_RANGE_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be in the past.";
   private static final String INVALID_DATE_FORMAT_WARNING =
@@ -118,9 +125,18 @@ public final class UploadReceiptServletTest {
   private static final int DEV_SERVER_PORT = 80;
   private static final String DEV_SERVER_CONTEXT_PATH = "";
 
+  private static final String DOMAIN_NAME = "gmail.com";
+  private static final String USER_EMAIL = "test@gmail.com";
+  private static final String USER_ID = "testID";
+
   // Uses local Datastore.
   private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+      new LocalServiceTestHelper(
+          new LocalDatastoreServiceTestConfig(), new LocalUserServiceTestConfig())
+          .setEnvEmail(USER_EMAIL)
+          .setEnvAuthDomain(DOMAIN_NAME)
+          .setEnvAttributes(new HashMap(
+              ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", USER_ID)));
 
   @Mock private BlobstoreService blobstoreService;
   @Mock private BlobInfoFactory blobInfoFactory;
@@ -166,7 +182,9 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
+    helper.setEnvIsLoggedIn(true);
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+
     when(request.getParameter("label")).thenReturn(LABEL);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
@@ -178,7 +196,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(LIVE_SERVER_ABSOLUTE_URL)).thenReturn(ANALYSIS_RESULTS);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
 
@@ -193,11 +212,14 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
+    Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
   }
 
   @Test
   public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
+    helper.setEnvIsLoggedIn(true);
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+
     when(request.getParameter("label")).thenReturn(LABEL);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
@@ -224,10 +246,13 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
+    Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
   }
 
   @Test
   public void doPostThrowsIfFileNotSelectedLiveServer() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -246,6 +271,8 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfFileNotSelectedDevServer() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -264,6 +291,8 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfInvalidFile() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -280,8 +309,28 @@ public final class UploadReceiptServletTest {
     verify(blobstoreService).delete(BLOB_KEY);
   }
 
+  public void doPostThrowsIfUserIsLoggedOut() throws IOException {
+    helper.setEnvIsLoggedIn(false);
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+
+    servlet.doPost(request, response);
+    writer.flush();
+
+    Assert.assertTrue(stringWriter.toString().contains(USER_NOT_LOGGED_IN_WARNING));
+    verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+
+    verify(blobstoreService).delete(BLOB_KEY);
+  }
+
   @Test
   public void doPostThrowsIfDateIsInTheFuture() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -298,6 +347,8 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfInvalidDateFormat() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -313,6 +364,8 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfReceiptAnalysisFails() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
@@ -329,7 +382,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis exception.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(LIVE_SERVER_ABSOLUTE_URL)).thenThrow(IOException.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenThrow(IOException.class);
 
     servlet.doPost(request, response);
     writer.flush();

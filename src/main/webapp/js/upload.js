@@ -149,7 +149,8 @@ function loadDateInput() {
 }
 
 /**
- * Converts a date to 'YYYY-MM-DD' format.
+ * Converts a date to 'YYYY-MM-DD' format, corresponding to the value attribute
+ * of the date input.
  * @param {Date} date The date to convert.
  * @return {string} The formatted date.
  */
