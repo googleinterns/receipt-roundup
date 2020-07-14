@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet that searches and returns matching receipts from datastore. */
 @WebServlet("/search-receipts")
 public class SearchServlet extends HttpServlet {
+
   /** Messages that show up on client-side banner on thrown exception. */
   private static final String NULL_EXCEPTION_MESSAGE =
       "Null Field: Receipt unable to be queried at this time, please try again.";
@@ -46,6 +47,17 @@ public class SearchServlet extends HttpServlet {
       "Invalid Price: Receipt unable to be queried at this time, please try again.";
   private static final String PARSE_EXCEPTION_MESSAGE =
       "Dates Unparseable: Receipt unable to be queried at this time, please try again.";
+
+  private static DatastoreService datastore;
+
+  public SearchServlet(DatastoreService datastore) {
+    this.datastore = datastore;
+  }
+
+  @Override
+  public void init() {
+    datastore = DatastoreServiceFactory.getDatastoreService();
+  }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -90,8 +102,6 @@ public class SearchServlet extends HttpServlet {
   /** Returns ImmutableList of receipts from datastore matching queryInformation fields. */
   private ImmutableList<Receipt> getMatchingReceipts(QueryInformation queryInformation) {
     Query query = setupQuery(queryInformation);
-
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     return datastore.prepare(query)
         .asList(FetchOptions.Builder.withDefaults())
