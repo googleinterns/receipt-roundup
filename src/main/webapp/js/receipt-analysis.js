@@ -15,6 +15,8 @@
 /** Fetches receipt properties from the server and adds them to the page. */
 async function loadReceiptAnalysis() {
   const timestamp = new URLSearchParams(location.search).get('timestamp');
+  const storeName = new URLSearchParams(location.search).get('store-name');
 
   document.getElementById('timestamp').innerText = `Upload Date: ${timestamp}`;
+  document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
 }
