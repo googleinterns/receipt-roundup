@@ -13,12 +13,18 @@
 // limitations under the License.
 
 /** Fetches receipt properties from the server and adds them to the page. */
-async function loadReceiptAnalysis() {
+function loadReceiptAnalysis() {
   const timestamp = new URLSearchParams(location.search).get('timestamp');
   const storeName = new URLSearchParams(location.search).get('store-name');
   const total = new URLSearchParams(location.search).get('total');
+  const categories =
+      new URLSearchParams(location.search).get('categories').split(',');
 
   document.getElementById('timestamp').innerText = `Upload Date: ${timestamp}`;
   document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
   document.getElementById('total').innerText = `Total Price: $${total}`;
+
+  for (let i = 0; i < categories.length && i < 3; i++) {
+    document.getElementById('category-' + i).innerText = categories[i];
+  }
 }
