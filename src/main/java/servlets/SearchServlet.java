@@ -20,14 +20,15 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
-import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
+import com.google.sps.data.QueryInformation;
 import com.google.sps.data.Receipt;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 import javax.servlet.annotation.WebServlet;
@@ -38,31 +39,88 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet that searches and returns matching receipts from datastore. */
 @WebServlet("/search-receipts")
 public class SearchServlet extends HttpServlet {
+  /** Messages that show up on client-side banner on thrown exception. */
+  private static final String NULL_EXCEPTION_MESSAGE =
+      "Null Field: Receipt unable to be queried at this time, please try again.";
+  private static final String NUMBER_EXCEPTION_MESSAGE =
+      "Invalid Price: Receipt unable to be queried at this time, please try again.";
+  private static final String PARSE_EXCEPTION_MESSAGE =
+      "Dates Unparseable: Receipt unable to be queried at this time, please try again.";
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String categories = request.getParameter("categories");
-    ImmutableList<Receipt> receipts = getReceiptsWithMatchingCategories(categories);
+    QueryInformation queryInformation = createQueryInformation(request, response);
+
+    ImmutableList<Receipt> receipts = getMatchingReceipts(queryInformation);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
     response.getWriter().println(gson.toJson(receipts));
   }
 
-  /** Returns ImmutableList of receipts from datastore with the same categories. */
-  private ImmutableList<Receipt> getReceiptsWithMatchingCategories(String categories) {
-    // Set filter to retrieve only receipts with categories equal to categories.
-    Filter matchingCategories = new FilterPredicate("categories", FilterOperator.EQUAL, categories);
-    Query query = new Query("Receipt");
-    query.setFilter(matchingCategories);
+  /** Creates a {@link QueryInformation} based on request parameters. */
+  private QueryInformation createQueryInformation(
+      HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String timeZoneId = request.getParameter("timeZoneId");
+    String categories = request.getParameter("categories");
+    String dateRange = request.getParameter("dateRange");
+    String store = request.getParameter("store");
+    String minPrice = request.getParameter("min");
+    String maxPrice = request.getParameter("max");
+
+    QueryInformation queryInformation = null;
+
+    try {
+      queryInformation =
+          new QueryInformation(timeZoneId, categories, dateRange, store, minPrice, maxPrice);
+    } catch (NullPointerException exception) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(NULL_EXCEPTION_MESSAGE);
+    } catch (NumberFormatException exception) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(NUMBER_EXCEPTION_MESSAGE);
+    } catch (ParseException exception) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
+    }
+
+    return queryInformation;
+  }
+
+  /** Returns ImmutableList of receipts from datastore matching queryInformation fields. */
+  private ImmutableList<Receipt> getMatchingReceipts(QueryInformation queryInformation) {
+    Query query = setupQuery(queryInformation);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
-    // Convert matching receipt entities to receipt objects and add to return list.
     return datastore.prepare(query)
         .asList(FetchOptions.Builder.withDefaults())
         .stream()
         .map(this::createReceiptFromEntity)
+        .filter(receipt
+            -> receipt.getPrice() >= queryInformation.getMinPrice()
+                && receipt.getPrice() <= queryInformation.getMaxPrice())
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /** Creates a {@link Query} with filters set based on which values were input by user. */
+  private Query setupQuery(QueryInformation queryInformation) {
+    Query query = new Query("Receipt");
+
+    if (queryInformation.getCategories() != null && queryInformation.getCategories().size() != 0) {
+      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategories());
+    }
+
+    query.addFilter("timestamp", Query.FilterOperator.GREATER_THAN_OR_EQUAL,
+        queryInformation.getStartTimestamp());
+    query.addFilter(
+        "timestamp", Query.FilterOperator.LESS_THAN_OR_EQUAL, queryInformation.getEndTimestamp());
+
+    if (!Strings.isNullOrEmpty(queryInformation.getStore())) {
+      query.addFilter("store", Query.FilterOperator.EQUAL, queryInformation.getStore());
+    }
+
+    return query;
   }
 
   /** Creates a {@link Receipt} from an {@link Entity}. */
