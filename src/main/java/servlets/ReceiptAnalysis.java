@@ -111,7 +111,6 @@ public class ReceiptAnalysis {
     ImmutableList<AnnotateImageRequest> requests = ImmutableList.of(request);
 
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
-      // TODO: Throw custom exception from PR #12 if response has an error or is missing
       BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
 
       if (batchResponse.getResponsesList().isEmpty()) {
@@ -122,6 +121,9 @@ public class ReceiptAnalysis {
 
       if (response.hasError()) {
         throw new ReceiptAnalysisException("Received image annotation response with error.");
+      } else if (response.getTextAnnotationsList().isEmpty()) {
+        throw new ReceiptAnalysisException(
+            "Received image annotation response without text annotations.");
       }
 
       // First element has the entire raw text from the image
