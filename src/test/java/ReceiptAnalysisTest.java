@@ -50,6 +50,8 @@ public final class ReceiptAnalysisTest {
       "Received empty batch image annotation response.";
   private static final String RESPONSE_ERROR_WARNING =
       "Received image annotation response with error.";
+  private static final String EMPTY_TEXT_ANNOTATIONS_LIST_WARNING =
+      "Received image annotation response without text annotations.";
 
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
@@ -126,6 +128,29 @@ public final class ReceiptAnalysisTest {
 
     expectedException.expect(ReceiptAnalysisException.class);
     expectedException.expectMessage(RESPONSE_ERROR_WARNING);
+
+    ReceiptAnalysis.serveImageText(url);
+  }
+
+  @Test
+  public void serveImageTextThrowsIfEmptyTextAnnotationsList()
+      throws IOException, ReceiptAnalysisException {
+    URL url = mock(URL.class);
+    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
+    when(url.openStream()).thenReturn(inputStream);
+
+    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
+    mockStatic(ImageAnnotatorClient.class);
+    when(ImageAnnotatorClient.create()).thenReturn(client);
+
+    AnnotateImageResponse response = AnnotateImageResponse.newBuilder().build();
+    BatchAnnotateImagesResponse batchResponse =
+        BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
+    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
+        .thenReturn(batchResponse);
+
+    expectedException.expect(ReceiptAnalysisException.class);
+    expectedException.expectMessage(EMPTY_TEXT_ANNOTATIONS_LIST_WARNING);
 
     ReceiptAnalysis.serveImageText(url);
   }
