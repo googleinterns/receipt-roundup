@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet that searches and returns matching receipts from datastore. */
 @WebServlet("/search-receipts")
 public class SearchServlet extends HttpServlet {
-
   /** Messages that show up on client-side banner on thrown exception. */
   private static final String NULL_EXCEPTION_MESSAGE =
       "Null Field: Receipt unable to be queried at this time, please try again.";
@@ -48,15 +47,14 @@ public class SearchServlet extends HttpServlet {
   private static final String PARSE_EXCEPTION_MESSAGE =
       "Dates Unparseable: Receipt unable to be queried at this time, please try again.";
 
-  private static DatastoreService datastore;
+  private final DatastoreService datastore;
+
+  public SearchServlet() {
+    datastore = DatastoreServiceFactory.getDatastoreService();
+  }
 
   public SearchServlet(DatastoreService datastore) {
     this.datastore = datastore;
-  }
-
-  @Override
-  public void init() {
-    datastore = DatastoreServiceFactory.getDatastoreService();
   }
 
   @Override
