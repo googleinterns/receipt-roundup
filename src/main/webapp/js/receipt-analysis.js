@@ -15,8 +15,8 @@
 /** Fetches receipt properties from the server and adds them to the page. */
 function loadReceiptAnalysis() {
   const timestamp = new URLSearchParams(location.search).get('timestamp');
-  const storeName = new URLSearchParams(location.search).get('store-name');
-  const total = new URLSearchParams(location.search).get('total');
+  const storeName = new URLSearchParams(location.search).get('store');
+  const total = new URLSearchParams(location.search).get('price');
   const categories =
       new URLSearchParams(location.search).get('categories').split(',');
   const imageUrl = new URLSearchParams(location.search).get('image-url');
