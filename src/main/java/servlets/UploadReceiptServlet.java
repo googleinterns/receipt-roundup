@@ -127,7 +127,7 @@ public class UploadReceiptServlet extends HttpServlet {
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, InvalidDateException,
              ReceiptAnalysisException {
-    long timestamp = getDate(request);
+    long timestamp = getTimestamp(request);
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
     String label = request.getParameter("label");
 
@@ -141,10 +141,10 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
-   * Converts the date parameter from the request to a long and verifies that the date is in the
-   * past.
+   * Converts the date parameter from the request to a timestamp and verifies that the date is in
+   * the past.
    */
-  private long getDate(HttpServletRequest request) throws InvalidDateException {
+  private long getTimestamp(HttpServletRequest request) throws InvalidDateException {
     long currentTimestamp = clock.instant().toEpochMilli();
     long transactionTimestamp;
 
