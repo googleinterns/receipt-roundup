@@ -23,8 +23,8 @@
 }
 
 .no-padding {
-  padding: 2% 0 0 !important;
   margin: 0 !important;
+  padding: 2% 0 0 !important;
 }
 
 .vertical-center {
