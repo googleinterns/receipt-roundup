@@ -63,6 +63,10 @@ public class SearchServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     QueryInformation queryInformation = createQueryInformation(request, response);
 
+    if (queryInformation == null) { // createQueryInformation() threw an exception, so exit
+      return;
+    }
+
     ImmutableList<Receipt> receipts = getMatchingReceipts(queryInformation);
 
     Gson gson = new Gson();
