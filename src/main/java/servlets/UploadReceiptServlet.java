@@ -107,7 +107,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
     try {
       receipt = createReceiptEntity(request);
-    } catch (FileNotSelectedException | InvalidFileException e) {
+    } catch (FileNotSelectedException | InvalidFileException | InvalidDateException e) {
       logger.warning(e.toString());
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().println(e.toString());
@@ -134,7 +134,8 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
-             ReceiptAnalysisException {
+             InvalidDateException, ReceiptAnalysisException {
+    long timestamp = getTimestamp(request);
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
 
     if (!userService.isUserLoggedIn()) {
@@ -142,7 +143,6 @@ public class UploadReceiptServlet extends HttpServlet {
       throw new UserNotLoggedInException("User must be logged in to upload a receipt.");
     }
 
-    long timestamp = clock.instant().toEpochMilli();
     String label = request.getParameter("label");
     String userId = userService.getCurrentUser().getUserId();
 
@@ -154,6 +154,27 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("userId", userId);
 
     return receipt;
+  }
+
+  /**
+   * Converts the date parameter from the request to a timestamp and verifies that the date is in
+   * the past.
+   */
+  private long getTimestamp(HttpServletRequest request) throws InvalidDateException {
+    long currentTimestamp = clock.instant().toEpochMilli();
+    long transactionTimestamp;
+
+    try {
+      transactionTimestamp = Long.parseLong(request.getParameter("date"));
+    } catch (NumberFormatException e) {
+      throw new InvalidDateException("Transaction date must be a long.");
+    }
+
+    if (transactionTimestamp > currentTimestamp) {
+      throw new InvalidDateException("Transaction date must be in the past.");
+    }
+
+    return transactionTimestamp;
   }
 
   /**
@@ -266,6 +287,12 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class UserNotLoggedInException extends Exception {
     public UserNotLoggedInException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class InvalidDateException extends Exception {
+    public InvalidDateException(String errorMessage) {
       super(errorMessage);
     }
   }
