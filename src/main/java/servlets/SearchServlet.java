@@ -29,14 +29,7 @@ import com.google.gson.Gson;
 import com.google.sps.data.Receipt;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -47,20 +40,20 @@ import javax.servlet.http.HttpServletResponse;
 public class SearchServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String desiredLabel = request.getParameter("label");
-    ImmutableList<Receipt> receipts = getReceiptsWithMatchingLabel(desiredLabel);
+    String categories = request.getParameter("categories");
+    ImmutableList<Receipt> receipts = getReceiptsWithMatchingCategories(categories);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
     response.getWriter().println(gson.toJson(receipts));
   }
 
-  /** Returns ImmutableList of receipts from datastore with the same label as desiredLabel. */
-  private ImmutableList<Receipt> getReceiptsWithMatchingLabel(String desiredLabel) {
-    // Set filter to retrieve only receipts with label equal to desiredLabel.
-    Filter matchingLabels = new FilterPredicate("label", FilterOperator.EQUAL, desiredLabel);
+  /** Returns ImmutableList of receipts from datastore with the same categories. */
+  private ImmutableList<Receipt> getReceiptsWithMatchingCategories(String categories) {
+    // Set filter to retrieve only receipts with categories equal to categories.
+    Filter matchingCategories = new FilterPredicate("categories", FilterOperator.EQUAL, categories);
     Query query = new Query("Receipt");
-    query.setFilter(matchingLabels);
+    query.setFilter(matchingCategories);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -72,7 +65,7 @@ public class SearchServlet extends HttpServlet {
         .collect(ImmutableList.toImmutableList());
   }
 
-  /** Creates and returns a {@link Receipt} from an {@link Entity}. */
+  /** Creates a {@link Receipt} from an {@link Entity}. */
   private Receipt createReceiptFromEntity(Entity entity) {
     long id = entity.getKey().getId();
     long userId = (long) entity.getProperty("userId");
@@ -81,11 +74,10 @@ public class SearchServlet extends HttpServlet {
     String imageUrl = (String) entity.getProperty("imageUrl");
     double price = (double) entity.getProperty("price");
     String store = (String) entity.getProperty("store");
-    String label = (String) entity.getProperty("label");
     ImmutableSet<String> categories =
         ImmutableSet.copyOf((ArrayList) entity.getProperty("categories"));
     String rawText = (String) entity.getProperty("rawText");
-    return new Receipt(
-        id, userId, timestamp, blobKey, imageUrl, price, store, label, categories, rawText);
+    return new Receipt(id, userId, timestamp, blobKey, imageUrl, price, store, categories, rawText);
   }
+ }
 }
