@@ -54,9 +54,9 @@ async function uploadReceipt(event) {
 
   const json = (await response.json()).propertyMap;
   // Redirect to the receipt analysis page.
-  window.location.href = `/receipt-analysis.html?categories=${
-      json.categories}&image-url=${json.imageUrl}&price=${json.price}&store=${
-      json.store}&timestamp=${json.timestamp}`;
+  window.location.href = `/receipt-analysis.html?categories=` +
+      `${json.categories}&image-url=${json.imageUrl}` +
+      `&price=${json.price}&store=${json.store}&timestamp=${json.timestamp}`;
 }
 
 /**
