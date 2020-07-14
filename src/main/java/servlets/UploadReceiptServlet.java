@@ -25,6 +25,8 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
@@ -60,6 +62,7 @@ public class UploadReceiptServlet extends HttpServlet {
   private final BlobstoreService blobstoreService;
   private final BlobInfoFactory blobInfoFactory;
   private final DatastoreService datastore;
+  private final UserService userService = UserServiceFactory.getUserService();
   private final Clock clock;
 
   public UploadReceiptServlet() {
@@ -104,9 +107,14 @@ public class UploadReceiptServlet extends HttpServlet {
 
     try {
       receipt = createReceiptEntity(request);
-    } catch (FileNotSelectedException | InvalidFileException e) {
+    } catch (FileNotSelectedException | InvalidFileException | InvalidDateException e) {
       logger.warning(e.toString());
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(e.toString());
+      return;
+    } catch (UserNotLoggedInException e) {
+      logger.warning(e.toString());
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       response.getWriter().println(e.toString());
       return;
     } catch (ReceiptAnalysisException e) {
@@ -125,18 +133,48 @@ public class UploadReceiptServlet extends HttpServlet {
    * information about the receipt.
    */
   private Entity createReceiptEntity(HttpServletRequest request)
-      throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
+      throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
+             InvalidDateException, ReceiptAnalysisException {
+    long timestamp = getTimestamp(request);
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
-    long timestamp = clock.instant().toEpochMilli();
+
+    if (!userService.isUserLoggedIn()) {
+      blobstoreService.delete(blobKey);
+      throw new UserNotLoggedInException("User must be logged in to upload a receipt.");
+    }
+
     String label = request.getParameter("label");
+    String userId = userService.getCurrentUser().getUserId();
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
+    receipt.setProperty("userId", userId);
 
     return receipt;
+  }
+
+  /**
+   * Converts the date parameter from the request to a timestamp and verifies that the date is in
+   * the past.
+   */
+  private long getTimestamp(HttpServletRequest request) throws InvalidDateException {
+    long currentTimestamp = clock.instant().toEpochMilli();
+    long transactionTimestamp;
+
+    try {
+      transactionTimestamp = Long.parseLong(request.getParameter("date"));
+    } catch (NumberFormatException e) {
+      throw new InvalidDateException("Transaction date must be a long.");
+    }
+
+    if (transactionTimestamp > currentTimestamp) {
+      throw new InvalidDateException("Transaction date must be in the past.");
+    }
+
+    return transactionTimestamp;
   }
 
   /**
@@ -243,6 +281,18 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class FileNotSelectedException extends Exception {
     public FileNotSelectedException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class UserNotLoggedInException extends Exception {
+    public UserNotLoggedInException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class InvalidDateException extends Exception {
+    public InvalidDateException(String errorMessage) {
       super(errorMessage);
     }
   }
