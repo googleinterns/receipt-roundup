@@ -28,7 +28,6 @@ public class Account {
   public Account(String loginUrl) {
     this.loggedIn = false;
     this.loginUrl = loginUrl;
-
     this.logoutUrl = this.email = null;
   }
 
@@ -39,7 +38,6 @@ public class Account {
     this.loggedIn = true;
     this.logoutUrl = logoutUrl;
     this.email = email;
-
     this.loginUrl = null;
   }
 }
