@@ -19,6 +19,7 @@ function loadReceiptAnalysis() {
   const total = new URLSearchParams(location.search).get('total');
   const categories =
       new URLSearchParams(location.search).get('categories').split(',');
+  const imageUrl = new URLSearchParams(location.search).get('image-url');
 
   document.getElementById('timestamp').innerText = `Upload Date: ${timestamp}`;
   document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
@@ -27,4 +28,6 @@ function loadReceiptAnalysis() {
   for (let i = 0; i < categories.length && i < 3; i++) {
     document.getElementById('category-' + i).innerText = categories[i];
   }
+
+  document.getElementById('receipt-image').src = imageUrl;
 }
