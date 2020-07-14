@@ -25,6 +25,8 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
@@ -60,6 +62,7 @@ public class UploadReceiptServlet extends HttpServlet {
   private final BlobstoreService blobstoreService;
   private final BlobInfoFactory blobInfoFactory;
   private final DatastoreService datastore;
+  private final UserService userService = UserServiceFactory.getUserService();
   private final Clock clock;
 
   public UploadReceiptServlet() {
@@ -109,6 +112,11 @@ public class UploadReceiptServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().println(e.toString());
       return;
+    } catch (UserNotLoggedInException e) {
+      logger.warning(e.toString());
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.getWriter().println(e.toString());
+      return;
     } catch (ReceiptAnalysisException e) {
       logger.warning(e.toString());
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -125,12 +133,20 @@ public class UploadReceiptServlet extends HttpServlet {
    * information about the receipt.
    */
   private Entity createReceiptEntity(HttpServletRequest request)
-      throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
+      throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
+             ReceiptAnalysisException {
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
+
+    if (!userService.isUserLoggedIn()) {
+      blobstoreService.delete(blobKey);
+      throw new UserNotLoggedInException("User must be logged in to upload a receipt.");
+    }
+
     long timestamp = clock.instant().toEpochMilli();
     String label = request.getParameter("label");
     String store = request.getParameter("store");
     double price = roundPrice(request.getParameter("price"));
+    String userId = userService.getCurrentUser().getUserId();
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
@@ -139,6 +155,7 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("label", label);
     receipt.setProperty("store", store);
     receipt.setProperty("price", price);
+    receipt.setProperty("userId", userId);
 
     return receipt;
   }
@@ -206,7 +223,7 @@ public class UploadReceiptServlet extends HttpServlet {
       if (baseUrl.equals(DEV_SERVER_BASE_URL)) {
         results = ReceiptAnalysis.serveImageText(blobKey);
       } else {
-        String absoluteUrl = baseUrl + imageUrl;
+        URL absoluteUrl = new URL(baseUrl + imageUrl);
         results = ReceiptAnalysis.serveImageText(absoluteUrl);
       }
     } catch (IOException e) {
@@ -248,6 +265,12 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class FileNotSelectedException extends Exception {
     public FileNotSelectedException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class UserNotLoggedInException extends Exception {
+    public UserNotLoggedInException(String errorMessage) {
       super(errorMessage);
     }
   }

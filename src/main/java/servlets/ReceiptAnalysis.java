@@ -42,24 +42,30 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ReceiptAnalysis {
   /** Returns the text of the image at the requested URL. */
-  public static AnalysisResults serveImageText(String url) throws IOException {
+  public static AnalysisResults serveImageText(URL url) throws IOException {
     ByteString imageBytes = readImageBytes(url);
 
-    return retrieveText(imageBytes);
+    String rawText = retrieveText(imageBytes);
+    AnalysisResults results = new AnalysisResults(rawText);
+
+    return results;
   }
 
   /** Returns the text of the image at the requested blob key. */
   public static AnalysisResults serveImageText(BlobKey blobKey) throws IOException {
     ByteString imageBytes = readImageBytes(blobKey);
 
-    return retrieveText(imageBytes);
+    String rawText = retrieveText(imageBytes);
+    AnalysisResults results = new AnalysisResults(rawText);
+
+    return results;
   }
 
   /** Reads the image bytes from the URL. */
-  private static ByteString readImageBytes(String url) throws IOException {
+  private static ByteString readImageBytes(URL url) throws IOException {
     ByteString imageBytes;
 
-    try (InputStream imageInputStream = new URL(url).openStream()) {
+    try (InputStream imageInputStream = url.openStream()) {
       imageBytes = ByteString.readFrom(imageInputStream);
     }
 
@@ -92,8 +98,8 @@ public class ReceiptAnalysis {
   }
 
   /** Detects and retrieves text in the provided image. */
-  private static AnalysisResults retrieveText(ByteString imageBytes) throws IOException {
-    String description = "";
+  private static String retrieveText(ByteString imageBytes) throws IOException {
+    String rawText = "";
 
     Image image = Image.newBuilder().setContent(imageBytes).build();
     Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
@@ -109,10 +115,10 @@ public class ReceiptAnalysis {
       // First element has the entire raw text from the image
       EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
 
-      description = annotation.getDescription();
+      rawText = annotation.getDescription();
     }
 
-    return new AnalysisResults(description);
+    return rawText;
   }
 
   public static class ReceiptAnalysisException extends Exception {
