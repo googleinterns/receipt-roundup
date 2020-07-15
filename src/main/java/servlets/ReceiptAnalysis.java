@@ -150,11 +150,11 @@ public class ReceiptAnalysis {
   private static Set<String> categorizeText(String text) throws IOException {
     Set<String> categories = Collections.emptySet();
 
-    try (LanguageServiceClient language = LanguageServiceClient.create()) {
-      Document doc = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
-      ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(doc).build();
+    try (LanguageServiceClient client = LanguageServiceClient.create()) {
+      Document document = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
+      ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(document).build();
 
-      ClassifyTextResponse response = language.classifyText(request);
+      ClassifyTextResponse response = client.classifyText(request);
 
       categories = response.getCategoriesList()
                        .stream()
