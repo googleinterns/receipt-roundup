@@ -107,7 +107,8 @@ public class UploadReceiptServlet extends HttpServlet {
 
     try {
       receipt = createReceiptEntity(request);
-    } catch (FileNotSelectedException | InvalidFileException | InvalidDateException e) {
+    } catch (FileNotSelectedException | InvalidFileException | InvalidPriceException
+        | InvalidDateException e) {
       logger.warning(e.toString());
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().println(e.toString());
@@ -134,8 +135,9 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
-             InvalidDateException, ReceiptAnalysisException {
+             InvalidPriceException, InvalidDateException, ReceiptAnalysisException {
     long timestamp = getTimestamp(request);
+    double price = roundPrice(request.getParameter("price"));
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
 
     if (!userService.isUserLoggedIn()) {
@@ -145,7 +147,6 @@ public class UploadReceiptServlet extends HttpServlet {
 
     String label = request.getParameter("label");
     String store = request.getParameter("store");
-    double price = roundPrice(request.getParameter("price"));
     String userId = userService.getCurrentUser().getUserId();
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
@@ -223,8 +224,19 @@ public class UploadReceiptServlet extends HttpServlet {
   /**
    * Converts a price string into a double rounded to 2 decimal places.
    */
-  private static double roundPrice(String price) {
-    return Math.round(Double.parseDouble(price) * 100.0) / 100.0;
+  private static double roundPrice(String price) throws InvalidPriceException {
+    double parsedPrice;
+    try {
+      parsedPrice = Double.parseDouble(price);
+    } catch (NumberFormatException e) {
+      throw new InvalidPriceException("Price could not be parsed.");
+    }
+
+    if (parsedPrice < 0) {
+      throw new InvalidPriceException("Price must be positive.");
+    }
+
+    return Math.round(parsedPrice * 100.0) / 100.0;
   }
 
   /**
@@ -298,6 +310,12 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class InvalidDateException extends Exception {
     public InvalidDateException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class InvalidPriceException extends Exception {
+    public InvalidPriceException(String errorMessage) {
       super(errorMessage);
     }
   }
