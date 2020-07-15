@@ -14,12 +14,13 @@
 
 /** Fetches receipt properties from the server and adds them to the page. */
 function loadReceiptAnalysis() {
-  const timestamp = new URLSearchParams(location.search).get('timestamp');
-  const storeName = new URLSearchParams(location.search).get('store');
-  const total = new URLSearchParams(location.search).get('price');
-  const categories =
-      new URLSearchParams(location.search).get('categories').split(',');
-  const imageUrl = new URLSearchParams(location.search).get('image-url');
+  const parameters = new URLSearchParams(location.search);
+
+  const timestamp = parameters.get('timestamp');
+  const storeName = parameters.get('store');
+  const total = parameters.get('price');
+  const categories = parameters.get('categories').split(',');
+  const imageUrl = parameters.get('image-url');
 
   document.getElementById('timestamp').innerText = `Upload Date: ${timestamp}`;
   document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
