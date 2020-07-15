@@ -52,10 +52,12 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -111,7 +113,9 @@ public final class UploadReceiptServletTest {
   private static final double PRICE = 5.89;
   private static final String STORE = "McDonald's";
   private static final String INVALID_DATE_TYPE = "2020-05-20";
-  private static final AnalysisResults ANALYSIS_RESULTS = new AnalysisResults(RAW_TEXT.getValue());
+  private static final Set<String> CATEGORIES = Collections.singleton("category");
+  private static final AnalysisResults ANALYSIS_RESULTS =
+      new AnalysisResults(RAW_TEXT.getValue(), CATEGORIES);
 
   private static final String IMAGE_URL = "/serve-image?blob-key=" + BLOB_KEY.getKeyString();
   private static final String LIVE_SERVER_BASE_URL =
