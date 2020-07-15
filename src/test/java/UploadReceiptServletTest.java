@@ -404,13 +404,7 @@ public final class UploadReceiptServletTest {
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
 
-    Assert.assertEquals(receipt.getProperty("imageUrl"), IMAGE_URL);
     Assert.assertEquals(receipt.getProperty("price"), roundedPrice);
-    Assert.assertEquals(receipt.getProperty("store"), STORE);
-    Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
-    Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
-    Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
-    Assert.assertEquals(receipt.getProperty("label"), LABEL);
   }
 
   /**
