@@ -147,15 +147,21 @@ public final class UploadReceiptServletTest {
   private UploadReceiptServlet servlet;
   private DatastoreService datastore;
   private Clock clock;
+  private StringWriter stringWriter;
+  private PrintWriter writer;
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     MockitoAnnotations.initMocks(this);
     helper.setUp();
     datastore = DatastoreServiceFactory.getDatastoreService();
 
     // Create a fixed time clock that always returns the same instant.
     clock = Clock.fixed(Instant.parse(INSTANT), ZoneId.systemDefault());
+
+    stringWriter = new StringWriter();
+    writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
 
     servlet = new UploadReceiptServlet(blobstoreService, blobInfoFactory, datastore, clock);
   }
@@ -167,10 +173,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doGetReturnsBlobstoreUploadUrl() throws IOException {
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     UploadOptions uploadOptions =
         UploadOptions.Builder.withMaxUploadSizeBytesPerBlob(MAX_UPLOAD_SIZE_BYTES);
     when(blobstoreService.createUploadUrl("/upload-receipt", uploadOptions)).thenReturn(UPLOAD_URL);
@@ -184,10 +186,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
     helper.setEnvIsLoggedIn(true);
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
@@ -230,10 +228,6 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
     when(request.getParameterValues("categories")).thenReturn(CATEGORIES);
@@ -274,10 +268,6 @@ public final class UploadReceiptServletTest {
   public void doPostThrowsIfFileNotSelectedLiveServer() throws IOException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_0MB);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
@@ -293,10 +283,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostThrowsIfFileNotSelectedDevServer() throws IOException {
     helper.setEnvIsLoggedIn(true);
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
 
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
@@ -314,10 +300,6 @@ public final class UploadReceiptServletTest {
   public void doPostThrowsIfInvalidFile() throws IOException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     createMockBlob(request, INVALID_CONTENT_TYPE, INVALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
@@ -332,10 +314,6 @@ public final class UploadReceiptServletTest {
 
   public void doPostThrowsIfUserIsLoggedOut() throws IOException {
     helper.setEnvIsLoggedIn(false);
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
@@ -352,10 +330,6 @@ public final class UploadReceiptServletTest {
   public void doPostThrowsIfDateIsInTheFuture() throws IOException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
     when(request.getParameter("date")).thenReturn(Long.toString(futureTimestamp));
 
@@ -370,10 +344,6 @@ public final class UploadReceiptServletTest {
   public void doPostThrowsIfInvalidDateFormat() throws IOException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     when(request.getParameter("date")).thenReturn(INVALID_DATE_TYPE);
 
     servlet.doPost(request, response);
@@ -386,10 +356,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostThrowsIfReceiptAnalysisFails() throws IOException {
     helper.setEnvIsLoggedIn(true);
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     when(request.getParameterValues("categories")).thenReturn(CATEGORIES);
