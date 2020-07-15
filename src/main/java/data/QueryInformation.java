@@ -23,8 +23,8 @@ import java.util.TimeZone;
 
 /** Class to hold query information. */
 public class QueryInformation {
-  /** Millieconds equivalent to 11:59:59 PM. */
-  private static final long MILLISECONDS_TO_END_OF_DAY = (24L * 60L * 60L * 1000L) - 1000L;
+  /** Milliseconds equivalent to 11:59:59 PM. */
+  private static final long MILLISECONDS_TO_END_OF_DAY = (24L * 60L * 60L * 1000L) - 1L;
 
   private final TimeZone timeZone;
   private final ImmutableSet<String> categories;
