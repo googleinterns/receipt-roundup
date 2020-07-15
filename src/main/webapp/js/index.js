@@ -166,15 +166,15 @@ $(document).ready(function() {
         const step = steps[handle];
         let position;
 
-        const enter = 13;
-        const up = 38;
-        const down = 40;
+        const ENTER = 13;
+        const UP = 38;
+        const DOWN = 40;
 
         switch (event.which) {
-          case enter:
+          case ENTER:
             setSliderHandle(handle, this.value);
             break;
-          case up:
+          case UP:
             // Get step to go increase slider value (up).
             position = step[1];
 
@@ -188,7 +188,7 @@ $(document).ready(function() {
               setSliderHandle(handle, value + position);
             }
             break;
-          case down:
+          case DOWN:
             position = step[0];
 
             if (position === false) {
