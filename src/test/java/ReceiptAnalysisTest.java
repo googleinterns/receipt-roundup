@@ -14,12 +14,19 @@
 
 package com.google.sps;
 
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+import com.google.cloud.language.v1.ClassificationCategory;
+import com.google.cloud.language.v1.ClassifyTextRequest;
+import com.google.cloud.language.v1.ClassifyTextResponse;
+import com.google.cloud.language.v1.Document;
+import com.google.cloud.language.v1.Document.Type;
+import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
@@ -37,6 +44,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,7 +58,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ImageAnnotatorClient.class, ReceiptAnalysis.class, URL.class})
+@PrepareForTest(
+    {ImageAnnotatorClient.class, LanguageServiceClient.class, ReceiptAnalysis.class, URL.class})
 public final class ReceiptAnalysisTest {
   private static final String EMPTY_BATCH_RESPONSE_WARNING =
       "Received empty batch image annotation response.";
@@ -60,6 +70,8 @@ public final class ReceiptAnalysisTest {
 
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
+  private static final String CATEGORY_NAME = "category";
+  private static final Set<String> CATEGORIES = Collections.singleton(CATEGORY_NAME);
 
   @Before
   public void setUp() {
@@ -75,27 +87,43 @@ public final class ReceiptAnalysisTest {
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
 
-    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
+    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
     mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(client);
+    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
 
     EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
-    AnnotateImageResponse response =
+    AnnotateImageResponse imageResponse =
         AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
     BatchAnnotateImagesResponse batchResponse =
-        BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
-    when(client.batchAnnotateImages(anyList())).thenReturn(batchResponse);
+        BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
+
+    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
+    mockStatic(LanguageServiceClient.class);
+    when(LanguageServiceClient.create()).thenReturn(languageClient);
+
+    ClassificationCategory category =
+        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
+    ClassifyTextResponse classifyResponse =
+        ClassifyTextResponse.newBuilder().addCategories(category).build();
+    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
 
     Image image = Image.newBuilder().setContent(IMAGE_BYTES).build();
     Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
-    AnnotateImageRequest request =
+    AnnotateImageRequest imageRequest =
         AnnotateImageRequest.newBuilder().addFeatures(feature).setImage(image).build();
-    ImmutableList<AnnotateImageRequest> requests = ImmutableList.of(request);
+    ImmutableList<AnnotateImageRequest> imageRequests = ImmutableList.of(imageRequest);
+
+    Document document = Document.newBuilder().setContent(RAW_TEXT).setType(Type.PLAIN_TEXT).build();
+    ClassifyTextRequest classifyRequest =
+        ClassifyTextRequest.newBuilder().setDocument(document).build();
 
     AnalysisResults results = ReceiptAnalysis.serveImageText(url);
 
     Assert.assertEquals(results.getRawText(), RAW_TEXT);
-    verify(client).batchAnnotateImages(requests);
+    Assert.assertEquals(results.getCategories(), CATEGORIES);
+    verify(imageClient).batchAnnotateImages(imageRequests);
+    verify(languageClient).classifyText(classifyRequest);
   }
 
   @Test
