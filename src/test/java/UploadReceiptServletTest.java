@@ -40,6 +40,7 @@ import com.google.sps.servlets.UploadReceiptServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -175,7 +176,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(LIVE_SERVER_ABSOLUTE_URL)).thenReturn(ANALYSIS_RESULTS);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
 
@@ -319,7 +321,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis exception.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(LIVE_SERVER_ABSOLUTE_URL)).thenThrow(IOException.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenThrow(IOException.class);
 
     servlet.doPost(request, response);
     writer.flush();
