@@ -19,6 +19,12 @@ import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.cloud.language.v1.ClassificationCategory;
+import com.google.cloud.language.v1.ClassifyTextRequest;
+import com.google.cloud.language.v1.ClassifyTextResponse;
+import com.google.cloud.language.v1.Document;
+import com.google.cloud.language.v1.Document.Type;
+import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
@@ -34,6 +40,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -47,7 +56,8 @@ public class ReceiptAnalysis {
     ByteString imageBytes = readImageBytes(url);
 
     String rawText = retrieveText(imageBytes);
-    AnalysisResults results = new AnalysisResults(rawText);
+    Set<String> categories = categorizeText(rawText);
+    AnalysisResults results = new AnalysisResults(rawText, categories);
 
     return results;
   }
@@ -58,7 +68,8 @@ public class ReceiptAnalysis {
     ByteString imageBytes = readImageBytes(blobKey);
 
     String rawText = retrieveText(imageBytes);
-    AnalysisResults results = new AnalysisResults(rawText);
+    Set<String> categories = categorizeText(rawText);
+    AnalysisResults results = new AnalysisResults(rawText, categories);
 
     return results;
   }
@@ -133,6 +144,25 @@ public class ReceiptAnalysis {
     }
 
     return rawText;
+  }
+
+  /** Generates categories for the provided text. */
+  private static Set<String> categorizeText(String text) throws IOException {
+    Set<String> categories = Collections.emptySet();
+
+    try (LanguageServiceClient language = LanguageServiceClient.create()) {
+      Document doc = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
+      ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(doc).build();
+
+      ClassifyTextResponse response = language.classifyText(request);
+
+      categories = response.getCategoriesList()
+                       .stream()
+                       .map(category -> category.getName())
+                       .collect(Collectors.toSet());
+    }
+
+    return categories;
   }
 
   public static class ReceiptAnalysisException extends Exception {

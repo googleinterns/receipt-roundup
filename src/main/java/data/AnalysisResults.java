@@ -14,17 +14,25 @@
 
 package com.google.sps.data;
 
+import java.util.Set;
+
 /**
  * Object for holding the analysis results served by ReceiptAnalysisServlet.
  */
 public class AnalysisResults {
   private final String rawText;
+  private final Set<String> categories;
 
-  public AnalysisResults(String rawText) {
+  public AnalysisResults(String rawText, Set<String> categories) {
     this.rawText = rawText;
+    this.categories = categories;
   }
 
   public String getRawText() {
     return rawText;
+  }
+
+  public Set<String> getCategories() {
+    return categories;
   }
 }
