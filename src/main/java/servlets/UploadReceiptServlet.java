@@ -154,7 +154,7 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
-    receipt.setProperty("store", store);
+    receipt.setProperty("store", sanitize(store));
     receipt.setProperty("price", price);
     receipt.setProperty("userId", userId);
 
@@ -288,6 +288,14 @@ public class UploadReceiptServlet extends HttpServlet {
         + request.getServerPort() + request.getContextPath();
 
     return baseUrl;
+  }
+
+  /**
+   * Converts the input to all lowercase with exactly 1 whitespace separating words and no leading
+   * or trailing whitespace.
+   */
+  private String sanitize(String input) {
+    return input.trim().replaceAll("\\s+", " ").toLowerCase();
   }
 
   public static class InvalidFileException extends Exception {
