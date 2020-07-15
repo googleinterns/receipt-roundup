@@ -85,32 +85,28 @@ function createReceiptCardElement(receipt) {
   }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
+  receiptCardClone.querySelector('.col-md-6').id = receipt.id;
+
+  // Attach listener to trigger the deletion of this receipt.
+  attachDeleteButtonEventListener(receipt, receiptCardClone);
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
-
-  // Attach listener to trigger the deletion of this receipt.
-  attachDeleteButtonEventListener(receipt);
 }
 
 /**
  * Attaches event listener to delete button.
  * @param {Receipt} receipt A Receipt datastore object.
+ * @param {receiptCardClone} DocumentFragment Receipt card wrapper.
  */
-function attachDeleteButtonEventListener(receipt) {
-  // Get all delete buttons; most recently attached will be at the end.
-  const allDeleteButtons =
-      document.querySelector('#receipts-display').querySelectorAll('#delete');
-  const mostRecentDeleteButton = allDeleteButtons[allDeleteButtons.length - 1];
-
-  mostRecentDeleteButton.addEventListener('click', () => {
+function attachDeleteButtonEventListener(receipt, receiptCardClone) {
+  receiptCardClone.querySelector('#delete').addEventListener('click', () => {
     // Display a pop-up to the user confirming the deletion of the receipt.
     const selection = confirm(
         'Are you sure you want to delete this receipt? This cannot be undone.');
     if (selection) {
       deleteReceipt(receipt);
-      // Locate the entire receipt card div and remove from the DOM.
-      mostRecentDeleteButton.closest('.col-md-6').remove();
+      document.getElementById(receipt.id).remove();
     }
   });
 }
