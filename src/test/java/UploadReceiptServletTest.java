@@ -385,10 +385,6 @@ public final class UploadReceiptServletTest {
   public void doPostRoundPrice() throws IOException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
     double price = 17.236;
