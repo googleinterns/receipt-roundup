@@ -36,7 +36,6 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -149,7 +148,6 @@ public class UploadReceiptServlet extends HttpServlet {
       throw new UserNotLoggedInException("User must be logged in to upload a receipt.");
     }
 
-    String label = request.getParameter("label");
     String userId = userService.getCurrentUser().getUserId();
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
@@ -284,7 +282,18 @@ public class UploadReceiptServlet extends HttpServlet {
    * Gets the list of user-assigned categories from the request.
    */
   private Set<String> getCategories(HttpServletRequest request) {
-    return new HashSet<>(Arrays.asList(request.getParameterValues("categories")));
+    return Arrays.asList(request.getParameterValues("categories"))
+        .stream()
+        .map(this::sanitize)
+        .collect(Collectors.toSet());
+  }
+
+  /**
+   * Converts the input to all lowercase with exactly 1 whitespace separating words and no leading
+   * or trailing whitespace.
+   */
+  private String sanitize(String input) {
+    return input.trim().replaceAll("\\s+", " ").toLowerCase();
   }
 
   public static class InvalidFileException extends Exception {
