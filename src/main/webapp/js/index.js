@@ -16,8 +16,7 @@
 /** Fetches receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
   const categories = document.getElementById('category-input').value;
-  const response = await fetch(`/search-receipts?categories=${categories}`);
-  const receipts = await response.json();
+  const response = fetch(`/search-receipts?categories=${categories}`);
 
   clearExistingDisplay();
   displayReceipts(receipts);
