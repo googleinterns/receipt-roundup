@@ -16,13 +16,13 @@
 function loadReceiptAnalysis() {
   const parameters = new URLSearchParams(location.search);
 
-  const timestamp = parameters.get('timestamp');
+  const date = getDateFromTimestamp(parameters.get('timestamp'));
   const storeName = parameters.get('store');
   const total = parameters.get('price');
   const categories = parameters.get('categories').split(',');
   const imageUrl = parameters.get('image-url');
 
-  document.getElementById('timestamp').innerText = `Upload Date: ${timestamp}`;
+  document.getElementById('date').innerText = `Upload Date: ${date}`;
   document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
   document.getElementById('total').innerText = `Total Price: $${total}`;
 
@@ -31,4 +31,11 @@ function loadReceiptAnalysis() {
   }
 
   document.getElementById('receipt-image').src = imageUrl;
+}
+
+/** Converts a timestamp string into the equivalent date string. */
+function getDateFromTimestamp(timestamp) {
+  const time = parseInt(timestamp);
+  const timeZoneId = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return new Date(time).toLocaleString('en-US', {timeZone: timeZoneId});
 }
