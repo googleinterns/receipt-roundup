@@ -29,17 +29,14 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet responsible for deleting a single receipt. */
 @WebServlet("/delete-receipt")
 public class DeleteReceiptServlet extends HttpServlet {
-  private static DatastoreService datastore;
+  private final DatastoreService datastore;
 
-  public DeleteReceiptServlet() {}
+  public DeleteReceiptServlet() {
+    datastore = DatastoreServiceFactory.getDatastoreService();
+  }
 
   public DeleteReceiptServlet(DatastoreService datastore) {
     this.datastore = datastore;
-  }
-
-  @Override
-  public void init() {
-    datastore = DatastoreServiceFactory.getDatastoreService();
   }
 
   @Override
