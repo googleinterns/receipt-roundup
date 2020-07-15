@@ -14,6 +14,8 @@
 
 package com.google.sps;
 
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -22,7 +24,10 @@ import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
+import com.google.cloud.vision.v1.Feature;
+import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.rpc.Status;
 import com.google.sps.data.AnalysisResults;
@@ -79,12 +84,18 @@ public final class ReceiptAnalysisTest {
         AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
-    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenReturn(batchResponse);
+    when(client.batchAnnotateImages(anyList())).thenReturn(batchResponse);
+
+    Image image = Image.newBuilder().setContent(IMAGE_BYTES).build();
+    Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
+    AnnotateImageRequest request =
+        AnnotateImageRequest.newBuilder().addFeatures(feature).setImage(image).build();
+    ImmutableList<AnnotateImageRequest> requests = ImmutableList.of(request);
 
     AnalysisResults results = ReceiptAnalysis.serveImageText(url);
 
     Assert.assertEquals(results.getRawText(), RAW_TEXT);
+    verify(client).batchAnnotateImages(requests);
   }
 
   @Test

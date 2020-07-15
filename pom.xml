@@ -50,7 +50,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>23.0</version>
+      <version>29.0-jre</version>
     </dependency>
 
     <!-- Test Dependencies -->
@@ -70,7 +70,7 @@
 
     <dependency>
       <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito2</artifactId>
+      <artifactId>powermock-api-mockito</artifactId>
       <version>1.7.4</version>
       <scope>test</scope>
     </dependency>
