@@ -112,7 +112,7 @@ public final class UploadReceiptServletTest {
   private static final String LABEL = "Label";
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
-  private static final String STORE = "McDonald's";
+  private static final String STORE = "mcdonald's";
   private static final String INVALID_DATE_TYPE = "2020-05-20";
   private static final AnalysisResults ANALYSIS_RESULTS = new AnalysisResults(RAW_TEXT.getValue());
 
@@ -241,6 +241,31 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("label"), LABEL);
     Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
+  }
+
+  @Test
+  public void doPostSanitizesStore() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
+    String store = "    TraDeR   JOE's  ";
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubRequestBody(request, LABEL, store, PRICE, PAST_TIMESTAMP);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
+
+    servlet.doPost(request, response);
+
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    String formattedStore = "trader joe's";
+    Assert.assertEquals(receipt.getProperty("store"), formattedStore);
   }
 
   @Test
