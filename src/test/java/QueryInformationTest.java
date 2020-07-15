@@ -55,14 +55,14 @@ public final class QueryInformationTest {
   private static final String EDGE_CASE_STORE = "  MCdoNald'S";
 
   @Test
-  public void validTimeZoneIdSetsToCST() throws ParseException {
+  public void validTimeZoneIdSetsToCst() throws ParseException {
     QueryInformation queryInformation =
         new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(CST_TIMEZONE, queryInformation.getTimeZone());
   }
 
   @Test
-  public void invalideTimeZoneIdSetsToGMT() throws ParseException {
+  public void invalidTimeZoneIdSetsToGmt() throws ParseException {
     // Test with empty string.
     QueryInformation queryInformation =
         new QueryInformation(EMPTY_STRING, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
