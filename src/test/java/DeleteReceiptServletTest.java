@@ -92,9 +92,6 @@ public final class DeleteReceiptServletTest {
     servlet.doPost(request, response);
 
     // Make sure receipt is deleted by checking if there are no entities returned.
-    Key desiredKey = KeyFactory.createKey("Receipt", id);
-    Filter matchingKeys = new FilterPredicate("__key__", FilterOperator.EQUAL, desiredKey);
-    query.setFilter(matchingKeys);
     results = datastore.prepare(query);
     Assert.assertEquals(0, results.countEntities(FetchOptions.Builder.withDefaults()));
   }
