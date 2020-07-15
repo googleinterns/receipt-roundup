@@ -105,7 +105,7 @@ public final class UploadReceiptServletTest {
   private static final long IMAGE_SIZE_0MB = 0;
   private static final String HASH = "35454B055CC325EA1AF2126E27707052";
 
-  private static final String[] CATEGORIES = new String[] {"Fast Food, Burger, Restaurant"};
+  private static final String[] CATEGORIES = new String[] {"burger", "fast food", "restaurant"};
   private static final Collection<String> CATEGORIES_COLLECTION = Arrays.asList(CATEGORIES);
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
@@ -248,6 +248,38 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("categories"), CATEGORIES_COLLECTION);
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
+  }
+
+  @Test
+  public void doPostSanitizesCategories() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+
+    String[] categories =
+        new String[] {"   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH"};
+    when(request.getParameterValues("categories")).thenReturn(categories);
+    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
+
+    // Stub request with URL components.
+    when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
+    when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
+    when(request.getServerPort()).thenReturn(LIVE_SERVER_PORT);
+    when(request.getContextPath()).thenReturn(LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
+
+    servlet.doPost(request, response);
+
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    Collection<String> formattedCategories =
+        Arrays.asList("lunch", "burger", "fast food", "restaurant");
+    Assert.assertEquals(receipt.getProperty("categories"), formattedCategories);
   }
 
   @Test
