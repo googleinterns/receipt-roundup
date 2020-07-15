@@ -12,10 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/** Fetches all receipts from the server and adds them to the DOM. */
+async function displayAllReceipts() {
+  const params = new URLSearchParams();
+  params.append('isNewLoad', 'true');
 
-/** Fetches receipts from the server and adds them to the DOM. */
+  const response = await fetch('/search-receipts?' + params.toString());
+  const receipts = await response.json();
+
+  clearExistingDisplay();
+  displayReceipts(receipts);
+}
+
+/** Fetches matching receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
   const params = new URLSearchParams();
+  params.append('isNewLoad', 'false');
   params.append('categories', document.getElementById('category-input').value);
   params.append(
       'dateRange', document.getElementById('date-range-input').textContent);

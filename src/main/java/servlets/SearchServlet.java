@@ -59,13 +59,20 @@ public class SearchServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    QueryInformation queryInformation = createQueryInformation(request, response);
+    QueryInformation queryInformation;
+    ImmutableList<Receipt> receipts;
 
-    if (queryInformation == null) { // createQueryInformation() threw an exception, so exit
-      return;
+    if (Boolean.parseBoolean(request.getParameter("isNewLoad"))) {
+      receipts = getAllReceipts();
+    } else {
+      queryInformation = createQueryInformation(request, response);
+
+      if (queryInformation == null) { // createQueryInformation() threw an exception, so exit.
+        return;
+      }
+
+      receipts = getMatchingReceipts(queryInformation);
     }
-
-    ImmutableList<Receipt> receipts = getMatchingReceipts(queryInformation);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
@@ -112,6 +119,17 @@ public class SearchServlet extends HttpServlet {
         .filter(receipt
             -> receipt.getPrice() >= queryInformation.getMinPrice()
                 && receipt.getPrice() <= queryInformation.getMaxPrice())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /** Returns ImmutableList of all receipts from datastore. */
+  private ImmutableList<Receipt> getAllReceipts() {
+    Query query = new Query("Receipt");
+
+    return datastore.prepare(query)
+        .asList(FetchOptions.Builder.withDefaults())
+        .stream()
+        .map(this::createReceiptFromEntity)
         .collect(ImmutableList.toImmutableList());
   }
 
