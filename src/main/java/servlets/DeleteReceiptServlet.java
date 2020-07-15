@@ -53,6 +53,12 @@ public class DeleteReceiptServlet extends HttpServlet {
     }
 
     Key key = KeyFactory.createKey("Receipt", id);
-    datastore.delete(key);
+    try {
+      datastore.delete(key);
+    } catch (DatastoreFailureException exception) {
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.getWriter().println(
+          "Datastore Error: Receipt unable to be deleted at this time, please try again.");
+    }
   }
 }
