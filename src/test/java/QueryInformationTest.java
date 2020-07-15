@@ -42,7 +42,7 @@ public final class QueryInformationTest {
   private static final TimeZone CST_TIMEZONE = TimeZone.getTimeZone("America/Chicago");
   private static final ImmutableSet EXPECTED_CATEGORIES = ImmutableSet.of("breakfast");
   private static final long JUNE_1_2020_START_OF_DAY = 1590987600000L;
-  private static final long JUNE_30_2020_END_OF_DAY = 1593579599000L;
+  private static final long JUNE_30_2020_END_OF_DAY = 1593579599999L;
   private static final String EXPECTED_STORE = "mcdonald's";
   private static final double EXPECTED_MIN_PRICE = 21.30;
   private static final double EXPECTED_MAX_PRICE = 87.60;

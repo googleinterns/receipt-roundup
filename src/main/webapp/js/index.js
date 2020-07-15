@@ -15,17 +15,17 @@
 
 /** Fetches receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
-  const categories = document.getElementById('category-input').value;
-  const dateRange = document.getElementById('date-range-input').textContent;
-  const store = document.getElementById('store-name-input').value;
-  const minPrice = document.getElementById('min-price-input').value;
-  const maxPrice = document.getElementById('max-price-input').value;
+  const params = new URLSearchParams();
+  params.append('categories', document.getElementById('category-input').value);
+  params.append(
+      'dateRange', document.getElementById('date-range-input').textContent);
+  params.append('store', document.getElementById('store-name-input').value);
+  params.append('min', document.getElementById('min-price-input').value);
+  params.append('max', document.getElementById('max-price-input').value);
   const dateTimeFormat = new Intl.DateTimeFormat();
-  const timeZoneId = dateTimeFormat.resolvedOptions().timeZone;
+  params.append('timeZoneId', dateTimeFormat.resolvedOptions().timeZone);
 
-  const response = await fetch(`/search-receipts?categories=
-    ${categories}&store=${store}&min=${minPrice}&max=
-    ${maxPrice}&dateRange=${dateRange}&timeZoneId=${timeZoneId}`);
+  const response = await fetch('/search-receipts?' + params.toString());
   const receipts = await response.json();
 
   clearExistingDisplay();
