@@ -15,12 +15,9 @@
 
 /** Fetches receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
-
-  var url = new URL('/search-receipts');
   const params = new URLSearchParams();
   params.append('categories', document.getElementById('category-input').value);
-  url.search = params.toString();
-  const response = await fetch(url);
+  const response = await fetch('/search-receipts?' + params.toString());
   const receipts = await response.json();
 
   clearExistingDisplay();
