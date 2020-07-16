@@ -92,11 +92,8 @@ public final class SearchServletTest {
     //
     // id   Timestamp      Price          Store                    Categories
     // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
-    // 2  1513103400000    32.38     "raising cane's"     ["chicken", "drink", "lunch"]
-    // 3  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
-    // 4  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
-    // 5  1551461940000   118.94        "target"          ["disney", "lion", "personal"]
-    // 6  1131818640000     4.32     "trader joe's"       ["cat", "food", "random"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
     //
     // Query: drink, 2/1/03-2/28/03, walmart, $5.00-$30.00.
     // Will only return walmart receipt.
@@ -111,7 +108,7 @@ public final class SearchServletTest {
     writer.flush();
 
     // Make sure receipt is retrieved by finding the store name in the writer.
-    Assert.assertTrue(stringWriter.toString().contains("walmart"));
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
   }
 
   @Test
@@ -120,11 +117,8 @@ public final class SearchServletTest {
     //
     // id   Timestamp      Price          Store                    Categories
     // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
-    // 2  1513103400000    32.38     "raising cane's"     ["chicken", "drink", "lunch"]
-    // 3  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
-    // 4  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
-    // 5  1551461940000   118.94        "target"          ["disney", "lion", "personal"]
-    // 6  1131818640000     4.32     "trader joe's"       ["cat", "food", "random"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
     //
     // Query: 1/1/10-7/31/20, $5.00-$30.00.
     // Will return main st restaurant and contoso receipts.
@@ -138,9 +132,9 @@ public final class SearchServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipts are retrieved by finding store names in the writer.
-    Assert.assertTrue(stringWriter.toString().contains("main street restaurant"));
-    Assert.assertTrue(stringWriter.toString().contains("contoso"));
+    // Make sure receipts are retrieved by finding ids in the writer.
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":3"));
   }
 
   @Test
