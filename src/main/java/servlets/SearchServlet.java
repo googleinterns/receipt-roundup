@@ -76,7 +76,7 @@ public class SearchServlet extends HttpServlet {
   private QueryInformation createQueryInformation(
       HttpServletRequest request, HttpServletResponse response) throws IOException {
     String timeZoneId = request.getParameter("timeZoneId");
-    String categories = request.getParameter("categories");
+    String category = request.getParameter("category");
     String dateRange = request.getParameter("dateRange");
     String store = request.getParameter("store");
     String minPrice = request.getParameter("min");
@@ -86,7 +86,7 @@ public class SearchServlet extends HttpServlet {
 
     try {
       queryInformation =
-          new QueryInformation(timeZoneId, categories, dateRange, store, minPrice, maxPrice);
+          new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
     } catch (NullPointerException exception) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().println(NULL_EXCEPTION_MESSAGE);
@@ -119,8 +119,8 @@ public class SearchServlet extends HttpServlet {
   private Query setupQuery(QueryInformation queryInformation) {
     Query query = new Query("Receipt");
 
-    if (queryInformation.getCategories() != null && queryInformation.getCategories().size() != 0) {
-      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategories());
+    if (queryInformation.getCategory() != null && queryInformation.getCategory().size() != 0) {
+      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategory());
     }
 
     query.addFilter("timestamp", Query.FilterOperator.GREATER_THAN_OR_EQUAL,

@@ -27,29 +27,29 @@ public class QueryInformation {
   private static final long MILLISECONDS_TO_END_OF_DAY = (24L * 60L * 60L * 1000L) - 1L;
 
   private final TimeZone timeZone;
-  private final ImmutableSet<String> categories;
+  private final ImmutableSet<String> category;
   private final long startTimestamp;
   private final long endTimestamp;
   private final String store;
   private final double minPrice;
   private final double maxPrice;
 
-  public QueryInformation(String timeZoneId, String categories, String dateRange, String store,
+  public QueryInformation(String timeZoneId, String category, String dateRange, String store,
       String minPrice, String maxPrice)
       throws ParseException, NumberFormatException, NullPointerException {
     this.timeZone = TimeZone.getTimeZone(timeZoneId);
 
-    String formattedCategories;
+    String formattedCategory;
     try {
-      formattedCategories = formatInput(categories);
+      formattedCategory = formatInput(category);
     } catch (NullPointerException exception) {
-      formattedCategories = null;
+      formattedCategory = null;
     }
 
-    if (!Strings.isNullOrEmpty(formattedCategories)) {
-      this.categories = ImmutableSet.copyOf(Arrays.asList(formattedCategories));
+    if (!Strings.isNullOrEmpty(formattedCategory)) {
+      this.category = ImmutableSet.copyOf(Arrays.asList(formattedCategory));
     } else {
-      this.categories = ImmutableSet.of(); // Empty set.
+      this.category = ImmutableSet.of(); // Empty set.
     }
 
     String[] dates = dateRange.split("-");
@@ -78,8 +78,8 @@ public class QueryInformation {
     return timeZone;
   }
 
-  public ImmutableSet<String> getCategories() {
-    return categories;
+  public ImmutableSet<String> getCategory() {
+    return category;
   }
 
   public long getStartTimestamp() {

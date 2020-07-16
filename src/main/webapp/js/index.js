@@ -16,7 +16,7 @@
 /** Fetches receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
   const params = new URLSearchParams();
-  params.append('categories', document.getElementById('category-input').value);
+  params.append('category', document.getElementById('category-input').value);
   params.append(
       'dateRange', document.getElementById('date-range-input').textContent);
   params.append('store', document.getElementById('store-name-input').value);

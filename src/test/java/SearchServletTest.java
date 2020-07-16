@@ -47,7 +47,7 @@ public final class SearchServletTest {
 
   // Values for a valid test.
   private static final String CST_TIMEZONE_ID = "America/Chicago";
-  private static final String CATEGORIES = "drink";
+  private static final String CATEGORY = "drink";
   private static final String SHORT_DATE_RANGE = "February 1, 2003 - February 28, 2003";
   private static final String LONG_DATE_RANGE = "January 1, 2010 - July 31, 2020";
   private static final String STORE = "walmart";
@@ -93,7 +93,7 @@ public final class SearchServletTest {
 
     // Perform doGet - this should retrieve one receipt.
     TestUtils.setRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORIES, SHORT_DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -124,7 +124,7 @@ public final class SearchServletTest {
 
     // Perform doGet with a null value as a parameter.
     TestUtils.setRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORIES, SHORT_DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -139,7 +139,7 @@ public final class SearchServletTest {
 
     // Perform doGet with an empty string for price.
     TestUtils.setRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORIES, SHORT_DATE_RANGE, STORE, MAX_PRICE, EMPTY_STRING);
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MAX_PRICE, EMPTY_STRING);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -154,7 +154,7 @@ public final class SearchServletTest {
 
     // Perform doGet with an empty string for date range.
     TestUtils.setRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORIES, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
+        request, CST_TIMEZONE_ID, CATEGORY, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
