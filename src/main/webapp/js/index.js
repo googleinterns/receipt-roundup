@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Fetches all receipts from the server and adds them to the DOM. */
-async function displayAllReceipts() {
+async function getAllReceipts() {
   const params = new URLSearchParams();
   params.append('isNewLoad', 'true');
 
