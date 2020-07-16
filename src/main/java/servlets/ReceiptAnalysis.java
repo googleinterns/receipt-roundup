@@ -150,14 +150,14 @@ public class ReceiptAnalysis {
   }
 
   /** Generates categories for the provided text. */
-  private static Set<String> categorizeText(String text) throws IOException {
+  private static Set<String> categorizeText(String text)
+      throws IOException, ReceiptAnalysisException {
     Set<String> categories = Collections.emptySet();
 
     try (LanguageServiceClient client = LanguageServiceClient.create()) {
       Document document = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
       ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(document).build();
 
-      // TODO: Check if ApiException was thrown
       ClassifyTextResponse response = client.classifyText(request);
 
       // TODO: Parse category strings into more natural categories
@@ -165,6 +165,8 @@ public class ReceiptAnalysis {
                        .stream()
                        .map(category -> category.getName())
                        .collect(Collectors.toSet());
+    } catch (ApiException e) {
+      throw new ReceiptAnalysisException("Classify text request failed.", e);
     }
 
     return categories;
