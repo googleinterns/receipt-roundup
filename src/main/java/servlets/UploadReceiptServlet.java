@@ -27,6 +27,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.collect.ImmutableSet;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
@@ -279,13 +280,13 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
-   * Gets the list of user-assigned categories from the request.
+   * Gets the set of user-assigned categories from the request.
    */
-  private Set<String> getCategories(HttpServletRequest request) {
+  private ImmutableSet<String> getCategories(HttpServletRequest request) {
     return Arrays.asList(request.getParameterValues("categories"))
         .stream()
         .map(this::sanitize)
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
