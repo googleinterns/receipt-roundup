@@ -40,20 +40,20 @@ import javax.servlet.http.HttpServletResponse;
 public class SearchServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String categories = request.getParameter("categories");
-    ImmutableList<Receipt> receipts = getReceiptsWithMatchingCategories(categories);
+    String category = request.getParameter("category");
+    ImmutableList<Receipt> receipts = getReceiptsWithMatchingCategory(category);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
     response.getWriter().println(gson.toJson(receipts));
   }
 
-  /** Returns ImmutableList of receipts from datastore with the same categories. */
-  private ImmutableList<Receipt> getReceiptsWithMatchingCategories(String categories) {
-    // Set filter to retrieve only receipts with categories equal to categories.
-    Filter matchingCategories = new FilterPredicate("categories", FilterOperator.EQUAL, categories);
+  /** Returns ImmutableList of receipts from datastore with the same category. */
+  private ImmutableList<Receipt> getReceiptsWithMatchingCategory(String category) {
+    // Set filter to retrieve only receipts with category equal to category.
+    Filter matchingCategory = new FilterPredicate("categories", FilterOperator.EQUAL, category);
     Query query = new Query("Receipt");
-    query.setFilter(matchingCategories);
+    query.setFilter(matchingCategory);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
