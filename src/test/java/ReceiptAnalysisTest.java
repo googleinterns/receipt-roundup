@@ -130,8 +130,8 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.serveImageText(url);
 
-    Assert.assertEquals(results.getRawText(), RAW_TEXT);
-    Assert.assertEquals(results.getCategories(), CATEGORIES);
+    Assert.assertEquals(RAW_TEXT, results.getRawText());
+    Assert.assertEquals(CATEGORIES, results.getCategories());
     verify(imageClient).batchAnnotateImages(imageRequests);
     verify(languageClient).classifyText(classifyRequest);
   }
