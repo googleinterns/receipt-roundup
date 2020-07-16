@@ -14,6 +14,7 @@
 
 package com.google.sps.servlets;
 
+import com.google.api.gax.rpc.ApiException;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
@@ -130,6 +131,8 @@ public class ReceiptAnalysis {
       EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
 
       rawText = annotation.getDescription();
+    } catch (ApiException e) {
+      throw new ReceiptAnalysisException("Image annotation request failed.", e);
     }
 
     return rawText;
