@@ -39,9 +39,8 @@ import java.io.InputStream;
 import java.net.URL;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -65,8 +64,6 @@ public final class ReceiptAnalysisTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
   }
-
-  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void serveImageTextUrlReturnsAnalysisResults()
@@ -113,10 +110,10 @@ public final class ReceiptAnalysisTest {
     when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
 
-    expectedException.expect(ReceiptAnalysisException.class);
-    expectedException.expectMessage(EMPTY_BATCH_RESPONSE_WARNING);
+    ReceiptAnalysisException exception = Assertions.assertThrows(
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
 
-    ReceiptAnalysis.serveImageText(url);
+    Assert.assertEquals(EMPTY_BATCH_RESPONSE_WARNING, exception.getMessage());
   }
 
   @Test
@@ -137,10 +134,10 @@ public final class ReceiptAnalysisTest {
     when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
 
-    expectedException.expect(ReceiptAnalysisException.class);
-    expectedException.expectMessage(RESPONSE_ERROR_WARNING);
+    ReceiptAnalysisException exception = Assertions.assertThrows(
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
 
-    ReceiptAnalysis.serveImageText(url);
+    Assert.assertEquals(RESPONSE_ERROR_WARNING, exception.getMessage());
   }
 
   @Test
@@ -160,9 +157,9 @@ public final class ReceiptAnalysisTest {
     when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
 
-    expectedException.expect(ReceiptAnalysisException.class);
-    expectedException.expectMessage(EMPTY_TEXT_ANNOTATIONS_LIST_WARNING);
+    ReceiptAnalysisException exception = Assertions.assertThrows(
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
 
-    ReceiptAnalysis.serveImageText(url);
+    Assert.assertEquals(EMPTY_TEXT_ANNOTATIONS_LIST_WARNING, exception.getMessage());
   }
 }
