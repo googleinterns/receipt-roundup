@@ -48,8 +48,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,8 +76,14 @@ public final class ReceiptAnalysisTest {
 
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
-  private static final String CATEGORY_NAME = "category";
-  private static final Set<String> CATEGORIES = Collections.singleton(CATEGORY_NAME);
+
+  private static final String GENERAL_CATEGORY_NAME = "General";
+  private static final String SPECIFIC_CATEGORY_NAME = "Specific";
+  private static final String CATEGORY_NAME =
+      "/" + GENERAL_CATEGORY_NAME + "/" + SPECIFIC_CATEGORY_NAME;
+
+  private static final Set<String> CATEGORIES =
+      Stream.of(GENERAL_CATEGORY_NAME, SPECIFIC_CATEGORY_NAME).collect(Collectors.toSet());
 
   @Before
   public void setUp() {
