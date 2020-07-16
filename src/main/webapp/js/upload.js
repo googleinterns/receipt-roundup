@@ -33,7 +33,10 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const uploadUrl = fetchBlobstoreUrl();
+  // Change to the loading cursor.
+  document.body.style.cursor = 'wait';
+
+  const uploadUrl = await fetchBlobstoreUrl();
   const categories = document.getElementById('categories-input').value;
   const store = document.getElementById('store-input').value;
   const price =
@@ -49,6 +52,9 @@ async function uploadReceipt(event) {
   formData.append('receipt-image', image);
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
+
+  // Restore the cursor after the upload request has loaded.
+  document.body.style.cursor = 'default';
 
   // Create an alert if there is an error.
   if (response.status !== 200) {
