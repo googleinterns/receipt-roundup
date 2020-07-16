@@ -251,6 +251,36 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
+  public void doPostRemovesDuplicateCategories() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+
+    String[] categories = new String[] {"lunch", "restaurant", "lunch", "lunch", "restaurant"};
+    when(request.getParameterValues("categories")).thenReturn(categories);
+    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
+
+    // Stub request with URL components.
+    when(request.getScheme()).thenReturn(LIVE_SERVER_SCHEME);
+    when(request.getServerName()).thenReturn(LIVE_SERVER_NAME);
+    when(request.getServerPort()).thenReturn(LIVE_SERVER_PORT);
+    when(request.getContextPath()).thenReturn(LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
+
+    servlet.doPost(request, response);
+
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    Collection<String> categoriesWithoutDuplicates = Arrays.asList("lunch", "restaurant");
+    Assert.assertEquals(receipt.getProperty("categories"), categoriesWithoutDuplicates);
+  }
+
+  @Test
   public void doPostSanitizesCategories() throws IOException {
     helper.setEnvIsLoggedIn(true);
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
@@ -278,7 +308,7 @@ public final class UploadReceiptServletTest {
     Entity receipt = results.asSingleEntity();
 
     Collection<String> formattedCategories =
-        Arrays.asList("lunch", "burger", "fast food", "restaurant");
+        Arrays.asList("fast food", "burger", "restaurant", "lunch");
     Assert.assertEquals(receipt.getProperty("categories"), formattedCategories);
   }
 
