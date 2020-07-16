@@ -32,13 +32,18 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const uploadUrl = await fetchBlobstoreUrl();
-  const label = document.getElementById('label-input').value;
+  const uploadUrl = fetchBlobstoreUrl();
+  const categories = document.getElementById('categories-input').value;
+  const store = document.getElementById('store-input').value;
+  const price =
+      convertStringToNumber(document.getElementById('price-input').value);
   const date = document.getElementById('date-input').valueAsNumber;
   const image = fileInput.files[0];
 
   const formData = new FormData();
-  formData.append('label', label);
+  formData.append('categories', createCategoryList(categories));
+  formData.append('store', store);
+  formData.append('price', price);
   formData.append('date', date);
   formData.append('receipt-image', image);
 
@@ -62,6 +67,14 @@ async function fetchBlobstoreUrl() {
   const response = await fetch('/upload-receipt');
   const imageUploadUrl = await response.text();
   return imageUploadUrl;
+}
+
+/**
+ * Converts the comma-separated categories string into a list of categories.
+ * @return {(string|Array)} List of categories.
+ */
+function createCategoryList(categories) {
+  return categories.split(',').map((category) => category.trim());
 }
 
 /**
