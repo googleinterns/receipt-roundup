@@ -260,7 +260,7 @@ public final class UploadReceiptServletTest {
     Entity receipt = results.asSingleEntity();
 
     Collection<String> categoriesWithoutDuplicates = Arrays.asList("lunch", "restaurant");
-    Assert.assertEquals(receipt.getProperty("categories"), categoriesWithoutDuplicates);
+    Assert.assertEquals(categoriesWithoutDuplicates, receipt.getProperty("categories"));
   }
 
   @Test
@@ -287,7 +287,7 @@ public final class UploadReceiptServletTest {
 
     Collection<String> formattedCategories =
         Arrays.asList("fast food", "burger", "restaurant", "lunch");
-    Assert.assertEquals(receipt.getProperty("categories"), formattedCategories);
+    Assert.assertEquals(formattedCategories, receipt.getProperty("categories"));
   }
 
   @Test
