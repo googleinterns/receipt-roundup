@@ -27,6 +27,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.collect.ImmutableSet;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
@@ -283,8 +284,8 @@ public class UploadReceiptServlet extends HttpServlet {
   /**
    * Gets the list of user-assigned categories from the request.
    */
-  private Set<String> getCategories(HttpServletRequest request) {
-    return new HashSet<>(Arrays.asList(request.getParameterValues("categories")));
+  private ImmutableSet<String> getCategories(HttpServletRequest request) {
+    return ImmutableSet.copyOf(request.getParameterValues("categories"));
   }
 
   public static class InvalidFileException extends Exception {
