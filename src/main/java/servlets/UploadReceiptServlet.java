@@ -107,7 +107,8 @@ public class UploadReceiptServlet extends HttpServlet {
 
     try {
       receipt = createReceiptEntity(request);
-    } catch (FileNotSelectedException | InvalidFileException | InvalidDateException e) {
+    } catch (FileNotSelectedException | InvalidFileException | InvalidPriceException
+        | InvalidDateException e) {
       logger.warning(e.toString());
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       response.getWriter().println(e.toString());
@@ -134,8 +135,9 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
-             InvalidDateException, ReceiptAnalysisException {
+             InvalidPriceException, InvalidDateException, ReceiptAnalysisException {
     long timestamp = getTimestamp(request);
+    double price = roundPrice(request.getParameter("price"));
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
 
     if (!userService.isUserLoggedIn()) {
@@ -144,6 +146,7 @@ public class UploadReceiptServlet extends HttpServlet {
     }
 
     String label = request.getParameter("label");
+    String store = request.getParameter("store");
     String userId = userService.getCurrentUser().getUserId();
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
@@ -151,6 +154,8 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
+    receipt.setProperty("store", store);
+    receipt.setProperty("price", price);
     receipt.setProperty("userId", userId);
 
     return receipt;
@@ -217,6 +222,24 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
+   * Converts a price string into a double rounded to 2 decimal places.
+   */
+  private static double roundPrice(String price) throws InvalidPriceException {
+    double parsedPrice;
+    try {
+      parsedPrice = Double.parseDouble(price);
+    } catch (NumberFormatException e) {
+      throw new InvalidPriceException("Price could not be parsed.");
+    }
+
+    if (parsedPrice < 0) {
+      throw new InvalidPriceException("Price must be positive.");
+    }
+
+    return Math.round(parsedPrice * 100.0) / 100.0;
+  }
+
+  /**
    * Extracts the raw text from the image with the Cloud Vision API. Returns a receipt
    * entity populated with the extracted fields.
    */
@@ -241,15 +264,9 @@ public class UploadReceiptServlet extends HttpServlet {
       throw new ReceiptAnalysisException("Receipt analysis failed.", e);
     }
 
-    // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
-    double price = 5.89;
-    String store = "McDonald's";
-
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
     receipt.setProperty("imageUrl", imageUrl);
-    receipt.setProperty("price", price);
-    receipt.setProperty("store", store);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
 
@@ -293,6 +310,12 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class InvalidDateException extends Exception {
     public InvalidDateException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class InvalidPriceException extends Exception {
+    public InvalidPriceException(String errorMessage) {
       super(errorMessage);
     }
   }
