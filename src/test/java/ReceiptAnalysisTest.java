@@ -202,13 +202,13 @@ public final class ReceiptAnalysisTest {
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
 
-    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
+    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
     mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(client);
+    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
 
     StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
     ApiException clientException = new ApiException(null, statusCode, false);
-    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
+    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenThrow(clientException);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
