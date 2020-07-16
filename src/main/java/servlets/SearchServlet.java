@@ -105,6 +105,10 @@ public class SearchServlet extends HttpServlet {
   private ImmutableList<Receipt> getMatchingReceipts(QueryInformation queryInformation) {
     Query query = setupQuery(queryInformation);
 
+    /**
+     * Datastore doesn't support queries with multiple inequality filters
+     * (i.e price and timestamp) so price filtering is manually done here.
+     */
     return datastore.prepare(query)
         .asList(FetchOptions.Builder.withDefaults())
         .stream()
