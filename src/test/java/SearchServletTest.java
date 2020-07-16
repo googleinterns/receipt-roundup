@@ -88,6 +88,19 @@ public final class SearchServletTest {
 
   @Test
   public void queryWithAllFieldsFilled() throws IOException {
+    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1513103400000    32.38     "raising cane's"     ["chicken", "drink", "lunch"]
+    // 3  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 4  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+    // 5  1551461940000   118.94        "target"          ["disney", "lion", "personal"]
+    // 6  1131818640000     4.32     "trader joe's"       ["cat", "food", "random"]
+    //
+    // Query: drink, 2/1/03-2/28/03, walmart, $5.00-$30.00.
+    // Will only return walmart receipt.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
@@ -103,6 +116,19 @@ public final class SearchServletTest {
 
   @Test
   public void queryWithBlankFieldsIgnoresBlanks() throws IOException {
+    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1513103400000    32.38     "raising cane's"     ["chicken", "drink", "lunch"]
+    // 3  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 4  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+    // 5  1551461940000   118.94        "target"          ["disney", "lion", "personal"]
+    // 6  1131818640000     4.32     "trader joe's"       ["cat", "food", "random"]
+    //
+    // Query: 1/1/10-7/31/20, $5.00-$30.00.
+    // Will return main st restaurant and contoso receipts.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
@@ -119,6 +145,9 @@ public final class SearchServletTest {
 
   @Test
   public void checkNullPointerExceptionIsThrown() throws IOException {
+    // Query: drink, 2/1/03-2/28/03, walmart, $5.00-null.
+    // Will throw NullPointerException since maxPrice was null.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
@@ -134,6 +163,9 @@ public final class SearchServletTest {
 
   @Test
   public void checkNumberFormatExceptionIsThrown() throws IOException {
+    // Query: drink, 2/1/03-2/28/03, walmart, $5.00-"".
+    // Will throw NumberFormatException since maxPrice was the empty string.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
@@ -149,6 +181,9 @@ public final class SearchServletTest {
 
   @Test
   public void checkParseExceptionIsThrown() throws IOException {
+    // Query: drink, "", walmart, $5.00-$30.00.
+    // Will throw ParseExceptionThrow since dateRange was the empty string.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
