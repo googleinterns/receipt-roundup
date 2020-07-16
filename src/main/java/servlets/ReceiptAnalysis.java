@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -160,10 +161,11 @@ public class ReceiptAnalysis {
 
       ClassifyTextResponse response = client.classifyText(request);
 
-      // TODO: Parse category strings into more natural categories
+      // Parse category strings into more natural categories
+      // e.g. "/Food & Drink/Restaurants" becomes "Food & Drink" and "Restaurants"
       categories = response.getCategoriesList()
                        .stream()
-                       .map(category -> category.getName())
+                       .flatMap(category -> Stream.of(category.getName().substring(1).split("/")))
                        .collect(Collectors.toSet());
     } catch (ApiException e) {
       throw new ReceiptAnalysisException("Classify text request failed.", e);
