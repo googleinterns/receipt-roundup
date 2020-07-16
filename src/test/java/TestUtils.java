@@ -34,26 +34,28 @@ public final class TestUtils {
 
   /* Add receipts to database for testing purposes. */
   public static void addTestReceipts(DatastoreService datastore) {
-    addTestReceipt(datastore, 1, 123, 1045237591000L, new BlobKey("test"),
-        "img/walmart-receipt.jpg", 26.12, "walmart", ImmutableSet.of("candy", "drink", "personal"),
-        "");
+    addTestReceipt(datastore, /* id = */ 1, /* userId = */ 123, /* timestamp = */ 1045237591000L,
+        new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
+        ImmutableSet.of("candy", "drink", "personal"), "");
 
-    addTestReceipt(datastore, 2, 123, 1513103400000L, new BlobKey("test"), "img/canes-receipt.jpg",
-        32.38, "raising cane's chicken fingers", ImmutableSet.of("chicken", "drink", "lunch"), "");
+    addTestReceipt(datastore, /* id = */ 2, /* userId = */ 123, /* timestamp = */ 1513103400000L,
+        new BlobKey("test"), "img/canes-receipt.jpg", 32.38, "raising cane's chicken fingers",
+        ImmutableSet.of("chicken", "drink", "lunch"), "");
 
-    addTestReceipt(datastore, 3, 123, 1560193140000L, new BlobKey("test"),
-        "img/contoso-receipt.jpg", 14.51, "contoso",
+    addTestReceipt(datastore, /* id = */ 3, /* userId = */ 123, /* timestamp = */ 1560193140000L,
+        new BlobKey("test"), "img/contoso-receipt.jpg", 14.51, "contoso",
         ImmutableSet.of("cappuccino", "sandwich", "lunch"), "");
 
-    addTestReceipt(datastore, 4, 123, 1491582960000L, new BlobKey("test"),
-        "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
+    addTestReceipt(datastore, /* id = */ 4, /* userId = */ 123, /* timestamp = */ 1491582960000L,
+        new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
         ImmutableSet.of("food", "meal", "lunch"), "");
 
-    addTestReceipt(datastore, 5, 123, 1551461940000L, new BlobKey("test"), "img/target-receipt.jpg",
-        118.94, "target", ImmutableSet.of("disney", "lion", "personal"), "");
+    addTestReceipt(datastore, /* id = */ 5, /* userId = */ 123, /* timestamp = */ 1551461940000L,
+        new BlobKey("test"), "img/target-receipt.jpg", 118.94, "target",
+        ImmutableSet.of("disney", "lion", "personal"), "");
 
-    addTestReceipt(datastore, 5, 123, 1131818640000L, new BlobKey("test"),
-        "img/trader-joes-receipt.jpg", 4.32, "trader joe's",
+    addTestReceipt(datastore, /* id = */ 6, /* userId = */ 123, /* timestamp = */ 1131818640000L,
+        new BlobKey("test"), "img/trader-joes-receipt.jpg", 4.32, "trader joe's",
         ImmutableSet.of("cat", "food", "random"), "");
   }
 
