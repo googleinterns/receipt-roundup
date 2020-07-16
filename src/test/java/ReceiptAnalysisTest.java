@@ -143,16 +143,6 @@ public final class ReceiptAnalysisTest {
     when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
 
-    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
-    mockStatic(LanguageServiceClient.class);
-    when(LanguageServiceClient.create()).thenReturn(languageClient);
-
-    ClassificationCategory category =
-        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
-    ClassifyTextResponse classifyResponse =
-        ClassifyTextResponse.newBuilder().addCategories(category).build();
-    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
-
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
 
@@ -177,16 +167,6 @@ public final class ReceiptAnalysisTest {
     when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
 
-    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
-    mockStatic(LanguageServiceClient.class);
-    when(LanguageServiceClient.create()).thenReturn(languageClient);
-
-    ClassificationCategory category =
-        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
-    ClassifyTextResponse classifyResponse =
-        ClassifyTextResponse.newBuilder().addCategories(category).build();
-    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
-
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
 
@@ -209,16 +189,6 @@ public final class ReceiptAnalysisTest {
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
     when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
-
-    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
-    mockStatic(LanguageServiceClient.class);
-    when(LanguageServiceClient.create()).thenReturn(languageClient);
-
-    ClassificationCategory category =
-        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
-    ClassifyTextResponse classifyResponse =
-        ClassifyTextResponse.newBuilder().addCategories(category).build();
-    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
