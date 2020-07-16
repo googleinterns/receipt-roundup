@@ -133,13 +133,23 @@ public final class ReceiptAnalysisTest {
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
 
-    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
+    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
     mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(client);
+    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
 
     BatchAnnotateImagesResponse batchResponse = BatchAnnotateImagesResponse.newBuilder().build();
-    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
+    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
+
+    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
+    mockStatic(LanguageServiceClient.class);
+    when(LanguageServiceClient.create()).thenReturn(languageClient);
+
+    ClassificationCategory category =
+        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
+    ClassifyTextResponse classifyResponse =
+        ClassifyTextResponse.newBuilder().addCategories(category).build();
+    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
 
     expectedException.expect(ReceiptAnalysisException.class);
     expectedException.expectMessage(EMPTY_BATCH_RESPONSE_WARNING);
@@ -154,16 +164,26 @@ public final class ReceiptAnalysisTest {
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
 
-    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
+    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
     mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(client);
+    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
 
     AnnotateImageResponse response =
         AnnotateImageResponse.newBuilder().setError(Status.getDefaultInstance()).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
-    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
+    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
+
+    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
+    mockStatic(LanguageServiceClient.class);
+    when(LanguageServiceClient.create()).thenReturn(languageClient);
+
+    ClassificationCategory category =
+        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
+    ClassifyTextResponse classifyResponse =
+        ClassifyTextResponse.newBuilder().addCategories(category).build();
+    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
 
     expectedException.expect(ReceiptAnalysisException.class);
     expectedException.expectMessage(RESPONSE_ERROR_WARNING);
@@ -178,15 +198,25 @@ public final class ReceiptAnalysisTest {
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
 
-    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
+    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
     mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(client);
+    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
 
     AnnotateImageResponse response = AnnotateImageResponse.newBuilder().build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
-    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
+    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
+
+    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
+    mockStatic(LanguageServiceClient.class);
+    when(LanguageServiceClient.create()).thenReturn(languageClient);
+
+    ClassificationCategory category =
+        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
+    ClassifyTextResponse classifyResponse =
+        ClassifyTextResponse.newBuilder().addCategories(category).build();
+    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
 
     expectedException.expect(ReceiptAnalysisException.class);
     expectedException.expectMessage(EMPTY_TEXT_ANNOTATIONS_LIST_WARNING);
