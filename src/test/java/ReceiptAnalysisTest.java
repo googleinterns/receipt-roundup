@@ -20,6 +20,10 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+import com.google.api.gax.grpc.GrpcStatusCode;
+import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
@@ -56,6 +60,7 @@ public final class ReceiptAnalysisTest {
       "Received image annotation response with error.";
   private static final String EMPTY_TEXT_ANNOTATIONS_LIST_WARNING =
       "Received image annotation response without text annotations.";
+  private static final String REQUEST_FAILED_WARNING = "Image annotation request failed.";
 
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
@@ -161,5 +166,27 @@ public final class ReceiptAnalysisTest {
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
 
     Assert.assertEquals(EMPTY_TEXT_ANNOTATIONS_LIST_WARNING, exception.getMessage());
+  }
+
+  @Test
+  public void serveImageTextThrowsIfRequestFails() throws IOException, ReceiptAnalysisException {
+    URL url = mock(URL.class);
+    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
+    when(url.openStream()).thenReturn(inputStream);
+
+    ImageAnnotatorClient client = mock(ImageAnnotatorClient.class);
+    mockStatic(ImageAnnotatorClient.class);
+    when(ImageAnnotatorClient.create()).thenReturn(client);
+
+    StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
+    ApiException clientException = new ApiException(null, statusCode, false);
+    when(client.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
+        .thenThrow(clientException);
+
+    ReceiptAnalysisException exception = Assertions.assertThrows(
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
+
+    Assert.assertEquals(REQUEST_FAILED_WARNING, exception.getMessage());
+    Assert.assertEquals(clientException, exception.getCause());
   }
 }
