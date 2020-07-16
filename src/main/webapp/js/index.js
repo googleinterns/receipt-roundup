@@ -13,6 +13,20 @@
 // limitations under the License.
 
 
+/** Fetches the login status and adds a URL to the logout button. */
+async function checkAuthentication() {
+  const response = await fetch('/login-status');
+  const account = await response.json();
+
+  // Redirect to the login page if the user is not logged in.
+  if (!account.loggedIn) {
+    window.location.replace('/login.html');
+  }
+
+  const logoutButton = document.getElementById('logout-button');
+  logoutButton.href = account.logoutUrl;
+}
+
 /** Fetches receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
   const label = document.getElementById('search-input').value;

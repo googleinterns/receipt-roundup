@@ -32,12 +32,19 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const uploadUrl = await fetchBlobstoreUrl();
-  const label = document.getElementById('label-input').value;
+  const uploadUrl = fetchBlobstoreUrl();
+  const categories = document.getElementById('categories-input').value;
+  const store = document.getElementById('store-input').value;
+  const price =
+      convertStringToNumber(document.getElementById('price-input').value);
+  const date = document.getElementById('date-input').valueAsNumber;
   const image = fileInput.files[0];
 
   const formData = new FormData();
-  formData.append('label', label);
+  formData.append('categories', createCategoryList(categories));
+  formData.append('store', store);
+  formData.append('price', price);
+  formData.append('date', date);
   formData.append('receipt-image', image);
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
@@ -60,6 +67,14 @@ async function fetchBlobstoreUrl() {
   const response = await fetch('/upload-receipt');
   const imageUploadUrl = await response.text();
   return imageUploadUrl;
+}
+
+/**
+ * Converts the comma-separated categories string into a list of categories.
+ * @return {(string|Array)} List of categories.
+ */
+function createCategoryList(categories) {
+  return categories.split(',').map((category) => category.trim());
 }
 
 /**
@@ -135,4 +150,26 @@ function checkFileSize() {
   }
 
   return true;
+}
+
+/**
+ * Sets the value and max value of the transaction date input field to the
+ * current date.
+ */
+function loadDateInput() {
+  const dateInput = document.getElementById('date-input');
+  dateInput.value = dateInput.max = formatDate(new Date());
+}
+
+/**
+ * Converts a date to 'YYYY-MM-DD' format, corresponding to the value attribute
+ * of the date input.
+ * @param {Date} date The date to convert.
+ * @return {string} The formatted date.
+ */
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
 }

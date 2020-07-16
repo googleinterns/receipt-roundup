@@ -25,11 +25,14 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,8 +56,29 @@ public class UploadReceiptServlet extends HttpServlet {
   private static final String DEV_SERVER_BASE_URL = "http://0.0.0.0:80";
   // Matches JPEG image filenames.
   private static final Pattern validFilename = Pattern.compile("([^\\s]+(\\.(?i)(jpe?g))$)");
+
   // Logs to System.err by default.
   private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
+  private final BlobstoreService blobstoreService;
+  private final BlobInfoFactory blobInfoFactory;
+  private final DatastoreService datastore;
+  private final UserService userService = UserServiceFactory.getUserService();
+  private final Clock clock;
+
+  public UploadReceiptServlet() {
+    this.blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    this.blobInfoFactory = new BlobInfoFactory();
+    this.datastore = DatastoreServiceFactory.getDatastoreService();
+    this.clock = Clock.systemDefaultZone();
+  }
+
+  public UploadReceiptServlet(BlobstoreService blobstoreService, BlobInfoFactory blobInfoFactory,
+      DatastoreService datastore, Clock clock) {
+    this.blobstoreService = blobstoreService;
+    this.blobInfoFactory = blobInfoFactory;
+    this.datastore = datastore;
+    this.clock = clock;
+  }
 
   /**
    * Creates a URL that uploads the receipt image to Blobstore when the user submits the upload
@@ -64,7 +88,6 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     UploadOptions uploadOptions =
         UploadOptions.Builder.withMaxUploadSizeBytesPerBlob(MAX_UPLOAD_SIZE_BYTES);
     String uploadUrl = blobstoreService.createUploadUrl("/upload-receipt", uploadOptions);
@@ -84,9 +107,15 @@ public class UploadReceiptServlet extends HttpServlet {
 
     try {
       receipt = createReceiptEntity(request);
-    } catch (FileNotSelectedException | InvalidFileException e) {
+    } catch (FileNotSelectedException | InvalidFileException | InvalidPriceException
+        | InvalidDateException e) {
       logger.warning(e.toString());
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(e.toString());
+      return;
+    } catch (UserNotLoggedInException e) {
+      logger.warning(e.toString());
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       response.getWriter().println(e.toString());
       return;
     } catch (ReceiptAnalysisException e) {
@@ -97,7 +126,6 @@ public class UploadReceiptServlet extends HttpServlet {
     }
 
     // Store the receipt entity in Datastore.
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(receipt);
   }
 
@@ -106,18 +134,52 @@ public class UploadReceiptServlet extends HttpServlet {
    * information about the receipt.
    */
   private Entity createReceiptEntity(HttpServletRequest request)
-      throws FileNotSelectedException, InvalidFileException, ReceiptAnalysisException {
+      throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
+             InvalidPriceException, InvalidDateException, ReceiptAnalysisException {
+    long timestamp = getTimestamp(request);
+    double price = roundPrice(request.getParameter("price"));
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
-    long timestamp = System.currentTimeMillis();
+
+    if (!userService.isUserLoggedIn()) {
+      blobstoreService.delete(blobKey);
+      throw new UserNotLoggedInException("User must be logged in to upload a receipt.");
+    }
+
     String label = request.getParameter("label");
+    String store = request.getParameter("store");
+    String userId = userService.getCurrentUser().getUserId();
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("label", label);
+    receipt.setProperty("store", store);
+    receipt.setProperty("price", price);
+    receipt.setProperty("userId", userId);
 
     return receipt;
+  }
+
+  /**
+   * Converts the date parameter from the request to a timestamp and verifies that the date is in
+   * the past.
+   */
+  private long getTimestamp(HttpServletRequest request) throws InvalidDateException {
+    long currentTimestamp = clock.instant().toEpochMilli();
+    long transactionTimestamp;
+
+    try {
+      transactionTimestamp = Long.parseLong(request.getParameter("date"));
+    } catch (NumberFormatException e) {
+      throw new InvalidDateException("Transaction date must be a long.");
+    }
+
+    if (transactionTimestamp > currentTimestamp) {
+      throw new InvalidDateException("Transaction date must be in the past.");
+    }
+
+    return transactionTimestamp;
   }
 
   /**
@@ -125,7 +187,6 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private BlobKey getUploadedBlobKey(HttpServletRequest request, String formInputElementName)
       throws FileNotSelectedException, InvalidFileException {
-    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(request);
     List<BlobKey> blobKeys = blobs.get(formInputElementName);
 
@@ -138,7 +199,7 @@ public class UploadReceiptServlet extends HttpServlet {
     BlobKey blobKey = blobKeys.get(0);
 
     // User submitted the form without selecting a file. (live server)
-    BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
+    BlobInfo blobInfo = blobInfoFactory.loadBlobInfo(blobKey);
     if (blobInfo.getSize() == 0) {
       blobstoreService.delete(blobKey);
       throw new FileNotSelectedException("No file was uploaded by the user (live server).");
@@ -161,6 +222,24 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
+   * Converts a price string into a double rounded to 2 decimal places.
+   */
+  private static double roundPrice(String price) throws InvalidPriceException {
+    double parsedPrice;
+    try {
+      parsedPrice = Double.parseDouble(price);
+    } catch (NumberFormatException e) {
+      throw new InvalidPriceException("Price could not be parsed.");
+    }
+
+    if (parsedPrice < 0) {
+      throw new InvalidPriceException("Price must be positive.");
+    }
+
+    return Math.round(parsedPrice * 100.0) / 100.0;
+  }
+
+  /**
    * Extracts the raw text from the image with the Cloud Vision API. Returns a receipt
    * entity populated with the extracted fields.
    */
@@ -177,22 +256,17 @@ public class UploadReceiptServlet extends HttpServlet {
       if (baseUrl.equals(DEV_SERVER_BASE_URL)) {
         results = ReceiptAnalysis.serveImageText(blobKey);
       } else {
-        String absoluteUrl = baseUrl + imageUrl;
+        URL absoluteUrl = new URL(baseUrl + imageUrl);
         results = ReceiptAnalysis.serveImageText(absoluteUrl);
       }
     } catch (IOException e) {
+      blobstoreService.delete(blobKey);
       throw new ReceiptAnalysisException("Receipt analysis failed.", e);
     }
-
-    // TODO: Replace hard-coded values using receipt analysis with Cloud Vision.
-    double price = 5.89;
-    String store = "McDonald's";
 
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
     receipt.setProperty("imageUrl", imageUrl);
-    receipt.setProperty("price", price);
-    receipt.setProperty("store", store);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
 
@@ -224,6 +298,24 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class FileNotSelectedException extends Exception {
     public FileNotSelectedException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class UserNotLoggedInException extends Exception {
+    public UserNotLoggedInException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class InvalidDateException extends Exception {
+    public InvalidDateException(String errorMessage) {
+      super(errorMessage);
+    }
+  }
+
+  public static class InvalidPriceException extends Exception {
+    public InvalidPriceException(String errorMessage) {
       super(errorMessage);
     }
   }
