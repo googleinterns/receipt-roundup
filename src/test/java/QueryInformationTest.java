@@ -106,8 +106,8 @@ public final class QueryInformationTest {
 
   @Test(expected = ParseException.class)
   public void invalidDateRangeEmptyString() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(
-        CST_TIMEZONE_ID, CATEGORY, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
+    QueryInformation queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORY, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
   }
 
   @Test
@@ -134,8 +134,8 @@ public final class QueryInformationTest {
 
   @Test(expected = NumberFormatException.class)
   public void emptyStringPriceThrows() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(
-        CST_TIMEZONE_ID, CATEGORY, DATE_RANGE, STORE, EMPTY_STRING, MAX_PRICE);
+    QueryInformation queryInformation =
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORY, DATE_RANGE, STORE, EMPTY_STRING, MAX_PRICE);
   }
 
   @Test(expected = NullPointerException.class)

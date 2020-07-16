@@ -59,9 +59,21 @@ public class SearchServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    QueryInformation queryInformation = createQueryInformation(request, response);
+    QueryInformation queryInformation = null;
 
-    if (queryInformation == null) { // createQueryInformation() threw an exception, so exit
+    try {
+      queryInformation = createQueryInformation(request, response);
+    } catch (NullPointerException exception) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(NULL_EXCEPTION_MESSAGE);
+      return;
+    } catch (NumberFormatException exception) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(NUMBER_EXCEPTION_MESSAGE);
+      return;
+    } catch (ParseException exception) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
       return;
     }
 
@@ -74,7 +86,8 @@ public class SearchServlet extends HttpServlet {
 
   /** Creates a {@link QueryInformation} based on request parameters. */
   private QueryInformation createQueryInformation(
-      HttpServletRequest request, HttpServletResponse response) throws IOException {
+      HttpServletRequest request, HttpServletResponse response)
+      throws IOException, NullPointerException, NumberFormatException, ParseException {
     String timeZoneId = request.getParameter("timeZoneId");
     String category = request.getParameter("category");
     String dateRange = request.getParameter("dateRange");
@@ -82,21 +95,8 @@ public class SearchServlet extends HttpServlet {
     String minPrice = request.getParameter("min");
     String maxPrice = request.getParameter("max");
 
-    QueryInformation queryInformation = null;
-
-    try {
-      queryInformation =
-          new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
-    } catch (NullPointerException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(NULL_EXCEPTION_MESSAGE);
-    } catch (NumberFormatException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(NUMBER_EXCEPTION_MESSAGE);
-    } catch (ParseException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
-    }
+    QueryInformation queryInformation =
+        new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
 
     return queryInformation;
   }
