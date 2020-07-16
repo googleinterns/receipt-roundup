@@ -389,7 +389,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostRoundPrice() throws IOException {
+  public void doPostRoundPrice() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     StringWriter stringWriter = new StringWriter();
