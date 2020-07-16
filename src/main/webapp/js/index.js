@@ -28,7 +28,7 @@ async function getAllReceipts() {
 async function searchReceipts() {
   const params = new URLSearchParams();
   params.append('isNewLoad', 'false');
-  params.append('categories', document.getElementById('category-input').value);
+  params.append('category', document.getElementById('category-input').value);
   params.append(
       'dateRange', document.getElementById('date-range-input').textContent);
   params.append('store', document.getElementById('store-name-input').value);

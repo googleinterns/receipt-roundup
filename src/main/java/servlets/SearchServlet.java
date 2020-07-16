@@ -65,9 +65,19 @@ public class SearchServlet extends HttpServlet {
     if (Boolean.parseBoolean(request.getParameter("isNewLoad"))) {
       receipts = getAllReceipts();
     } else {
-      queryInformation = createQueryInformation(request, response);
-
-      if (queryInformation == null) { // createQueryInformation() threw an exception, so exit.
+      try {
+        queryInformation = createQueryInformation(request, response);
+      } catch (NullPointerException exception) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println(NULL_EXCEPTION_MESSAGE);
+        return;
+      } catch (NumberFormatException exception) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println(NUMBER_EXCEPTION_MESSAGE);
+        return;
+      } catch (ParseException exception) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
         return;
       }
 
@@ -81,29 +91,17 @@ public class SearchServlet extends HttpServlet {
 
   /** Creates a {@link QueryInformation} based on request parameters. */
   private QueryInformation createQueryInformation(
-      HttpServletRequest request, HttpServletResponse response) throws IOException {
+      HttpServletRequest request, HttpServletResponse response)
+      throws IOException, NullPointerException, NumberFormatException, ParseException {
     String timeZoneId = request.getParameter("timeZoneId");
-    String categories = request.getParameter("categories");
+    String category = request.getParameter("category");
     String dateRange = request.getParameter("dateRange");
     String store = request.getParameter("store");
     String minPrice = request.getParameter("min");
     String maxPrice = request.getParameter("max");
 
-    QueryInformation queryInformation = null;
-
-    try {
-      queryInformation =
-          new QueryInformation(timeZoneId, categories, dateRange, store, minPrice, maxPrice);
-    } catch (NullPointerException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(NULL_EXCEPTION_MESSAGE);
-    } catch (NumberFormatException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(NUMBER_EXCEPTION_MESSAGE);
-    } catch (ParseException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
-    }
+    QueryInformation queryInformation =
+        new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
 
     return queryInformation;
   }
@@ -112,6 +110,10 @@ public class SearchServlet extends HttpServlet {
   private ImmutableList<Receipt> getMatchingReceipts(QueryInformation queryInformation) {
     Query query = setupQuery(queryInformation);
 
+    /**
+     * Datastore doesn't support queries with multiple inequality filters
+     * (i.e price and timestamp) so price filtering is manually done here.
+     */
     return datastore.prepare(query)
         .asList(FetchOptions.Builder.withDefaults())
         .stream()
@@ -137,8 +139,8 @@ public class SearchServlet extends HttpServlet {
   private Query setupQuery(QueryInformation queryInformation) {
     Query query = new Query("Receipt");
 
-    if (queryInformation.getCategories() != null && queryInformation.getCategories().size() != 0) {
-      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategories());
+    if (queryInformation.getCategory() != null && queryInformation.getCategory().size() != 0) {
+      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategory());
     }
 
     query.addFilter("timestamp", Query.FilterOperator.GREATER_THAN_OR_EQUAL,

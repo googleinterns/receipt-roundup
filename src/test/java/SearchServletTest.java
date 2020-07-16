@@ -47,7 +47,7 @@ public final class SearchServletTest {
 
   // Values for a valid test.
   private static final String CST_TIMEZONE_ID = "America/Chicago";
-  private static final String CATEGORIES = "drink";
+  private static final String CATEGORY = "drink";
   private static final String SHORT_DATE_RANGE = "February 1, 2003 - February 28, 2003";
   private static final String LONG_DATE_RANGE = "January 1, 2010 - July 31, 2020";
   private static final String STORE = "walmart";
@@ -88,43 +88,116 @@ public final class SearchServletTest {
 
   @Test
   public void queryWithAllFieldsFilled() throws IOException {
+    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+    //
+    // Query: drink, 2/1/03-2/28/03, walmart, $5.00-$30.00.
+    // Will only return walmart receipt.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet - this should retrieve one receipt.
-    TestUtils.setRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORIES, SHORT_DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    TestUtils.setSearchServletRequestParameters(
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipt is retrieved by finding the store name in the writer.
-    Assert.assertTrue(stringWriter.toString().contains("walmart"));
+    // Make sure receipt is retrieved by finding the receipt id in the writer.
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
   }
 
   @Test
-  public void queryWithBlankFieldsIgnoresBlanks() throws IOException {
+  public void queryWithoutStore() throws IOException {
+    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+    //
+    // Query: drink, 2/1/03-2/28/03, $5.00-$30.00.
+    // Will return main st restaurant and contoso receipts.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet - this should retrieve a couple receipts.
-    TestUtils.setRequestParameters(request, CST_TIMEZONE_ID, EMPTY_STRING, LONG_DATE_RANGE,
-        EMPTY_STRING, MIN_PRICE, MAX_PRICE);
+    TestUtils.setSearchServletRequestParameters(
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, EMPTY_STRING, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipts are retrieved by finding store names in the writer.
-    Assert.assertTrue(stringWriter.toString().contains("main street restaurant"));
-    Assert.assertTrue(stringWriter.toString().contains("contoso"));
+    // Make sure receipts are retrieved by finding receipt ids in the writer.
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
+  }
+
+  @Test
+  public void queryWithoutCategory() throws IOException {
+    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+    //
+    // Query: 1/1/10-7/31/20, contoso, $5.00-$30.00.
+    // Will return main st restaurant and contoso receipts.
+
+    // Add mock receipts to datastore.
+    TestUtils.addTestReceipts(datastore);
+
+    // Perform doGet - this should retrieve a couple receipts.
+    TestUtils.setSearchServletRequestParameters(
+        request, CST_TIMEZONE_ID, EMPTY_STRING, LONG_DATE_RANGE, "CONTOSO", MIN_PRICE, MAX_PRICE);
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure receipts are retrieved by finding receipt ids in the writer.
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
+  }
+
+  @Test
+  public void queryWithoutStoreAndCategory() throws IOException {
+    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+    //
+    // Query: 1/1/10-7/31/20, $5.00-$30.00.
+    // Will return main st restaurant and contoso receipts.
+
+    // Add mock receipts to datastore.
+    TestUtils.addTestReceipts(datastore);
+
+    // Perform doGet - this should retrieve a couple receipts.
+    TestUtils.setSearchServletRequestParameters(request, CST_TIMEZONE_ID, EMPTY_STRING,
+        LONG_DATE_RANGE, EMPTY_STRING, MIN_PRICE, MAX_PRICE);
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure receipts are retrieved by finding receipt ids in the writer.
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":3"));
   }
 
   @Test
   public void checkNullPointerExceptionIsThrown() throws IOException {
+    // Query: drink, 2/1/03-2/28/03, walmart, $5.00-null.
+    // Will throw NullPointerException since maxPrice was null.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet with a null value as a parameter.
-    TestUtils.setRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORIES, SHORT_DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
+    TestUtils.setSearchServletRequestParameters(
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -134,12 +207,15 @@ public final class SearchServletTest {
 
   @Test
   public void checkNumberFormatExceptionIsThrown() throws IOException {
+    // Query: drink, 2/1/03-2/28/03, walmart, $5.00-"".
+    // Will throw NumberFormatException since maxPrice was the empty string.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet with an empty string for price.
-    TestUtils.setRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORIES, SHORT_DATE_RANGE, STORE, MAX_PRICE, EMPTY_STRING);
+    TestUtils.setSearchServletRequestParameters(
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MAX_PRICE, EMPTY_STRING);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -149,12 +225,15 @@ public final class SearchServletTest {
 
   @Test
   public void checkParseExceptionIsThrown() throws IOException {
+    // Query: drink, "", walmart, $5.00-$30.00.
+    // Will throw ParseExceptionThrow since dateRange was the empty string.
+
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet with an empty string for date range.
-    TestUtils.setRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORIES, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
+    TestUtils.setSearchServletRequestParameters(
+        request, CST_TIMEZONE_ID, CATEGORY, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
