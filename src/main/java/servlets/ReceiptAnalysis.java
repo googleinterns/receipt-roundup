@@ -154,8 +154,10 @@ public class ReceiptAnalysis {
       Document document = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
       ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(document).build();
 
+      // TODO: Check if ApiException was thrown
       ClassifyTextResponse response = client.classifyText(request);
 
+      // TODO: Parse category strings into more natural categories
       categories = response.getCategoriesList()
                        .stream()
                        .map(category -> category.getName())
