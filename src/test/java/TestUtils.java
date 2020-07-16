@@ -78,8 +78,9 @@ public final class TestUtils {
   }
 
   /** Set all necessary parameters that SearchServlet will ask for in a doGet. */
-  public static void setRequestParameters(HttpServletRequest request, String timeZoneId,
-      String categories, String dateRange, String store, String minPrice, String maxPrice) {
+  public static void setSearchServletRequestParameters(HttpServletRequest request,
+      String timeZoneId, String categories, String dateRange, String store, String minPrice,
+      String maxPrice) {
     when(request.getParameter("timeZoneId")).thenReturn(timeZoneId);
     when(request.getParameter("categories")).thenReturn(categories);
     when(request.getParameter("dateRange")).thenReturn(dateRange);

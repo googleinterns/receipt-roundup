@@ -92,7 +92,7 @@ public final class SearchServletTest {
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet - this should retrieve one receipt.
-    TestUtils.setRequestParameters(
+    TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
@@ -107,8 +107,8 @@ public final class SearchServletTest {
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet - this should retrieve a couple receipts.
-    TestUtils.setRequestParameters(request, CST_TIMEZONE_ID, EMPTY_STRING, LONG_DATE_RANGE,
-        EMPTY_STRING, MIN_PRICE, MAX_PRICE);
+    TestUtils.setSearchServletRequestParameters(request, CST_TIMEZONE_ID, EMPTY_STRING,
+        LONG_DATE_RANGE, EMPTY_STRING, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -123,7 +123,7 @@ public final class SearchServletTest {
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet with a null value as a parameter.
-    TestUtils.setRequestParameters(
+    TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
     servlet.doGet(request, response);
     writer.flush();
@@ -138,7 +138,7 @@ public final class SearchServletTest {
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet with an empty string for price.
-    TestUtils.setRequestParameters(
+    TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MAX_PRICE, EMPTY_STRING);
     servlet.doGet(request, response);
     writer.flush();
@@ -153,7 +153,7 @@ public final class SearchServletTest {
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet with an empty string for date range.
-    TestUtils.setRequestParameters(
+    TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, CATEGORY, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
