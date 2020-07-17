@@ -35,7 +35,8 @@ async function uploadReceipt(event) {
 
   // Change to the loading cursor and disable the submit button.
   document.body.style.cursor = 'wait';
-  document.getElementById('submit-receipt').disabled = true;
+  const submitButton = document.getElementById('submit-receipt');
+  submitButton.disabled = true;
 
   const uploadUrl = await fetchBlobstoreUrl();
   const categories = document.getElementById('categories-input').value;
@@ -59,8 +60,9 @@ async function uploadReceipt(event) {
   // Restore the cursor after the upload request has loaded.
   document.body.style.cursor = 'default';
 
-  // Create an alert if there is an error.
+  // Create an alert and re-enable the submit button if there is an error.
   if (response.status !== 200) {
+    submitButton.disabled = false;
     alert(await response.text());
     return;
   }
