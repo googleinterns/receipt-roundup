@@ -20,31 +20,33 @@
 
 <title>Receipt Analysis</title>
 
-<h1 class="p-3 text-center">Receipt Analysis</h1>
+<body onload="loadReceiptAnalysis()">
+  <h1 class="p-3 text-center">Receipt Analysis</h1>
 
-<div class="container-fluid">
-  <p class="text-center">Success! The following receipt has been added to your account:</p>
+  <div class="container-fluid">
+    <p class="text-center">Success! The following receipt has been added to your account:</p>
 
-  <div class="card m-auto p-3 box-shadow">
-    <p class="card-text align-self-center">Upload Date: February 14, 2003, 9:46 AM</p>
-    <p class="card-text align-self-center">Store Name: Walmart</p>
-    <p class="card-text align-self-center">Total Price: $26.12</p>
-    <p class="card-text align-self-center mb-1">Categories:</p>
-    <div class="row">
-      <div class="col-4 d-flex justify-content-center">
-        <h4><span class="badge badge-pill badge-secondary">Candy</span></h4>
+    <div class="card m-auto p-3 box-shadow">
+      <p id="date" class="card-text align-self-center"></p>
+      <p id="store-name" class="card-text align-self-center"></p>
+      <p id="total" class="card-text align-self-center"></p>
+      <p class="card-text align-self-center mb-1">Categories:</p>
+      <div class="row">
+        <div class="col-4 d-flex justify-content-center">
+          <h4><span id="category-0" class="badge badge-pill badge-secondary">-</span></h4>
+        </div>
+        <div class="col-4 d-flex justify-content-center">
+          <h4><span id="category-1" class="badge badge-pill badge-secondary">-</span></h4>
+        </div>
+        <div class="col-4 d-flex justify-content-center">
+          <h4><span id="category-2" class="badge badge-pill badge-secondary">-</span></h4>
+        </div>
       </div>
-      <div class="col-4 d-flex justify-content-center">
-        <h4><span class="badge badge-pill badge-secondary">Drink</span></h4>
-      </div>
-      <div class="col-4 d-flex justify-content-center">
-        <h4><span class="badge badge-pill badge-secondary">Personal</span></h4>
-      </div>
+      <img id="receipt-image" src="-" alt="Receipt image" class="d-block p-2 img-fluid" />
     </div>
-    <img src="img/walmart-receipt.jpg" alt="Receipt image" class="d-block p-2 img-fluid" />
-  </div>
 
-  <div class="my-4 d-flex justify-content-center">
-    <a href="/" class="btn btn-info">Return to Home</a>
+    <div class="my-4 d-flex justify-content-center">
+      <a href="/" class="btn btn-info">Return to Home</a>
+    </div>
   </div>
-</div>
+</body>

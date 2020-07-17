@@ -27,18 +27,25 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -99,7 +106,7 @@ public class UploadReceiptServlet extends HttpServlet {
   /**
    * When the user submits the upload form, Blobstore processes the image and then forwards the
    * request to this servlet, which analyzes the receipt image and inserts information
-   * about the receipt into Datastore.
+   * about the receipt into Datastore. The JSON response contains the receipt that was added.
    */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -127,6 +134,13 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Store the receipt entity in Datastore.
     datastore.put(receipt);
+
+    // Convert the receipt to JSON.
+    String json = new Gson().toJson(receipt);
+
+    // Send the JSON as the response.
+    response.setContentType("application/json;");
+    response.getWriter().println(json);
   }
 
   /**
@@ -145,7 +159,6 @@ public class UploadReceiptServlet extends HttpServlet {
       throw new UserNotLoggedInException("User must be logged in to upload a receipt.");
     }
 
-    String label = request.getParameter("label");
     String store = request.getParameter("store");
     String userId = userService.getCurrentUser().getUserId();
 
@@ -153,7 +166,6 @@ public class UploadReceiptServlet extends HttpServlet {
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
-    receipt.setProperty("label", label);
     receipt.setProperty("store", sanitize(store));
     receipt.setProperty("price", price);
     receipt.setProperty("userId", userId);
@@ -269,6 +281,8 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("imageUrl", imageUrl);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
+    // TODO: Add generated categories from Natural Language API.
+    receipt.setProperty("categories", getCategories(request));
 
     return receipt;
   }
@@ -288,6 +302,16 @@ public class UploadReceiptServlet extends HttpServlet {
         + request.getServerPort() + request.getContextPath();
 
     return baseUrl;
+  }
+
+  /**
+   * Gets the set of user-assigned categories from the request.
+   */
+  private ImmutableSet<String> getCategories(HttpServletRequest request) {
+    return Arrays.asList(request.getParameterValues("categories"))
+        .stream()
+        .map(this::sanitize)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**

@@ -20,7 +20,8 @@ function cancelUpload() {
 }
 
 /**
- * Sends a request to add a receipt to Blobstore.
+ * Sends a request to add a receipt to Blobstore then redirects to the receipt
+ * analysis page.
  */
 async function uploadReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
@@ -32,8 +33,8 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const uploadUrl = fetchBlobstoreUrl();
-  const label = document.getElementById('label-input').value;
+  const uploadUrl = await fetchBlobstoreUrl();
+  const categories = document.getElementById('categories-input').value;
   const store = document.getElementById('store-input').value;
   const price =
       convertStringToNumber(document.getElementById('price-input').value);
@@ -41,7 +42,9 @@ async function uploadReceipt(event) {
   const image = fileInput.files[0];
 
   const formData = new FormData();
-  formData.append('label', label);
+  createCategoryList(categories).forEach((category) => {
+    formData.append('categories', category);
+  });
   formData.append('store', store);
   formData.append('price', price);
   formData.append('date', date);
@@ -55,8 +58,16 @@ async function uploadReceipt(event) {
     return;
   }
 
-  // TODO: Redirect to receipt analysis page for MVP
-  window.location.href = '/';
+  const json = (await response.json()).propertyMap;
+  const params = new URLSearchParams();
+  params.append('categories', json.categories);
+  params.append('image-url', json.imageUrl);
+  params.append('price', json.price);
+  params.append('store', json.store);
+  params.append('timestamp', json.timestamp);
+
+  // Redirect to the receipt analysis page.
+  window.location.href = `/receipt-analysis.html?${params.toString()}`;
 }
 
 /**
@@ -67,6 +78,14 @@ async function fetchBlobstoreUrl() {
   const response = await fetch('/upload-receipt');
   const imageUploadUrl = await response.text();
   return imageUploadUrl;
+}
+
+/**
+ * Converts the comma-separated categories string into a list of categories.
+ * @return {(string|Array)} List of categories.
+ */
+function createCategoryList(categories) {
+  return categories.split(',').map((category) => category.trim());
 }
 
 /**

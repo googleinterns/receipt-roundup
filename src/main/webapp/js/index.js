@@ -13,6 +13,20 @@
 // limitations under the License.
 
 
+/** Fetches the login status and adds a URL to the logout button. */
+async function checkAuthentication() {
+  const response = await fetch('/login-status');
+  const account = await response.json();
+
+  // Redirect to the login page if the user is not logged in.
+  if (!account.loggedIn) {
+    window.location.replace('/login.html');
+  }
+
+  const logoutButton = document.getElementById('logout-button');
+  logoutButton.href = account.logoutUrl;
+}
+
 /** Fetches receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
   const label = document.getElementById('search-input').value;
@@ -45,10 +59,28 @@ function displayReceipts(label, receipts) {
 }
 
 /**
+ * Creates error message based on existing HTML template.
+ * @param {string} label User-entered label.
+ */
+function createErrorMessageElement(label) {
+  // Clone error message from template.
+  const errorMessageClone =
+      document.querySelector('#error-message-template').content.cloneNode(true);
+
+  // Fill in template fields with correct information.
+  errorMessageClone.querySelector('h3').innerText =
+      `Sorry, no results found for "${label}". ` +
+      `Please try your search again or try a different query.`;
+
+  // Attach error message clone to parent div.
+  document.getElementById('receipts-display').appendChild(errorMessageClone);
+}
+
+/**
  * Creates receipt card based on existing HTML template.
  * This card displays transaction date, store name, trasaction total,
  * categories, receipt photo, and view/edit/delete buttons.
- * @param {Receipt} receipt A Receipt object.
+ * @param {Receipt} receipt A Receipt datastore object.
  */
 function createReceiptCardElement(receipt) {
   // Clone receipt card from template.
@@ -67,27 +99,37 @@ function createReceiptCardElement(receipt) {
   }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
+  receiptCardClone.querySelector('.col-md-6').id = receipt.id;
+
+  // Attach listener to trigger the deletion of this receipt.
+  attachDeleteButtonEventListener(receipt, receiptCardClone);
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
 }
 
 /**
- * Creates error message based on existing HTML template.
- * @param {string} label User-entered label.
+ * Attaches event listener to delete button.
+ * @param {Receipt} receipt A Receipt datastore object.
+ * @param {receiptCardClone} DocumentFragment Receipt card wrapper.
  */
-function createErrorMessageElement(label) {
-  // Clone error message from template.
-  const errorMessageClone =
-      document.querySelector('#error-message-template').content.cloneNode(true);
+function attachDeleteButtonEventListener(receipt, receiptCardClone) {
+  receiptCardClone.querySelector('#delete').addEventListener('click', () => {
+    // Display a pop-up to the user confirming the deletion of the receipt.
+    const selection = confirm(
+        'Are you sure you want to delete this receipt? This cannot be undone.');
+    if (selection) {
+      deleteReceipt(receipt);
+      document.getElementById(receipt.id).remove();
+    }
+  });
+}
 
-  // Fill in template fields with correct information.
-  errorMessageClone.querySelector('h3').innerText =
-      'Sorry, no results found for "' + label +
-      '". Please try your search again or try a different query.';
-
-  // Attach error message clone to parent div.
-  document.getElementById('receipts-display').appendChild(errorMessageClone);
+/** Tells the server to delete the receipt. */
+async function deleteReceipt(receipt) {
+  const params = new URLSearchParams();
+  params.append('id', receipt.id);
+  await fetch('/delete-receipt', {method: 'POST', body: params});
 }
 
 /**
