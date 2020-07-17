@@ -27,7 +27,6 @@ import com.google.appengine.api.blobstore.UploadOptions.Builder;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Text;
@@ -37,7 +36,6 @@ import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestC
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
@@ -49,15 +47,12 @@ import java.net.URL;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
@@ -68,7 +63,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -110,7 +104,7 @@ public final class UploadReceiptServletTest {
   private static final long IMAGE_SIZE_0MB = 0;
   private static final String HASH = "35454B055CC325EA1AF2126E27707052";
 
-  private static final String[] CATEGORIES = new String[] {"Fast Food, Burger, Restaurant"};
+  private static final String[] CATEGORIES = new String[] {"burger", "fast food", "restaurant"};
   private static final Collection<String> CATEGORIES_COLLECTION = Arrays.asList(CATEGORIES);
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
@@ -257,6 +251,58 @@ public final class UploadReceiptServletTest {
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
         PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
     Assert.assertTrue(response.contains(expectedResponse));
+  }
+
+  @Test
+  public void doPostRemovesDuplicateCategories() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
+    String[] categories = new String[] {"lunch", "restaurant", "lunch", "lunch", "restaurant"};
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubRequestBody(request, categories, STORE, PRICE, PAST_TIMESTAMP);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
+
+    servlet.doPost(request, response);
+
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    Collection<String> expectedCategories = Arrays.asList("lunch", "restaurant");
+    Assert.assertEquals(expectedCategories, receipt.getProperty("categories"));
+  }
+
+  @Test
+  public void doPostSanitizesCategories() throws IOException {
+    helper.setEnvIsLoggedIn(true);
+
+    String[] categories =
+        new String[] {"   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH"};
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubRequestBody(request, categories, STORE, PRICE, PAST_TIMESTAMP);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
+
+    servlet.doPost(request, response);
+
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    Collection<String> expectedCategories =
+        Arrays.asList("fast food", "burger", "restaurant", "lunch");
+    Assert.assertEquals(expectedCategories, receipt.getProperty("categories"));
   }
 
   @Test

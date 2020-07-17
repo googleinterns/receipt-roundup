@@ -33,7 +33,7 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const uploadUrl = fetchBlobstoreUrl();
+  const uploadUrl = await fetchBlobstoreUrl();
   const categories = document.getElementById('categories-input').value;
   const store = document.getElementById('store-input').value;
   const price =
@@ -42,7 +42,9 @@ async function uploadReceipt(event) {
   const image = fileInput.files[0];
 
   const formData = new FormData();
-  formData.append('categories', createCategoryList(categories));
+  createCategoryList(categories).forEach((category) => {
+    formData.append('categories', category);
+  });
   formData.append('store', store);
   formData.append('price', price);
   formData.append('date', date);
