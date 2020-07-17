@@ -27,18 +27,25 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.collect.ImmutableSet;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Clock;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -153,7 +160,6 @@ public class UploadReceiptServlet extends HttpServlet {
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
-    receipt.setProperty("label", label);
     receipt.setProperty("store", store);
     receipt.setProperty("price", price);
     receipt.setProperty("userId", userId);
@@ -269,6 +275,8 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("imageUrl", imageUrl);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
+    // TODO: Add generated categories from Natural Language API.
+    receipt.setProperty("categories", getCategories(request));
 
     return receipt;
   }
@@ -288,6 +296,13 @@ public class UploadReceiptServlet extends HttpServlet {
         + request.getServerPort() + request.getContextPath();
 
     return baseUrl;
+  }
+
+  /**
+   * Gets the list of user-assigned categories from the request.
+   */
+  private ImmutableSet<String> getCategories(HttpServletRequest request) {
+    return ImmutableSet.copyOf(request.getParameterValues("categories"));
   }
 
   public static class InvalidFileException extends Exception {
