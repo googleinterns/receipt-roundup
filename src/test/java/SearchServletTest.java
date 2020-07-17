@@ -149,8 +149,8 @@ public final class SearchServletTest {
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet - this should retrieve one receipt.
-    TestUtils.setSearchServletRequestParameters(
-        request, CST_TIMEZONE_ID, EMPTY_STRING, LONG_DATE_RANGE, "CONTOSO", MIN_PRICE, MAX_PRICE);
+    TestUtils.setSearchServletRequestParameters(request, CST_TIMEZONE_ID, /*category=*/"",
+        LONG_DATE_RANGE, "CONTOSO", MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
