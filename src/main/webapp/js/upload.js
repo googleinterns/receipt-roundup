@@ -20,7 +20,8 @@ function cancelUpload() {
 }
 
 /**
- * Sends a request to add a receipt to Blobstore.
+ * Sends a request to add a receipt to Blobstore then redirects to the receipt
+ * analysis page.
  */
 async function uploadReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
@@ -55,8 +56,16 @@ async function uploadReceipt(event) {
     return;
   }
 
-  // TODO: Redirect to receipt analysis page for MVP
-  window.location.href = '/';
+  const json = (await response.json()).propertyMap;
+  const params = new URLSearchParams();
+  params.append('categories', json.categories);
+  params.append('image-url', json.imageUrl);
+  params.append('price', json.price);
+  params.append('store', json.store);
+  params.append('timestamp', json.timestamp);
+
+  // Redirect to the receipt analysis page.
+  window.location.href = `/receipt-analysis.html?${params.toString()}`;
 }
 
 /**
