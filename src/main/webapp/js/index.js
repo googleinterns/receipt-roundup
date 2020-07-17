@@ -92,20 +92,33 @@ function createReceiptCardElement(receipt) {
       document.querySelector('#receipt-card-template').content.cloneNode(true);
 
   // Fill in template fields with correct information.
-  receiptCardClone.querySelector('#timestamp').innerText = receipt.timestamp;
-  receiptCardClone.querySelector('#store-name').innerText = receipt.store;
+  const date = new Date(receipt.timestamp);
+  receiptCardClone.querySelector('#timestamp').innerText = date.toDateString();
+  receiptCardClone.querySelector('#store-name').innerText =
+      capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
       'Total: $' + receipt.price;
 
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length && i < 3; i++) {
-    receiptCardClone.querySelector('#c' + i).innerText = categories[i];
+    receiptCardClone.querySelector('#c' + i).innerText =
+        capitalizeFirstLetters(categories[i]);
   }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
+}
+
+/** Capitalize the first letter of each word in a string. */
+function capitalizeFirstLetters(lowercasedString) {
+  if (typeof lowercasedString !== 'string') {
+    return '';
+  }
+  return lowercasedString.split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
 }
 
 /**
