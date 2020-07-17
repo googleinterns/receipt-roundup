@@ -259,8 +259,8 @@ public final class UploadReceiptServletTest {
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
 
-    Collection<String> categoriesWithoutDuplicates = Arrays.asList("lunch", "restaurant");
-    Assert.assertEquals(categoriesWithoutDuplicates, receipt.getProperty("categories"));
+    Collection<String> expectedCategories = Arrays.asList("lunch", "restaurant");
+    Assert.assertEquals(expectedCategories, receipt.getProperty("categories"));
   }
 
   @Test
@@ -285,9 +285,9 @@ public final class UploadReceiptServletTest {
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
 
-    Collection<String> formattedCategories =
+    Collection<String> expectedCategories =
         Arrays.asList("fast food", "burger", "restaurant", "lunch");
-    Assert.assertEquals(formattedCategories, receipt.getProperty("categories"));
+    Assert.assertEquals(expectedCategories, receipt.getProperty("categories"));
   }
 
   @Test
