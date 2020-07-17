@@ -35,9 +35,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public final class SearchServletTest {
-  private static final String EMPTY_STRING = "";
-  private static final String NULL_VALUE = null;
-
   private static final String NULL_EXCEPTION_MESSAGE =
       "Null Field: Receipt unable to be queried at this time, please try again.";
   private static final String NUMBER_EXCEPTION_MESSAGE =
@@ -121,14 +118,14 @@ public final class SearchServletTest {
     // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
     //
     // Query: drink, 2/1/03-2/28/03, $5.00-$30.00.
-    // Will return walmart receipts.
+    // Will only return walmart.
 
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet - this should retrieve one receipts.
     TestUtils.setSearchServletRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, EMPTY_STRING, MIN_PRICE, MAX_PRICE);
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, /*store=*/"", MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -146,7 +143,7 @@ public final class SearchServletTest {
     // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
     //
     // Query: 1/1/10-7/31/20, contoso, $5.00-$30.00.
-    // Will return contoso receipt.
+    // Will only return contoso receipt.
 
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
@@ -177,8 +174,8 @@ public final class SearchServletTest {
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet - this should retrieve a couple receipts.
-    TestUtils.setSearchServletRequestParameters(request, CST_TIMEZONE_ID, EMPTY_STRING,
-        LONG_DATE_RANGE, EMPTY_STRING, MIN_PRICE, MAX_PRICE);
+    TestUtils.setSearchServletRequestParameters(request, CST_TIMEZONE_ID, /*category=*/"",
+        LONG_DATE_RANGE, /*store=*/"", MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -220,7 +217,7 @@ public final class SearchServletTest {
 
     // Perform doGet with a null value as a parameter.
     TestUtils.setSearchServletRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, /*maxPrice=*/null);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -238,7 +235,7 @@ public final class SearchServletTest {
 
     // Perform doGet with an empty string for price.
     TestUtils.setSearchServletRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MAX_PRICE, EMPTY_STRING);
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MAX_PRICE, /*minPrice=*/"");
     servlet.doGet(request, response);
     writer.flush();
 
@@ -256,7 +253,7 @@ public final class SearchServletTest {
 
     // Perform doGet with an empty string for date range.
     TestUtils.setSearchServletRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORY, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
+        request, CST_TIMEZONE_ID, CATEGORY, /*dateRange=*/"", STORE, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
