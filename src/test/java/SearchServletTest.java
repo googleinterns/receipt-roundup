@@ -121,7 +121,7 @@ public final class SearchServletTest {
     // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
     //
     // Query: drink, 2/1/03-2/28/03, $5.00-$30.00.
-    // Will return main st restaurant and contoso receipts.
+    // Will only return walmart.
 
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
@@ -132,7 +132,7 @@ public final class SearchServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipts are retrieved by finding receipt ids in the writer.
+    // Make sure receipts is retrieved by finding receipt id in the writer.
     Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
   }
 
@@ -146,7 +146,7 @@ public final class SearchServletTest {
     // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
     //
     // Query: 1/1/10-7/31/20, contoso, $5.00-$30.00.
-    // Will return main st restaurant and contoso receipts.
+    // Will only return contoso receipt.
 
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
@@ -157,7 +157,7 @@ public final class SearchServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipts are retrieved by finding receipt ids in the writer.
+    // Make sure receipt is retrieved by finding receipt ids in the writer.
     Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
   }
 
