@@ -41,6 +41,8 @@ public final class SearchServletTest {
       "Invalid Price: Receipt unable to be queried at this time, please try again.";
   private static final String PARSE_EXCEPTION_MESSAGE =
       "Dates Unparseable: Receipt unable to be queried at this time, please try again.";
+  private static final String AUTHENTICATION_ERROR_MESSAGE =
+      "No Authentication: User must be logged in to search receipts.";
 
   // Values for a valid test.
   private static final String CST_TIMEZONE_ID = "America/Chicago";
@@ -53,9 +55,8 @@ public final class SearchServletTest {
 
   // Local Datastore
   private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
-          .setEnvIsAdmin(true)
-          .setEnvIsLoggedIn(true);
+      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()).setEnvIsLoggedIn(true);
+  ;
 
   @Mock private SearchServlet servlet;
   @Mock private HttpServletRequest request;
@@ -236,5 +237,18 @@ public final class SearchServletTest {
 
     Assert.assertTrue(stringWriter.toString().contains(PARSE_EXCEPTION_MESSAGE));
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void checkAuthenticationErrorIsReturned() throws IOException {
+    // Will respond with status code 403 since the user is not logged in.
+
+    helper.setEnvIsLoggedIn(false);
+
+    servlet.doGet(request, response);
+    writer.flush();
+
+    Assert.assertTrue(stringWriter.toString().contains(AUTHENTICATION_ERROR_MESSAGE));
+    verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
   }
 }
