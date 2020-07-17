@@ -188,6 +188,29 @@ public final class SearchServletTest {
   }
 
   @Test
+  public void queryAllReceipts() throws IOException {
+    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+
+    // Add mock receipts to datastore.
+    TestUtils.addTestReceipts(datastore);
+
+    // Perform doGet - this should retrieve all receipts.
+    when(request.getParameter("isNewLoad")).thenReturn("true");
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure all receipts retrieved by finding the ids in the writer.
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
+    Assert.assertTrue(stringWriter.toString().contains("\"id\":3"));
+  }
+
+  @Test
   public void checkNullPointerExceptionIsThrown() throws IOException {
     // Query: drink, 2/1/03-2/28/03, walmart, $5.00-null.
     // Will throw NullPointerException since maxPrice was null.

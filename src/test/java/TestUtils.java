@@ -71,6 +71,7 @@ public final class TestUtils {
   public static void setSearchServletRequestParameters(HttpServletRequest request,
       String timeZoneId, String categories, String dateRange, String store, String minPrice,
       String maxPrice) {
+    when(request.getParameter("isNewLoad")).thenReturn("false");
     when(request.getParameter("timeZoneId")).thenReturn(timeZoneId);
     when(request.getParameter("categories")).thenReturn(categories);
     when(request.getParameter("dateRange")).thenReturn(dateRange);
