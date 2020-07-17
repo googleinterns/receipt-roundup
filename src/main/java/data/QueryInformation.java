@@ -47,7 +47,7 @@ public class QueryInformation {
     }
 
     if (!Strings.isNullOrEmpty(formattedCategories)) {
-      this.categories = ImmutableSet.copyOf(Arrays.asList(formattedCategories));
+      this.categories = ImmutableSet.of(formattedCategories);
     } else {
       this.categories = ImmutableSet.of(); // Empty set.
     }

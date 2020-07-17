@@ -84,14 +84,15 @@ public final class QueryInformationTest {
   }
 
   @Test
-  public void invalidCategories() throws ParseException {
-    // Test with empty string.
+  public void invalidCategoriesEmptyString() throws ParseException {
     QueryInformation queryInformation = new QueryInformation(
         CST_TIMEZONE_ID, EMPTY_STRING, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EMPTY_IMMUTABLE_SET, queryInformation.getCategories());
+  }
 
-    // Test with null.
-    queryInformation =
+  @Test
+  public void invalidCategoriesNull() throws ParseException {
+    QueryInformation queryInformation =
         new QueryInformation(CST_TIMEZONE_ID, NULL_VALUE, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(EMPTY_IMMUTABLE_SET, queryInformation.getCategories());
   }
