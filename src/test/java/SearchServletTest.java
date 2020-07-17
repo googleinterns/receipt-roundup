@@ -121,18 +121,18 @@ public final class SearchServletTest {
     // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
     //
     // Query: drink, 2/1/03-2/28/03, $5.00-$30.00.
-    // Will return main st restaurant and contoso receipts.
+    // Will return walmart receipts.
 
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
-    // Perform doGet - this should retrieve a couple receipts.
+    // Perform doGet - this should retrieve one receipts.
     TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, EMPTY_STRING, MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipts are retrieved by finding receipt ids in the writer.
+    // Make sure receipt is retrieved by finding receipt id in the writer.
     Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
   }
 
@@ -146,18 +146,18 @@ public final class SearchServletTest {
     // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
     //
     // Query: 1/1/10-7/31/20, contoso, $5.00-$30.00.
-    // Will return main st restaurant and contoso receipts.
+    // Will return contoso receipt.
 
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
-    // Perform doGet - this should retrieve a couple receipts.
+    // Perform doGet - this should retrieve one receipt.
     TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, EMPTY_STRING, LONG_DATE_RANGE, "CONTOSO", MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipts are retrieved by finding receipt ids in the writer.
+    // Make sure receipt is retrieved by finding receipt id in the writer.
     Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
   }
 
