@@ -14,6 +14,7 @@
 
 package com.google.sps.data;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 
 /**
@@ -21,18 +22,18 @@ import java.util.Set;
  */
 public class AnalysisResults {
   private final String rawText;
-  private final Set<String> categories;
+  private final ImmutableSet<String> categories;
 
   public AnalysisResults(String rawText, Set<String> categories) {
     this.rawText = rawText;
-    this.categories = categories;
+    this.categories = ImmutableSet.copyOf(categories);
   }
 
   public String getRawText() {
     return rawText;
   }
 
-  public Set<String> getCategories() {
+  public ImmutableSet<String> getCategories() {
     return categories;
   }
 }

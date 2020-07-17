@@ -39,6 +39,7 @@ import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.ByteString;
 import com.google.rpc.Status;
 import com.google.sps.data.AnalysisResults;
@@ -48,8 +49,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +74,7 @@ public final class ReceiptAnalysisTest {
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
   private static final String CATEGORY_NAME = "category";
-  private static final Set<String> CATEGORIES = Collections.singleton(CATEGORY_NAME);
+  private static final ImmutableSet<String> CATEGORIES = ImmutableSet.of(CATEGORY_NAME);
 
   @Before
   public void setUp() {
