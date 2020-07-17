@@ -27,8 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 
 /** Class that contains helpful methods used for testing. */
 public final class TestUtils {
-  //   public static Map<String, Long> storeIds = new HashMap<>();
-
   /** Private constructor to prevent instantiation. */
   private TestUtils() {
     throw new UnsupportedOperationException();
