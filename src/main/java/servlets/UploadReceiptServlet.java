@@ -166,7 +166,7 @@ public class UploadReceiptServlet extends HttpServlet {
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
-    receipt.setProperty("store", store);
+    receipt.setProperty("store", sanitize(store));
     receipt.setProperty("price", price);
     receipt.setProperty("userId", userId);
 

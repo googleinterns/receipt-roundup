@@ -36,6 +36,7 @@ import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestC
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
@@ -108,7 +109,7 @@ public final class UploadReceiptServletTest {
   private static final Collection<String> CATEGORIES_COLLECTION = Arrays.asList(CATEGORIES);
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
-  private static final String STORE = "McDonald's";
+  private static final String STORE = "mcdonald's";
   private static final String INVALID_DATE_TYPE = "2020-05-20";
   private static final AnalysisResults ANALYSIS_RESULTS = new AnalysisResults(RAW_TEXT.getValue());
 
@@ -254,7 +255,31 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostRemovesDuplicateCategories() throws IOException {
+  public void doPostSanitizesStore() throws IOException, ReceiptAnalysisException {
+    helper.setEnvIsLoggedIn(true);
+
+    String store = "    TraDeR   JOE's  ";
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubRequestBody(request, CATEGORIES, store, PRICE, PAST_TIMESTAMP);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
+
+    servlet.doPost(request, response);
+
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    String expectedStore = "trader joe's";
+    Assert.assertEquals(receipt.getProperty("store"), expectedStore);
+  }
+
+  public void doPostRemovesDuplicateCategories() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     String[] categories = new String[] {"lunch", "restaurant", "lunch", "lunch", "restaurant"};
@@ -279,7 +304,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostSanitizesCategories() throws IOException {
+  public void doPostSanitizesCategories() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     String[] categories =
