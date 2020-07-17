@@ -25,9 +25,6 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class QueryInformationTest {
-  private static final String EMPTY_STRING = "";
-  private static final String NULL_VALUE = null;
-  private static final ImmutableSet<String> EMPTY_IMMUTABLE_SET = ImmutableSet.of();
   private static final double ERROR_THRESHOLD = 0.1;
 
   // Values for a valid test.
@@ -65,7 +62,7 @@ public final class QueryInformationTest {
   public void invalidTimeZoneIdSetsToGmt() throws ParseException {
     // Test with empty string.
     QueryInformation queryInformation =
-        new QueryInformation(EMPTY_STRING, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+        new QueryInformation(/*timeZoneId=*/"", CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(GMT_TIMEZONE, queryInformation.getTimeZone());
   }
 
@@ -86,15 +83,15 @@ public final class QueryInformationTest {
   @Test
   public void invalidCategoriesEmptyString() throws ParseException {
     QueryInformation queryInformation = new QueryInformation(
-        CST_TIMEZONE_ID, EMPTY_STRING, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
-    Assert.assertEquals(EMPTY_IMMUTABLE_SET, queryInformation.getCategories());
+        CST_TIMEZONE_ID, /*categories=*/"", DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    Assert.assertEquals(ImmutableSet.of(), queryInformation.getCategories());
   }
 
   @Test
   public void invalidCategoriesNull() throws ParseException {
     QueryInformation queryInformation =
-        new QueryInformation(CST_TIMEZONE_ID, NULL_VALUE, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
-    Assert.assertEquals(EMPTY_IMMUTABLE_SET, queryInformation.getCategories());
+        new QueryInformation(CST_TIMEZONE_ID, /*categories=*/null, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    Assert.assertEquals(ImmutableSet.of(), queryInformation.getCategories());
   }
 
   @Test
@@ -108,7 +105,7 @@ public final class QueryInformationTest {
   @Test(expected = ParseException.class)
   public void invalidDateRangeEmptyString() throws ParseException {
     QueryInformation queryInformation = new QueryInformation(
-        CST_TIMEZONE_ID, CATEGORIES, EMPTY_STRING, STORE, MIN_PRICE, MAX_PRICE);
+        CST_TIMEZONE_ID, CATEGORIES, /*dateRange=*/"", STORE, MIN_PRICE, MAX_PRICE);
   }
 
   @Test
@@ -136,12 +133,12 @@ public final class QueryInformationTest {
   @Test(expected = NumberFormatException.class)
   public void emptyStringPriceThrows() throws ParseException {
     QueryInformation queryInformation = new QueryInformation(
-        CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, EMPTY_STRING, MAX_PRICE);
+        CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, /*minPrice=*/"", MAX_PRICE);
   }
 
   @Test(expected = NullPointerException.class)
   public void nullPriceThrows() throws ParseException {
     QueryInformation queryInformation =
-        new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, NULL_VALUE);
+        new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, /*maxPrice=*/null);
   }
 }
