@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.ReceiptAnalysis;
+import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import com.google.sps.servlets.UploadReceiptServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -185,7 +186,8 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostUploadsReceiptToDatastoreLiveServer() throws IOException {
+  public void doPostUploadsReceiptToDatastoreLiveServer()
+      throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
@@ -215,7 +217,8 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostUploadsReceiptToDatastoreDevServer() throws IOException {
+  public void doPostUploadsReceiptToDatastoreDevServer()
+      throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
@@ -359,7 +362,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfReceiptAnalysisFails() throws IOException {
+  public void doPostThrowsIfReceiptAnalysisFails() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     StringWriter stringWriter = new StringWriter();
@@ -386,7 +389,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostRoundPrice() throws IOException {
+  public void doPostRoundPrice() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     StringWriter stringWriter = new StringWriter();
