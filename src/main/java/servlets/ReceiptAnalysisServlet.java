@@ -16,6 +16,7 @@ package com.google.sps.servlets;
 
 import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
+import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.URL;
 import javax.servlet.annotation.WebServlet;
@@ -33,13 +34,20 @@ public class ReceiptAnalysisServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String url = request.getParameter("url");
+    AnalysisResults results = null;
 
     // Ignore requests that don't specify a URL
     if (url == null) {
       return;
     }
 
-    AnalysisResults results = ReceiptAnalysis.serveImageText(new URL(url));
+    try {
+      results = ReceiptAnalysis.serveImageText(new URL(url));
+    } catch (ReceiptAnalysisException e) {
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.getWriter().println(e.toString());
+      return;
+    }
 
     Gson gson = new Gson();
     response.setContentType("application/json;");

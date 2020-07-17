@@ -46,7 +46,9 @@ async function uploadReceipt(event) {
   const image = fileInput.files[0];
 
   const formData = new FormData();
-  formData.append('categories', createCategoryList(categories));
+  createCategoryList(categories).forEach((category) => {
+    formData.append('categories', category);
+  });
   formData.append('store', store);
   formData.append('price', price);
   formData.append('date', date);
