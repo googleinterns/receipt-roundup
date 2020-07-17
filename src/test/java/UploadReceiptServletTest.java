@@ -112,7 +112,7 @@ public final class UploadReceiptServletTest {
 
   private static final String[] USER_CATEGORIES =
       new String[] {"burger", "fast food", "restaurant"};
-  private static final Set<String> GENERATED_CATEGORIES = Collections.singleton("dining");
+  private static final Set<String> GENERATED_CATEGORIES = ImmutableSet.of("dining");
   private static final Collection<String> CATEGORIES_COLLECTION =
       Stream.concat(Arrays.stream(USER_CATEGORIES), GENERATED_CATEGORIES.stream())
           .collect(Collectors.toList());
@@ -300,8 +300,7 @@ public final class UploadReceiptServletTest {
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
-    Set<String> categories =
-        Stream.of(USER_CATEGORIES[0], USER_CATEGORIES[2]).collect(Collectors.toSet());
+    Set<String> categories = ImmutableSet.of(USER_CATEGORIES[0], USER_CATEGORIES[2]);
     AnalysisResults analysisResults = new AnalysisResults(RAW_TEXT.getValue(), categories);
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
@@ -353,7 +352,7 @@ public final class UploadReceiptServletTest {
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
-    Set<String> generatedCategories = Collections.singleton("  dIninG ");
+    Set<String> generatedCategories = ImmutableSet.of("  dIninG ");
     AnalysisResults analysisResults = new AnalysisResults(RAW_TEXT.getValue(), generatedCategories);
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
