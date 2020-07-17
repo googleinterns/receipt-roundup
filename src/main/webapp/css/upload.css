@@ -34,6 +34,10 @@ input {
   width: 7em;
 }
 
+#date-input {
+  width: 12em;
+}
+
 .custom-file {
   font-size: 0.5rem;
 }
@@ -76,12 +80,13 @@ small {
     padding: 1.5%;
   }
 
-  #label-input,
+  #categories-input,
   #store-input {
     font-size: 20px;
     width: 20em;
   }
 
+  #date-input,
   #price-input {
     font-size: 20px;
   }
