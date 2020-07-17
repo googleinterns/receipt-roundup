@@ -34,6 +34,7 @@ import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
@@ -41,8 +42,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,11 +55,7 @@ public class ReceiptAnalysis {
       throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(url);
 
-    String rawText = retrieveText(imageBytes);
-    Set<String> categories = categorizeText(rawText);
-    AnalysisResults results = new AnalysisResults(rawText, categories);
-
-    return results;
+    return analyzeImage(imageBytes);
   }
 
   /** Returns the text of the image at the requested blob key. */
@@ -68,11 +63,7 @@ public class ReceiptAnalysis {
       throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(blobKey);
 
-    String rawText = retrieveText(imageBytes);
-    Set<String> categories = categorizeText(rawText);
-    AnalysisResults results = new AnalysisResults(rawText, categories);
-
-    return results;
+    return analyzeImage(imageBytes);
   }
 
   /** Reads the image bytes from the URL. */
@@ -109,6 +100,16 @@ public class ReceiptAnalysis {
     }
 
     return ByteString.copyFrom(outputBytes.toByteArray());
+  }
+
+  /** Analyzes the image represented by the given ByteString. */
+  private static AnalysisResults analyzeImage(ByteString imageBytes)
+      throws IOException, ReceiptAnalysisException {
+    String rawText = retrieveText(imageBytes);
+    ImmutableSet<String> categories = categorizeText(rawText);
+    AnalysisResults results = new AnalysisResults(rawText, categories);
+
+    return results;
   }
 
   /** Detects and retrieves text in the provided image. */
@@ -150,9 +151,9 @@ public class ReceiptAnalysis {
   }
 
   /** Generates categories for the provided text. */
-  private static Set<String> categorizeText(String text)
+  private static ImmutableSet<String> categorizeText(String text)
       throws IOException, ReceiptAnalysisException {
-    Set<String> categories = Collections.emptySet();
+    ImmutableSet<String> categories = ImmutableSet.of();
 
     try (LanguageServiceClient client = LanguageServiceClient.create()) {
       Document document = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
@@ -164,7 +165,7 @@ public class ReceiptAnalysis {
       categories = response.getCategoriesList()
                        .stream()
                        .map(category -> category.getName())
-                       .collect(Collectors.toSet());
+                       .collect(ImmutableSet.toImmutableSet());
     } catch (ApiException e) {
       throw new ReceiptAnalysisException("Classify text request failed.", e);
     }
