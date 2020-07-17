@@ -62,8 +62,8 @@ async function uploadReceipt(event) {
 
   // Create an alert and re-enable the submit button if there is an error.
   if (response.status !== 200) {
-    submitButton.disabled = false;
     alert(await response.text());
+    submitButton.disabled = false;
     return;
   }
 
