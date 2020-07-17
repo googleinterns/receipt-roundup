@@ -162,17 +162,23 @@ public class ReceiptAnalysis {
 
       ClassifyTextResponse response = client.classifyText(request);
 
-      // Parse category strings into more natural categories
-      // e.g. "/Food & Drink/Restaurants" becomes "Food & Drink" and "Restaurants"
       categories = response.getCategoriesList()
                        .stream()
-                       .flatMap(category -> Stream.of(category.getName().substring(1).split("/")))
+                       .flatMap(ReceiptAnalysis::parseCategory)
                        .collect(ImmutableSet.toImmutableSet());
     } catch (ApiException e) {
       throw new ReceiptAnalysisException("Classify text request failed.", e);
     }
 
     return categories;
+  }
+
+  /*
+   * Parse category strings into more natural categories
+   * e.g. "/Food & Drink/Restaurants" becomes "Food & Drink" and "Restaurants"
+   */
+  private static Stream<String> parseCategory(ClassificationCategory category) {
+    return Stream.of(category.getName().substring(1).split("/"));
   }
 
   public static class ReceiptAnalysisException extends Exception {
