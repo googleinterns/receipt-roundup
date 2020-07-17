@@ -264,8 +264,8 @@ public final class UploadReceiptServletTest {
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
 
-    String formattedStore = "trader joe's";
-    Assert.assertEquals(receipt.getProperty("store"), formattedStore);
+    String expectedStore = "trader joe's";
+    Assert.assertEquals(receipt.getProperty("store"), expectedStore);
   }
 
   @Test
