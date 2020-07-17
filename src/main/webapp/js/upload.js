@@ -20,6 +20,28 @@ function cancelUpload() {
 }
 
 /**
+ * Verifies that the user is logged in and sets the date input to the current
+ * date.
+ */
+function loadPage() {
+  checkAuthentication();
+  loadDateInput();
+}
+
+/**
+ * Fetches the login status and adds a URL to the logout button.
+ */
+async function checkAuthentication() {
+  const response = await fetch('/login-status');
+  const account = await response.json();
+
+  // Redirect to the login page if the user is not logged in.
+  if (!account.loggedIn) {
+    window.location.replace('/login.html');
+  }
+}
+
+/**
  * Sends a request to add a receipt to Blobstore then redirects to the receipt
  * analysis page.
  */
