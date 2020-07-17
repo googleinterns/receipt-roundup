@@ -56,7 +56,6 @@ public final class SearchServletTest {
   // Local Datastore
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()).setEnvIsLoggedIn(true);
-  ;
 
   @Mock private SearchServlet servlet;
   @Mock private HttpServletRequest request;
