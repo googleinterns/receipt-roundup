@@ -17,14 +17,21 @@ package com.google.sps;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.dampcake.gson.immutable.ImmutableAdapterFactory;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.sps.data.Receipt;
 import com.google.sps.servlets.SearchServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
@@ -194,18 +201,25 @@ public final class SearchServletTest {
     // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
 
     // Add mock receipts to datastore.
-    TestUtils.addTestReceipts(datastore);
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addTestReceipts(datastore);
 
-    when(request.getParameter("isNewLoad")).thenReturn("true");  
+    when(request.getParameter("isNewLoad")).thenReturn("true");
 
     // Perform doGet - this should retrieve all receipts.
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure all receipts retrieved by finding the ids in the writer.
-    Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
-    Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
-    Assert.assertTrue(stringWriter.toString().contains("\"id\":3"));
+    // Make sure all receipts retrieved by checking their ids.
+    Gson gson =
+        new GsonBuilder().registerTypeAdapterFactory(ImmutableAdapterFactory.forGuava()).create();
+    Receipt[] returnedReceipts = gson.fromJson(stringWriter.toString(), Receipt[].class);
+    Assert.assertEquals(expectedReceipts.size(), returnedReceipts.length);
+    for (Entity expectedReceipt : expectedReceipts) {
+      Assert.assertTrue(
+          Arrays.stream(returnedReceipts)
+              .anyMatch(
+                  receipt -> receipt.getId() == expectedReceipt.getKey().getId())); // check id
+    }
   }
 
   @Test
