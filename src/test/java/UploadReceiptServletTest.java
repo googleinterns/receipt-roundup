@@ -71,23 +71,23 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest(ReceiptAnalysis.class)
 public final class UploadReceiptServletTest {
   private static final String FILE_NOT_SELECTED_LIVE_SERVER_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$FileNotSelectedException: No file was uploaded by the user (live server).";
+      "com.google.sps.servlets.UploadReceiptServlet$FileNotSelectedException: No file was uploaded by the user (live server).\n";
   private static final String FILE_NOT_SELECTED_DEV_SERVER_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$FileNotSelectedException: No file was uploaded by the user (dev server).";
+      "com.google.sps.servlets.UploadReceiptServlet$FileNotSelectedException: No file was uploaded by the user (dev server).\n";
   private static final String INVALID_FILE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidFileException: Uploaded file must be a JPEG image.";
+      "com.google.sps.servlets.UploadReceiptServlet$InvalidFileException: Uploaded file must be a JPEG image.\n";
   private static final String USER_NOT_LOGGED_IN_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.";
+      "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.\n";
   private static final String INVALID_DATE_RANGE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be in the past.";
+      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be in the past.\n";
   private static final String INVALID_DATE_FORMAT_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be a long.";
+      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be a long.\n";
   private static final String PRICE_NOT_PARSABLE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidPriceException: Price could not be parsed.";
+      "com.google.sps.servlets.UploadReceiptServlet$InvalidPriceException: Price could not be parsed.\n";
   private static final String PRICE_NEGATIVE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidPriceException: Price must be positive.";
+      "com.google.sps.servlets.UploadReceiptServlet$InvalidPriceException: Price must be positive.\n";
   private static final String RECEIPT_ANALYSIS_FAILED_WARNING =
-      "com.google.sps.servlets.ReceiptAnalysis$ReceiptAnalysisException: Receipt analysis failed.";
+      "com.google.sps.servlets.ReceiptAnalysis$ReceiptAnalysisException: Receipt analysis failed.\n";
 
   private static final String INSTANT = "2020-06-22T10:15:30Z";
   private static final long PAST_TIMESTAMP =
@@ -180,7 +180,7 @@ public final class UploadReceiptServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(UPLOAD_URL));
+    Assert.assertEquals(UPLOAD_URL + "\n", stringWriter.toString());
   }
 
   @Test
@@ -213,10 +213,10 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("categories"), CATEGORIES_COLLECTION);
     Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
 
-    String response = stringWriter.toString();
+    String response = extractProperties(stringWriter.toString());
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
         PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
-    Assert.assertTrue(response.contains(expectedResponse));
+    Assert.assertEquals(expectedResponse, response);
   }
 
   @Test
@@ -248,10 +248,10 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
     Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
 
-    String response = stringWriter.toString();
+    String response = extractProperties(stringWriter.toString());
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
         PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
-    Assert.assertTrue(response.contains(expectedResponse));
+    Assert.assertEquals(expectedResponse, response);
   }
 
   @Test
@@ -340,7 +340,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(FILE_NOT_SELECTED_LIVE_SERVER_WARNING));
+    Assert.assertEquals(FILE_NOT_SELECTED_LIVE_SERVER_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
     verify(blobstoreService).delete(BLOB_KEY);
@@ -358,7 +358,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(FILE_NOT_SELECTED_DEV_SERVER_WARNING));
+    Assert.assertEquals(FILE_NOT_SELECTED_DEV_SERVER_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
@@ -372,7 +372,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(INVALID_FILE_WARNING));
+    Assert.assertEquals(INVALID_FILE_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
     verify(blobstoreService).delete(BLOB_KEY);
@@ -386,7 +386,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(USER_NOT_LOGGED_IN_WARNING));
+    Assert.assertEquals(USER_NOT_LOGGED_IN_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
 
     verify(blobstoreService).delete(BLOB_KEY);
@@ -404,7 +404,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(INVALID_DATE_RANGE_WARNING));
+    Assert.assertEquals(INVALID_DATE_RANGE_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
@@ -417,7 +417,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(INVALID_DATE_FORMAT_WARNING));
+    Assert.assertEquals(INVALID_DATE_FORMAT_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
@@ -438,7 +438,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(RECEIPT_ANALYSIS_FAILED_WARNING));
+    Assert.assertEquals(RECEIPT_ANALYSIS_FAILED_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
     verify(blobstoreService).delete(BLOB_KEY);
@@ -489,7 +489,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(PRICE_NOT_PARSABLE_WARNING));
+    Assert.assertEquals(PRICE_NOT_PARSABLE_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
@@ -508,7 +508,7 @@ public final class UploadReceiptServletTest {
     servlet.doPost(request, response);
     writer.flush();
 
-    Assert.assertTrue(stringWriter.toString().contains(PRICE_NEGATIVE_WARNING));
+    Assert.assertEquals(PRICE_NEGATIVE_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
@@ -540,8 +540,15 @@ public final class UploadReceiptServletTest {
     receipt.setProperty("userId", userId);
 
     String json = new Gson().toJson(receipt);
-    // Remove the unique ID property from the JSON string so it can be compared with the expected
-    // response.
+
+    return extractProperties(json) + "\n";
+  }
+
+  /**
+   * Removes the unique ID property from the receipt entity JSON string, leaving only the receipt
+   * properties.
+   */
+  private String extractProperties(String json) {
     return json.substring(json.indexOf("propertyMap"));
   }
 
