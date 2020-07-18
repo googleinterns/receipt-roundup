@@ -204,14 +204,14 @@ public final class UploadReceiptServletTest {
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
 
-    Assert.assertEquals(receipt.getProperty("imageUrl"), IMAGE_URL);
-    Assert.assertEquals(receipt.getProperty("price"), PRICE);
-    Assert.assertEquals(receipt.getProperty("store"), STORE);
-    Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
-    Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
-    Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
-    Assert.assertEquals(receipt.getProperty("categories"), CATEGORIES_COLLECTION);
-    Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
+    Assert.assertEquals(IMAGE_URL, receipt.getProperty("imageUrl"));
+    Assert.assertEquals(PRICE, receipt.getProperty("price"));
+    Assert.assertEquals(STORE, receipt.getProperty("store"));
+    Assert.assertEquals(RAW_TEXT, receipt.getProperty("rawText"));
+    Assert.assertEquals(BLOB_KEY, receipt.getProperty("blobKey"));
+    Assert.assertEquals(PAST_TIMESTAMP, receipt.getProperty("timestamp"));
+    Assert.assertEquals(CATEGORIES_COLLECTION, receipt.getProperty("categories"));
+    Assert.assertEquals(USER_ID, receipt.getProperty("userId"));
 
     String response = extractProperties(stringWriter.toString());
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
@@ -239,14 +239,14 @@ public final class UploadReceiptServletTest {
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
 
-    Assert.assertEquals(receipt.getProperty("imageUrl"), IMAGE_URL);
-    Assert.assertEquals(receipt.getProperty("price"), PRICE);
-    Assert.assertEquals(receipt.getProperty("store"), STORE);
-    Assert.assertEquals(receipt.getProperty("rawText"), RAW_TEXT);
-    Assert.assertEquals(receipt.getProperty("blobKey"), BLOB_KEY);
-    Assert.assertEquals(receipt.getProperty("categories"), CATEGORIES_COLLECTION);
-    Assert.assertEquals(receipt.getProperty("timestamp"), PAST_TIMESTAMP);
-    Assert.assertEquals(receipt.getProperty("userId"), USER_ID);
+    Assert.assertEquals(IMAGE_URL, receipt.getProperty("imageUrl"));
+    Assert.assertEquals(PRICE, receipt.getProperty("price"));
+    Assert.assertEquals(STORE, receipt.getProperty("store"));
+    Assert.assertEquals(RAW_TEXT, receipt.getProperty("rawText"));
+    Assert.assertEquals(BLOB_KEY, receipt.getProperty("blobKey"));
+    Assert.assertEquals(CATEGORIES_COLLECTION, receipt.getProperty("categories"));
+    Assert.assertEquals(PAST_TIMESTAMP, receipt.getProperty("timestamp"));
+    Assert.assertEquals(USER_ID, receipt.getProperty("userId"));
 
     String response = extractProperties(stringWriter.toString());
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
@@ -276,7 +276,7 @@ public final class UploadReceiptServletTest {
     Entity receipt = results.asSingleEntity();
 
     String expectedStore = "trader joe's";
-    Assert.assertEquals(receipt.getProperty("store"), expectedStore);
+    Assert.assertEquals(expectedStore, receipt.getProperty("store"));
   }
 
   public void doPostRemovesDuplicateCategories() throws IOException, ReceiptAnalysisException {
@@ -471,7 +471,7 @@ public final class UploadReceiptServletTest {
     PreparedQuery results = datastore.prepare(query);
     Entity receipt = results.asSingleEntity();
 
-    Assert.assertEquals(receipt.getProperty("price"), roundedPrice);
+    Assert.assertEquals(roundedPrice, receipt.getProperty("price"));
   }
 
   @Test
