@@ -196,8 +196,9 @@ public final class SearchServletTest {
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
+    when(request.getParameter("isNewLoad")).thenReturn("true");  
+
     // Perform doGet - this should retrieve all receipts.
-    when(request.getParameter("isNewLoad")).thenReturn("true");
     servlet.doGet(request, response);
     writer.flush();
 
