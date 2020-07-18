@@ -46,10 +46,10 @@ public class QueryInformation {
       formattedCategories = null;
     }
 
-    if (!Strings.isNullOrEmpty(formattedCategories)) {
-      this.categories = ImmutableSet.of(formattedCategories);
+    if (Strings.isNullOrEmpty(formattedCategories)) {
+      this.categories = ImmutableSet.of(); 
     } else {
-      this.categories = ImmutableSet.of(); // Empty set.
+      this.categories = ImmutableSet.of(formattedCategories); 
     }
 
     String[] dates = dateRange.split("-");
