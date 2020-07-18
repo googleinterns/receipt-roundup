@@ -89,13 +89,6 @@ public final class QueryInformationTest {
   }
 
   @Test
-  public void invalidCategoriesNull() throws ParseException {
-    QueryInformation queryInformation = new QueryInformation(
-        CST_TIMEZONE_ID, /*categories=*/null, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
-    Assert.assertEquals(ImmutableSet.of(), queryInformation.getCategories());
-  }
-
-  @Test
   public void valideDateRangeParse() throws ParseException {
     QueryInformation queryInformation =
         new QueryInformation(CST_TIMEZONE_ID, CATEGORIES, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);

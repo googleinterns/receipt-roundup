@@ -39,12 +39,8 @@ public class QueryInformation {
       throws ParseException, NumberFormatException, NullPointerException {
     this.timeZone = TimeZone.getTimeZone(timeZoneId);
 
-    String formattedCategories;
-    try {
-      formattedCategories = formatInput(categories);
-    } catch (NullPointerException exception) {
-      formattedCategories = null;
-    }
+    String formattedCategories = formatInput(categories);
+
 
     if (Strings.isNullOrEmpty(formattedCategories)) {
       this.categories = ImmutableSet.of(); 
