@@ -20,6 +20,12 @@ import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.cloud.language.v1.ClassificationCategory;
+import com.google.cloud.language.v1.ClassifyTextRequest;
+import com.google.cloud.language.v1.ClassifyTextResponse;
+import com.google.cloud.language.v1.Document;
+import com.google.cloud.language.v1.Document.Type;
+import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
@@ -28,6 +34,7 @@ import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.protobuf.ByteString;
 import com.google.sps.data.AnalysisResults;
@@ -35,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -47,10 +55,7 @@ public class ReceiptAnalysis {
       throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(url);
 
-    String rawText = retrieveText(imageBytes);
-    AnalysisResults results = new AnalysisResults(rawText);
-
-    return results;
+    return analyzeImage(imageBytes);
   }
 
   /** Returns the text of the image at the requested blob key. */
@@ -58,10 +63,7 @@ public class ReceiptAnalysis {
       throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(blobKey);
 
-    String rawText = retrieveText(imageBytes);
-    AnalysisResults results = new AnalysisResults(rawText);
-
-    return results;
+    return analyzeImage(imageBytes);
   }
 
   /** Reads the image bytes from the URL. */
@@ -100,6 +102,16 @@ public class ReceiptAnalysis {
     return ByteString.copyFrom(outputBytes.toByteArray());
   }
 
+  /** Analyzes the image represented by the given ByteString. */
+  private static AnalysisResults analyzeImage(ByteString imageBytes)
+      throws IOException, ReceiptAnalysisException {
+    String rawText = retrieveText(imageBytes);
+    ImmutableSet<String> categories = categorizeText(rawText);
+    AnalysisResults results = new AnalysisResults(rawText, categories);
+
+    return results;
+  }
+
   /** Detects and retrieves text in the provided image. */
   private static String retrieveText(ByteString imageBytes)
       throws IOException, ReceiptAnalysisException {
@@ -136,6 +148,27 @@ public class ReceiptAnalysis {
     }
 
     return rawText;
+  }
+
+  /** Generates categories for the provided text. */
+  private static ImmutableSet<String> categorizeText(String text) throws IOException {
+    ImmutableSet<String> categories = ImmutableSet.of();
+
+    try (LanguageServiceClient client = LanguageServiceClient.create()) {
+      Document document = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
+      ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(document).build();
+
+      // TODO: Check if ApiException was thrown
+      ClassifyTextResponse response = client.classifyText(request);
+
+      // TODO: Parse category strings into more natural categories
+      categories = response.getCategoriesList()
+                       .stream()
+                       .map(category -> category.getName())
+                       .collect(ImmutableSet.toImmutableSet());
+    }
+
+    return categories;
   }
 
   public static class ReceiptAnalysisException extends Exception {
