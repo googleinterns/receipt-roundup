@@ -12,6 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * Loads the receipts if the user is logged in. Otherwise, redirects to the
+ * login page.
+ */
+async function loadPage() {
+  const loggedIn = await checkAuthentication();
+
+  if (loggedIn) {
+    document.body.style.display = 'block';
+    getAllReceipts();
+  }
+}
+
 /** Fetches all receipts from the server and adds them to the DOM. */
 async function getAllReceipts() {
   const params = new URLSearchParams();
@@ -24,7 +37,10 @@ async function getAllReceipts() {
   displayReceipts(receipts);
 }
 
-/** Fetches the login status and adds a URL to the logout button. */
+/**
+ * Fetches the login status and adds a URL to the logout button.
+ * @return {boolean} Whether the user is logged in or not.
+ */
 async function checkAuthentication() {
   const response = await fetch('/login-status');
   const account = await response.json();
@@ -32,10 +48,12 @@ async function checkAuthentication() {
   // Redirect to the login page if the user is not logged in.
   if (!account.loggedIn) {
     window.location.replace('/login.html');
+    return false;
   }
 
   const logoutButton = document.getElementById('logout-button');
   logoutButton.href = account.logoutUrl;
+  return true;
 }
 
 /** Fetches matching receipts from the server and adds them to the DOM. */
