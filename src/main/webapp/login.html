@@ -1,26 +1,39 @@
 <!DOCTYPE html>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Login | Receipt Roundup</title>
+
+<link
+  rel="stylesheet"
+  href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+  integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+  crossorigin="anonymous"
+/>
 
 <link rel="stylesheet" href="css/style.css" />
 <link rel="stylesheet" href="css/login.css" />
 
+<script src="https://use.fontawesome.com/00622b47ab.js"></script>
 <script src="js/login.js"></script>
 
 <body onload="getLoginUrl()">
   <h1>Login</h1>
   <h2>Welcome to Receipt Roundup</h2>
-  <p>
-    Receipts are all-around a hassle, especially for those who aren’t particularly organized. Consumers get one every
-    time they make a purchase, and often times it is misplaced or destroyed shortly after. Storing physical copies of
-    receipts for an entire year can become extremely cumbersome. Additionally, the process of searching through these
-    receipts can be inefficient.
-  </p>
-  <p>
-    This web app keeps track of receipts so you don’t have to. Simply upload pictures of your receipts, and find them
-    instantly by searching for text.
-  </p>
+  <div id="description">
+    <p>
+      Receipts are all-around a hassle, especially for those who aren’t particularly organized. Consumers get one every
+      time they make a purchase, and often times it is misplaced or destroyed shortly after. Storing physical copies of
+      receipts for an entire year can become extremely cumbersome. Additionally, the process of searching through these
+      receipts can be inefficient.
+    </p>
+    <p>
+      This web app keeps track of receipts so you don’t have to. Simply upload pictures of your receipts, and find them
+      instantly by searching for text.
+    </p>
+  </div>
 
-  <p>Log In to Your Account</p>
-  <a id="login-link">Sign In with Google</a>
+  <a id="login-link" class="btn btn-danger btn-lg text-uppercase">
+    <i class="fa fa-google"></i>
+    Sign In with <b>Google</b>
+  </a>
 </body>
