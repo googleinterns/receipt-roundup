@@ -53,7 +53,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class ReceiptAnalysis {
   /** Returns the text and categorization of the image at the requested URL. */
-  public static AnalysisResults serveImageText(URL url)
+  public static AnalysisResults analyzeImageAt(URL url)
       throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(url);
 
@@ -61,7 +61,7 @@ public class ReceiptAnalysis {
   }
 
   /** Returns the text and categorization of the image at the requested blob key. */
-  public static AnalysisResults serveImageText(BlobKey blobKey)
+  public static AnalysisResults analyzeImageAt(BlobKey blobKey)
       throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(blobKey);
 

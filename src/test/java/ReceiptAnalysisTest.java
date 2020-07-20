@@ -89,7 +89,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void serveImageTextUrlReturnsAnalysisResults()
+  public void analyzeImageAtUrlReturnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
@@ -126,7 +126,7 @@ public final class ReceiptAnalysisTest {
     ClassifyTextRequest classifyRequest =
         ClassifyTextRequest.newBuilder().setDocument(document).build();
 
-    AnalysisResults results = ReceiptAnalysis.serveImageText(url);
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
     Assert.assertEquals(RAW_TEXT, results.getRawText());
     Assert.assertEquals(CATEGORIES, results.getCategories());
@@ -135,7 +135,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void serveImageTextThrowsIfEmptyBatchResponse()
+  public void analyzeImageAtThrowsIfEmptyBatchResponse()
       throws IOException, ReceiptAnalysisException {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
@@ -150,13 +150,13 @@ public final class ReceiptAnalysisTest {
         .thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
 
     Assert.assertEquals(EMPTY_BATCH_RESPONSE_WARNING, exception.getMessage());
   }
 
   @Test
-  public void serveImageTextThrowsIfResponseHasError()
+  public void analyzeImageAtThrowsIfResponseHasError()
       throws IOException, ReceiptAnalysisException {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
@@ -174,13 +174,13 @@ public final class ReceiptAnalysisTest {
         .thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
 
     Assert.assertEquals(RESPONSE_ERROR_WARNING, exception.getMessage());
   }
 
   @Test
-  public void serveImageTextThrowsIfEmptyTextAnnotationsList()
+  public void analyzeImageAtThrowsIfEmptyTextAnnotationsList()
       throws IOException, ReceiptAnalysisException {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
@@ -197,13 +197,13 @@ public final class ReceiptAnalysisTest {
         .thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
 
     Assert.assertEquals(EMPTY_TEXT_ANNOTATIONS_LIST_WARNING, exception.getMessage());
   }
 
   @Test
-  public void serveImageTextThrowsIfImageRequestFails()
+  public void analyzeImageAtThrowsIfImageRequestFails()
       throws IOException, ReceiptAnalysisException {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
@@ -219,14 +219,14 @@ public final class ReceiptAnalysisTest {
         .thenThrow(clientException);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
 
     Assert.assertEquals(IMAGE_REQUEST_FAILED_WARNING, exception.getMessage());
     Assert.assertEquals(clientException, exception.getCause());
   }
 
   @Test
-  public void serveImageTextThrowsIfTextRequestFails()
+  public void analyzeImageAtThrowsIfTextRequestFails()
       throws IOException, ReceiptAnalysisException {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
@@ -252,7 +252,7 @@ public final class ReceiptAnalysisTest {
     when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenThrow(clientException);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
 
     Assert.assertEquals(TEXT_REQUEST_FAILED_WARNING, exception.getMessage());
     Assert.assertEquals(clientException, exception.getCause());

@@ -200,7 +200,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
@@ -236,7 +236,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(BLOB_KEY)).thenReturn(ANALYSIS_RESULTS);
+    when(ReceiptAnalysis.analyzeImageAt(BLOB_KEY)).thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
 
@@ -271,7 +271,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
@@ -295,7 +295,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
@@ -321,7 +321,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
@@ -437,7 +437,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis exception.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenThrow(IOException.class);
 
     servlet.doPost(request, response);
@@ -467,7 +467,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);

@@ -42,7 +42,7 @@ public class ReceiptAnalysisServlet extends HttpServlet {
     }
 
     try {
-      results = ReceiptAnalysis.serveImageText(new URL(url));
+      results = ReceiptAnalysis.analyzeImageAt(new URL(url));
     } catch (ReceiptAnalysisException e) {
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       response.getWriter().println(e.toString());
