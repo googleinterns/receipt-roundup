@@ -42,6 +42,10 @@ public class Receipt {
     this.rawText = rawText;
   }
 
+  public long getId() {
+    return id;
+  }
+
   public double getPrice() {
     return price;
   }
