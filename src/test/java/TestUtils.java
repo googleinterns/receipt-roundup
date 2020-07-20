@@ -19,10 +19,7 @@ import static org.mockito.Mockito.when;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
-import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 
 /** Class that contains helpful methods used for testing. */

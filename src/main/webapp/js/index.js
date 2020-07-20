@@ -78,9 +78,7 @@ function displayReceipts(receipts) {
   }
 }
 
-/**
- * Creates error message based on existing HTML template.
- */
+/** Creates error message based on existing HTML template. */
 function createErrorMessageElement() {
   // Clone error message from template.
   const errorMessageClone =
