@@ -44,11 +44,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@PowerMockIgnore("jdk.internal.reflect.*")
-@RunWith(PowerMockRunner.class)
 public final class DeleteReceiptServletTest {
   private static final String INVALID_ID_MESSAGE =
       "Invalid ID: Receipt unable to be deleted at this time, please try again.";
@@ -117,7 +113,7 @@ public final class DeleteReceiptServletTest {
     // Add mock receipt to datastore.
     long id = TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT).getKey().getId();
 
-    // Pass in an String id instead of a long.
+    // Pass in a String id instead of a long.
     when(request.getParameter("id")).thenReturn(String.valueOf(id) + "this should fail");
     servlet.doPost(request, response);
     writer.flush();
@@ -137,7 +133,6 @@ public final class DeleteReceiptServletTest {
   @Test
   public void checkAuthenticationErrorIsReturned() throws IOException {
     // Will respond with status code 403 since the user is not logged in.
-
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
