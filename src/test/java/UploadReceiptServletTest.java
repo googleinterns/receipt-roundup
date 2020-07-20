@@ -56,6 +56,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
@@ -107,16 +110,18 @@ public final class UploadReceiptServletTest {
   private static final long IMAGE_SIZE_0MB = 0;
   private static final String HASH = "35454B055CC325EA1AF2126E27707052";
 
-  private static final String[] CATEGORIES = new String[] {"burger", "fast food", "restaurant"};
-  private static final Collection<String> CATEGORIES_COLLECTION = Arrays.asList(CATEGORIES);
+  private static final String[] USER_CATEGORIES =
+      new String[] {"burger", "fast food", "restaurant"};
+  private static final Set<String> GENERATED_CATEGORIES = ImmutableSet.of("dining");
+  private static final Collection<String> CATEGORIES_COLLECTION =
+      Stream.concat(Arrays.stream(USER_CATEGORIES), GENERATED_CATEGORIES.stream())
+          .collect(Collectors.toList());
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
   private static final String STORE = "mcdonald's";
   private static final String INVALID_DATE_TYPE = "2020-05-20";
-  private static final ImmutableSet<String> ANALYSIS_CATEGORIES =
-      ImmutableSet.copyOf(CATEGORIES_COLLECTION);
   private static final AnalysisResults ANALYSIS_RESULTS =
-      new AnalysisResults(RAW_TEXT.getValue(), ANALYSIS_CATEGORIES);
+      new AnalysisResults(RAW_TEXT.getValue(), GENERATED_CATEGORIES);
 
   private static final String IMAGE_URL = "/serve-image?blob-key=" + BLOB_KEY.getKeyString();
   private static final String LIVE_SERVER_BASE_URL =
@@ -194,7 +199,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -230,7 +235,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, DEV_SERVER_SCHEME, DEV_SERVER_NAME, DEV_SERVER_PORT, DEV_SERVER_CONTEXT_PATH);
 
@@ -265,7 +270,7 @@ public final class UploadReceiptServletTest {
 
     String store = "    TraDeR   JOE's  ";
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, CATEGORIES, store, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, USER_CATEGORIES, store, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -284,7 +289,34 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(receipt.getProperty("store"), expectedStore);
   }
 
-  public void doPostRemovesDuplicateCategories() throws IOException, ReceiptAnalysisException {
+  @Test
+  public void doPostRemovesDuplicateUserAndGeneratedCategories()
+      throws IOException, ReceiptAnalysisException {
+    helper.setEnvIsLoggedIn(true);
+
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    Set<String> categories = ImmutableSet.of(USER_CATEGORIES[0], USER_CATEGORIES[2]);
+    AnalysisResults analysisResults = new AnalysisResults(RAW_TEXT.getValue(), categories);
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(analysisResults);
+
+    servlet.doPost(request, response);
+
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    Collection<String> expectedCategories = Arrays.asList(USER_CATEGORIES);
+    Assert.assertEquals(expectedCategories, receipt.getProperty("categories"));
+  }
+
+  public void doPostRemovesDuplicateUserCategories() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     String[] categories = new String[] {"lunch", "restaurant", "lunch", "lunch", "restaurant"};
@@ -309,20 +341,23 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostSanitizesCategories() throws IOException, ReceiptAnalysisException {
+  public void doPostSanitizesUserAndGeneratedCategories()
+      throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
-    String[] categories =
+    String[] userCategories =
         new String[] {"   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH"};
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, categories, STORE, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, userCategories, STORE, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
+    Set<String> generatedCategories = ImmutableSet.of("  dIninG ");
+    AnalysisResults analysisResults = new AnalysisResults(RAW_TEXT.getValue(), generatedCategories);
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
-        .thenReturn(ANALYSIS_RESULTS);
+        .thenReturn(analysisResults);
 
     servlet.doPost(request, response);
 
@@ -331,7 +366,7 @@ public final class UploadReceiptServletTest {
     Entity receipt = results.asSingleEntity();
 
     Collection<String> expectedCategories =
-        Arrays.asList("fast food", "burger", "restaurant", "lunch");
+        Arrays.asList("fast food", "burger", "restaurant", "lunch", "dining");
     Assert.assertEquals(expectedCategories, receipt.getProperty("categories"));
   }
 
@@ -340,7 +375,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_0MB);
-    stubRequestBody(request, CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -358,7 +393,7 @@ public final class UploadReceiptServletTest {
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
 
-    stubRequestBody(request, CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -372,7 +407,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, INVALID_CONTENT_TYPE, INVALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -402,7 +437,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
-    stubRequestBody(request, CATEGORIES, STORE, PRICE, futureTimestamp);
+    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, futureTimestamp);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -431,7 +466,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -461,7 +496,7 @@ public final class UploadReceiptServletTest {
 
     double price = 17.236;
     double roundedPrice = 17.24;
-    stubRequestBody(request, CATEGORIES, STORE, price, PAST_TIMESTAMP);
+    stubRequestBody(request, USER_CATEGORIES, STORE, price, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
