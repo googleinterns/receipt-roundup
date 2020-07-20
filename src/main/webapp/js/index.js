@@ -12,11 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/** Fetches all receipts from the server and adds them to the DOM. */
+async function getAllReceipts() {
+  const params = new URLSearchParams();
+  params.append('isNewLoad', 'true');
 
-/** Fetches receipts from the server and adds them to the DOM. */
+  const response = await fetch('/search-receipts?' + params.toString());
+  const receipts = await response.json();
+
+  clearExistingDisplay();
+  displayReceipts(receipts);
+}
+
+/** Fetches matching receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
   const params = new URLSearchParams();
+  params.append('isNewLoad', 'false');
   params.append('category', document.getElementById('category-input').value);
+  params.append(
+      'dateRange', document.getElementById('date-range-input').textContent);
+  params.append('store', document.getElementById('store-name-input').value);
+  params.append('min', document.getElementById('min-price-input').value);
+  params.append('max', document.getElementById('max-price-input').value);
+  const dateTimeFormat = new Intl.DateTimeFormat();
+  params.append('timeZoneId', dateTimeFormat.resolvedOptions().timeZone);
+
   const response = await fetch('/search-receipts?' + params.toString());
   const receipts = await response.json();
 
@@ -72,20 +92,30 @@ function createReceiptCardElement(receipt) {
       document.querySelector('#receipt-card-template').content.cloneNode(true);
 
   // Fill in template fields with correct information.
-  receiptCardClone.querySelector('#timestamp').innerText = receipt.timestamp;
-  receiptCardClone.querySelector('#store-name').innerText = receipt.store;
+  const date = new Date(receipt.timestamp);
+  receiptCardClone.querySelector('#timestamp').innerText = date.toDateString();
+  receiptCardClone.querySelector('#store-name').innerText =
+      capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
       'Total: $' + receipt.price;
 
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length && i < 3; i++) {
-    receiptCardClone.querySelector('#c' + i).innerText = categories[i];
+    receiptCardClone.querySelector('#c' + i).innerText =
+        capitalizeFirstLetters(categories[i]);
   }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
+}
+
+/** Capitalize the first letter of each word in a string. */
+function capitalizeFirstLetters(lowercasedString) {
+  return lowercasedString.split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
 }
 
 /**

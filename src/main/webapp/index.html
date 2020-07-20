@@ -51,68 +51,73 @@
 <script src="js/index.js"></script>
 
 <title>Home</title>
-<div class="container-fluid">
-  <div class="row ml-1 mt-2">
-    <div class="col-9">
-      <div class="row">
-        You are signed in as test@test.com
-        <a href="#" class="ml-2 btn btn-info"> <span class="pull-right glyphicon glyphicon-log-out"></span> Log out </a>
+
+<body onload="getAllReceipts()">
+  <div class="container-fluid">
+    <div class="row ml-1 mt-2">
+      <div class="col-9">
+        <div class="row">
+          You are signed in as test@test.com
+          <a href="#" class="ml-2 btn btn-info">
+            <span class="pull-right glyphicon glyphicon-log-out"></span> Log out
+          </a>
+        </div>
+      </div>
+      <div class="col-3">
+        <a href="/upload.html" class="btn btn-info btn-sm float-right">
+          <span class="glyphicon glyphicon-log-out"></span> Add a receipt
+        </a>
       </div>
     </div>
-    <div class="col-3">
-      <a href="/upload.html" class="btn btn-info btn-sm float-right">
-        <span class="glyphicon glyphicon-log-out"></span> Add a receipt
-      </a>
-    </div>
+    <h1 class="text-center">Home</h1>
+    <form onsubmit="return false">
+      <div class="row mb-4 search-bar vertical-center">
+        <div class="col-md-2 d-flex justify-content-center pt-2">
+          <input class="form-control mr-sm-2" name="category" id="category-input" placeholder="Category" type="text" />
+        </div>
+        <div class="col-md-3 d-flex justify-content-center pt-2">
+          <div id="reportrange" class="time-range-form">
+            <i class="fa fa-calendar"></i>
+            <span id="date-range-input"></span> <i class="fa fa-caret-down"></i>
+          </div>
+        </div>
+        <div class="col-md-2 d-flex justify-content-center pt-2">
+          <input class="form-control mr-sm-2" name="store-name" id="store-name-input" placeholder="Store" type="text" />
+        </div>
+        <div class="col-md-4 pt-2">
+          <div class="slider-keypress"></div>
+          <div class="row d-flex justify-content-center">
+            <div class="col-auto no-padding">
+              <p>Min $</p>
+            </div>
+            <div class="col-4 no-padding">
+              <input type="text" id="min-price-input" class="input-with-keypress-0 form-control mr-sm-2" />
+            </div>
+            <div class="col-auto no-padding">
+              <p>Max $</p>
+            </div>
+            <div class="col-4 no-padding">
+              <input type="text" id="max-price-input" class="input-with-keypress-1 form-control mr-sm-2" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-outline-success my-2 my-sm-0" onclick="searchReceipts()">
+            Search
+          </button>
+        </div>
+      </div>
+    </form>
+    <!-- The columns will automatically stack on top of each other when the screen is less than 768px wide. -->
+    <div id="receipts-display" class="row"></div>
   </div>
-  <h1 class="text-center">Home</h1>
-  <form onsubmit="return false">
-    <div class="row mb-4 search-bar vertical-center">
-      <div class="col-md-2 d-flex justify-content-center pt-2">
-        <input class="form-control mr-sm-2" name="category" id="category-input" placeholder="Category" type="text" />
-      </div>
-      <div class="col-md-3 d-flex justify-content-center pt-2">
-        <div id="reportrange" class="time-range-form">
-          <i class="fa fa-calendar"></i>
-          <span></span> <i class="fa fa-caret-down"></i>
-        </div>
-      </div>
-      <div class="col-md-2 d-flex justify-content-center pt-2">
-        <input class="form-control mr-sm-2" name="store-name" id="store-name-input" placeholder="Store" type="text" />
-      </div>
-      <div class="col-md-4 pt-2">
-        <div class="slider-keypress"></div>
-        <div class="row d-flex justify-content-center">
-          <div class="col-auto no-padding">
-            <p>Min $</p>
-          </div>
-          <div class="col-4 no-padding">
-            <input type="text" class="input-with-keypress-0 form-control mr-sm-2" />
-          </div>
-          <div class="col-auto no-padding">
-            <p>Max $</p>
-          </div>
-          <div class="col-4 no-padding">
-            <input type="text" class="input-with-keypress-1 form-control mr-sm-2" />
-          </div>
-        </div>
-      </div>
-      <div class="col-md-1">
-        <button type="submit" class="btn btn-outline-success my-2 my-sm-0" onclick="searchReceipts()">
-          Search
-        </button>
-      </div>
-    </div>
-  </form>
-  <!-- The columns will automatically stack on top of each other when the screen is less than 768px wide. -->
-  <div id="receipts-display" class="row"></div>
-</div>
+</body>
 <template id="receipt-card-template">
   <div class="col-md-6">
     <div class="card mb-4 box-shadow">
-      <p id="timestamp" class="card-text align-self-end"></p>
-      <p id="store-name" class="card-text"></p>
-      <p id="total" class="card-text"></p>
+      <p id="timestamp" class="card-text align-self-end mr-2"></p>
+      <p id="store-name" class="card-text ml-2"></p>
+      <p id="total" class="card-text ml-2"></p>
       <div class="row">
         <div class="col-4 d-flex justify-content-center">
           <h4><span id="c0" class="badge badge-pill badge-secondary">-</span></h4>
