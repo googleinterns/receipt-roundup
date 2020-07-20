@@ -52,14 +52,16 @@ public class SearchServlet extends HttpServlet {
       "No Authentication: User must be logged in to search receipts.";
 
   private final DatastoreService datastore;
-  private final UserService userService = UserServiceFactory.getUserService();
+  private final UserService userService;
 
   public SearchServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
+    userService = UserServiceFactory.getUserService(); 
   }
 
   public SearchServlet(DatastoreService datastore) {
     this.datastore = datastore;
+    userService = UserServiceFactory.getUserService();
   }
 
   @Override
