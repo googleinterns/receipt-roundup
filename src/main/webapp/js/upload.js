@@ -20,7 +20,8 @@ function cancelUpload() {
 }
 
 /**
- * Sends a request to add a receipt to Blobstore.
+ * Sends a request to add a receipt to Blobstore then redirects to the receipt
+ * analysis page.
  */
 async function uploadReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
@@ -32,7 +33,11 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const uploadUrl = fetchBlobstoreUrl();
+  // Change to the loading cursor and disable the submit button.
+  document.body.style.cursor = 'wait';
+  document.getElementById('submit-receipt').disabled = true;
+
+  const uploadUrl = await fetchBlobstoreUrl();
   const categories = document.getElementById('categories-input').value;
   const store = document.getElementById('store-input').value;
   const price =
@@ -41,7 +46,9 @@ async function uploadReceipt(event) {
   const image = fileInput.files[0];
 
   const formData = new FormData();
-  formData.append('categories', createCategoryList(categories));
+  createCategoryList(categories).forEach((category) => {
+    formData.append('categories', category);
+  });
   formData.append('store', store);
   formData.append('price', price);
   formData.append('date', date);
@@ -49,14 +56,25 @@ async function uploadReceipt(event) {
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
 
+  // Restore the cursor after the upload request has loaded.
+  document.body.style.cursor = 'default';
+
   // Create an alert if there is an error.
   if (response.status !== 200) {
     alert(await response.text());
     return;
   }
 
-  // TODO: Redirect to receipt analysis page for MVP
-  window.location.href = '/';
+  const json = (await response.json()).propertyMap;
+  const params = new URLSearchParams();
+  params.append('categories', json.categories);
+  params.append('image-url', json.imageUrl);
+  params.append('price', json.price);
+  params.append('store', json.store);
+  params.append('timestamp', json.timestamp);
+
+  // Redirect to the receipt analysis page.
+  window.location.href = `/receipt-analysis.html?${params.toString()}`;
 }
 
 /**
