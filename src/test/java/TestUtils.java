@@ -33,22 +33,24 @@ public final class TestUtils {
   }
 
   /* Add receipts to database for testing purposes. */
-  public static void addTestReceipts(DatastoreService datastore) {
-    addTestReceipt(datastore, /* userId = */ 123, /* timestamp = */ 1045237591000L,
-        new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
-        ImmutableSet.of("candy", "drink", "personal"), "");
+  public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
+    ImmutableSet<Entity> testReceipts = ImmutableSet.of(
+        addTestReceipt(datastore, /* userId = */ 123, /* timestamp = */ 1045237591000L,
+            new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
+            ImmutableSet.of("candy", "drink", "personal"), ""),
 
-    addTestReceipt(datastore, /* userId = */ 123, /* timestamp = */ 1560193140000L,
-        new BlobKey("test"), "img/contoso-receipt.jpg", 14.51, "contoso",
-        ImmutableSet.of("cappuccino", "sandwich", "lunch"), "");
+        addTestReceipt(datastore, /* userId = */ 123, /* timestamp = */ 1560193140000L,
+            new BlobKey("test"), "img/contoso-receipt.jpg", 14.51, "contoso",
+            ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
 
-    addTestReceipt(datastore, /* userId = */ 123, /* timestamp = */ 1491582960000L,
-        new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
-        ImmutableSet.of("food", "meal", "lunch"), "");
+        addTestReceipt(datastore, /* userId = */ 123, /* timestamp = */ 1491582960000L,
+            new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
+            ImmutableSet.of("food", "meal", "lunch"), ""));
+    return testReceipts;
   }
 
   /** Adds a test receipt to the mock datastore and returns the id of that entity. */
-  public static long addTestReceipt(DatastoreService datastore, long userId, long timestamp,
+  public static Entity addTestReceipt(DatastoreService datastore, long userId, long timestamp,
       BlobKey blobkey, String imageUrl, double price, String store, ImmutableSet<String> categories,
       String rawText) {
     Entity receiptEntity = new Entity("Receipt");
@@ -61,16 +63,17 @@ public final class TestUtils {
     receiptEntity.setProperty("categories", categories);
     receiptEntity.setProperty("rawText", rawText);
 
-    Key key = datastore.put(receiptEntity);
-    return key.getId();
+    datastore.put(receiptEntity);
+    return receiptEntity;
   }
 
   /** Set all necessary parameters that SearchServlet will ask for in a doGet. */
   public static void setSearchServletRequestParameters(HttpServletRequest request,
       String timeZoneId, String categories, String dateRange, String store, String minPrice,
       String maxPrice) {
+    when(request.getParameter("isNewLoad")).thenReturn("false");
     when(request.getParameter("timeZoneId")).thenReturn(timeZoneId);
-    when(request.getParameter("categories")).thenReturn(categories);
+    when(request.getParameter("category")).thenReturn(categories);
     when(request.getParameter("dateRange")).thenReturn(dateRange);
     when(request.getParameter("store")).thenReturn(store);
     when(request.getParameter("min")).thenReturn(minPrice);

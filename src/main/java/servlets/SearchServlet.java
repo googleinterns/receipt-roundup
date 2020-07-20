@@ -70,25 +70,30 @@ public class SearchServlet extends HttpServlet {
       return;
     }
 
-    QueryInformation queryInformation = null;
+    QueryInformation queryInformation;
+    ImmutableList<Receipt> receipts;
 
-    try {
-      queryInformation = createQueryInformation(request, response);
-    } catch (NullPointerException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(NULL_EXCEPTION_MESSAGE);
-      return;
-    } catch (NumberFormatException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(NUMBER_EXCEPTION_MESSAGE);
-      return;
-    } catch (ParseException exception) {
-      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
-      return;
+    if (Boolean.parseBoolean(request.getParameter("isNewLoad"))) {
+      receipts = getAllReceipts();
+    } else {
+      try {
+        queryInformation = createQueryInformation(request, response);
+      } catch (NullPointerException exception) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println(NULL_EXCEPTION_MESSAGE);
+        return;
+      } catch (NumberFormatException exception) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println(NUMBER_EXCEPTION_MESSAGE);
+        return;
+      } catch (ParseException exception) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
+        return;
+      }
+
+      receipts = getMatchingReceipts(queryInformation);
     }
-
-    ImmutableList<Receipt> receipts = getMatchingReceipts(queryInformation);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
@@ -127,6 +132,17 @@ public class SearchServlet extends HttpServlet {
         .filter(receipt
             -> receipt.getPrice() >= queryInformation.getMinPrice()
                 && receipt.getPrice() <= queryInformation.getMaxPrice())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /** Returns ImmutableList of all receipts from datastore. */
+  private ImmutableList<Receipt> getAllReceipts() {
+    Query query = new Query("Receipt");
+
+    return datastore.prepare(query)
+        .asList(FetchOptions.Builder.withDefaults())
+        .stream()
+        .map(this::createReceiptFromEntity)
         .collect(ImmutableList.toImmutableList());
   }
 

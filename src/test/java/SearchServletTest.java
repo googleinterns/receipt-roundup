@@ -17,14 +17,21 @@ package com.google.sps;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.dampcake.gson.immutable.ImmutableAdapterFactory;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.sps.data.Receipt;
 import com.google.sps.servlets.SearchServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
@@ -105,6 +112,7 @@ public final class SearchServletTest {
     writer.flush();
 
     // Make sure receipt is retrieved by finding the receipt id in the writer.
+    System.out.println(stringWriter.toString());
     Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
   }
 
@@ -123,13 +131,13 @@ public final class SearchServletTest {
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
-    // Perform doGet - this should retrieve a couple receipts.
+    // Perform doGet - this should retrieve one receipts.
     TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, /*store=*/"", MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipts is retrieved by finding receipt id in the writer.
+    // Make sure receipt is retrieved by finding receipt id in the writer.
     Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
   }
 
@@ -148,13 +156,13 @@ public final class SearchServletTest {
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
-    // Perform doGet - this should retrieve a couple receipts.
+    // Perform doGet - this should retrieve one receipt.
     TestUtils.setSearchServletRequestParameters(request, CST_TIMEZONE_ID, /*category=*/"",
         LONG_DATE_RANGE, "CONTOSO", MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure receipt is retrieved by finding receipt ids in the writer.
+    // Make sure receipt is retrieved by finding receipt id in the writer.
     Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
   }
 
@@ -182,6 +190,37 @@ public final class SearchServletTest {
     // Make sure receipts are retrieved by finding receipt ids in the writer.
     Assert.assertTrue(stringWriter.toString().contains("\"id\":2"));
     Assert.assertTrue(stringWriter.toString().contains("\"id\":3"));
+  }
+
+  @Test
+  public void queryAllReceipts() throws IOException {
+    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+
+    // Add mock receipts to datastore.
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addTestReceipts(datastore);
+
+    when(request.getParameter("isNewLoad")).thenReturn("true");
+
+    // Perform doGet - this should retrieve all receipts.
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure all receipts retrieved by checking their ids.
+    Gson gson =
+        new GsonBuilder().registerTypeAdapterFactory(ImmutableAdapterFactory.forGuava()).create();
+    Receipt[] returnedReceipts = gson.fromJson(stringWriter.toString(), Receipt[].class);
+    Assert.assertEquals(expectedReceipts.size(), returnedReceipts.length);
+    for (Entity expectedReceipt : expectedReceipts) {
+      Assert.assertTrue(
+          Arrays.stream(returnedReceipts)
+              .anyMatch(
+                  receipt -> receipt.getId() == expectedReceipt.getKey().getId())); // check id
+    }
   }
 
   @Test

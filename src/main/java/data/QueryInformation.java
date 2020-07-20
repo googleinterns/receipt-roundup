@@ -39,17 +39,12 @@ public class QueryInformation {
       throws ParseException, NumberFormatException, NullPointerException {
     this.timeZone = TimeZone.getTimeZone(timeZoneId);
 
-    String formattedCategory;
-    try {
-      formattedCategory = formatInput(category);
-    } catch (NullPointerException exception) {
-      formattedCategory = null;
-    }
+    String formattedCategory = formatInput(category);
 
-    if (!Strings.isNullOrEmpty(formattedCategory)) {
-      this.category = ImmutableSet.copyOf(Arrays.asList(formattedCategory));
+    if (Strings.isNullOrEmpty(formattedCategory)) {
+      this.category = ImmutableSet.of();
     } else {
-      this.category = ImmutableSet.of(); // Empty set.
+      this.category = ImmutableSet.of(formattedCategory);
     }
 
     String[] dates = dateRange.split("-");
