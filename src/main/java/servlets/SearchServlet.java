@@ -21,6 +21,8 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -46,8 +48,11 @@ public class SearchServlet extends HttpServlet {
       "Invalid Price: Receipt unable to be queried at this time, please try again.";
   private static final String PARSE_EXCEPTION_MESSAGE =
       "Dates Unparseable: Receipt unable to be queried at this time, please try again.";
+  private static final String AUTHENTICATION_ERROR_MESSAGE =
+      "No Authentication: User must be logged in to search receipts.";
 
   private final DatastoreService datastore;
+  private final UserService userService = UserServiceFactory.getUserService();
 
   public SearchServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
@@ -59,6 +64,12 @@ public class SearchServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.getWriter().println(AUTHENTICATION_ERROR_MESSAGE);
+      return;
+    }
+
     QueryInformation queryInformation;
     ImmutableList<Receipt> receipts;
 
