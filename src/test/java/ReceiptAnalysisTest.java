@@ -74,8 +74,14 @@ public final class ReceiptAnalysisTest {
 
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
-  private static final String CATEGORY_NAME = "category";
-  private static final ImmutableSet<String> CATEGORIES = ImmutableSet.of(CATEGORY_NAME);
+
+  private static final String GENERAL_CATEGORY_NAME = "General";
+  private static final String SPECIFIC_CATEGORY_NAME = "Specific";
+  private static final String CATEGORY_NAME =
+      "/" + GENERAL_CATEGORY_NAME + "/" + SPECIFIC_CATEGORY_NAME;
+
+  private static final ImmutableSet<String> CATEGORIES =
+      ImmutableSet.of(GENERAL_CATEGORY_NAME, SPECIFIC_CATEGORY_NAME);
 
   @Before
   public void setUp() {
@@ -122,8 +128,8 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.serveImageText(url);
 
-    Assert.assertEquals(results.getRawText(), RAW_TEXT);
-    Assert.assertEquals(results.getCategories(), CATEGORIES);
+    Assert.assertEquals(RAW_TEXT, results.getRawText());
+    Assert.assertEquals(CATEGORIES, results.getCategories());
     verify(imageClient).batchAnnotateImages(imageRequests);
     verify(languageClient).classifyText(classifyRequest);
   }

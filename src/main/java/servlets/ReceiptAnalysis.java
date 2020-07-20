@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -161,16 +162,23 @@ public class ReceiptAnalysis {
 
       ClassifyTextResponse response = client.classifyText(request);
 
-      // TODO: Parse category strings into more natural categories
       categories = response.getCategoriesList()
                        .stream()
-                       .map(category -> category.getName())
+                       .flatMap(ReceiptAnalysis::parseCategory)
                        .collect(ImmutableSet.toImmutableSet());
     } catch (ApiException e) {
       throw new ReceiptAnalysisException("Classify text request failed.", e);
     }
 
     return categories;
+  }
+
+  /*
+   * Parse category strings into more natural categories
+   * e.g. "/Food & Drink/Restaurants" becomes "Food & Drink" and "Restaurants"
+   */
+  private static Stream<String> parseCategory(ClassificationCategory category) {
+    return Stream.of(category.getName().substring(1).split("/"));
   }
 
   public static class ReceiptAnalysisException extends Exception {
