@@ -112,6 +112,7 @@ public final class SearchServletTest {
     writer.flush();
 
     // Make sure receipt is retrieved by finding the receipt id in the writer.
+    System.out.println(stringWriter.toString());
     Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
   }
 

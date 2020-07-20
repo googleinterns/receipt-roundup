@@ -73,7 +73,7 @@ public final class TestUtils {
       String maxPrice) {
     when(request.getParameter("isNewLoad")).thenReturn("false");
     when(request.getParameter("timeZoneId")).thenReturn(timeZoneId);
-    when(request.getParameter("categories")).thenReturn(categories);
+    when(request.getParameter("category")).thenReturn(categories);
     when(request.getParameter("dateRange")).thenReturn(dateRange);
     when(request.getParameter("store")).thenReturn(store);
     when(request.getParameter("min")).thenReturn(minPrice);
