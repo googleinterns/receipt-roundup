@@ -54,7 +54,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -142,8 +141,7 @@ public final class ReceiptAnalysisTest {
   public void analyzeImageAtThrowsIfEmptyBatchResponse()
       throws IOException, ReceiptAnalysisException {
     BatchAnnotateImagesResponse batchResponse = BatchAnnotateImagesResponse.newBuilder().build();
-    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenReturn(batchResponse);
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
@@ -158,8 +156,7 @@ public final class ReceiptAnalysisTest {
         AnnotateImageResponse.newBuilder().setError(Status.getDefaultInstance()).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
-    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenReturn(batchResponse);
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
@@ -173,8 +170,7 @@ public final class ReceiptAnalysisTest {
     AnnotateImageResponse response = AnnotateImageResponse.newBuilder().build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
-    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenReturn(batchResponse);
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
@@ -187,8 +183,7 @@ public final class ReceiptAnalysisTest {
       throws IOException, ReceiptAnalysisException {
     StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
     ApiException clientException = new ApiException(null, statusCode, false);
-    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenThrow(clientException);
+    when(imageClient.batchAnnotateImages(anyList())).thenThrow(clientException);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
