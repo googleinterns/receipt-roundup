@@ -35,14 +35,16 @@ public class DeleteReceiptServlet extends HttpServlet {
       "No Authentication: User must be logged in to delete a receipt.";
 
   private final DatastoreService datastore;
-  private final UserService userService = UserServiceFactory.getUserService();
+  private final UserService userService;
 
   public DeleteReceiptServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
+    userService = UserServiceFactory.getUserService();
   }
 
   public DeleteReceiptServlet(DatastoreService datastore) {
     this.datastore = datastore;
+    userService = UserServiceFactory.getUserService();
   }
 
   @Override

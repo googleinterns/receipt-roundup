@@ -121,6 +121,12 @@
       <version>1.9.80</version>
       <scope>test</scope>
     </dependency>
+    
+    <dependency>
+      <groupId>com.dampcake</groupId>
+      <artifactId>gson-immutable</artifactId>
+      <version>1.2</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
