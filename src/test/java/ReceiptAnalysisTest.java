@@ -54,7 +54,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -83,32 +82,36 @@ public final class ReceiptAnalysisTest {
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of(GENERAL_CATEGORY_NAME, SPECIFIC_CATEGORY_NAME);
 
+  private URL url;
+  private ImageAnnotatorClient imageClient;
+  private LanguageServiceClient languageClient;
+
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     MockitoAnnotations.initMocks(this);
+
+    url = mock(URL.class);
+    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
+    when(url.openStream()).thenReturn(inputStream);
+
+    imageClient = mock(ImageAnnotatorClient.class);
+    mockStatic(ImageAnnotatorClient.class);
+    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
+
+    languageClient = mock(LanguageServiceClient.class);
+    mockStatic(LanguageServiceClient.class);
+    when(LanguageServiceClient.create()).thenReturn(languageClient);
   }
 
   @Test
   public void analyzeImageAtUrlReturnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
-    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
-    mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
-
     EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
     AnnotateImageResponse imageResponse =
         AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
-
-    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
-    mockStatic(LanguageServiceClient.class);
-    when(LanguageServiceClient.create()).thenReturn(languageClient);
 
     ClassificationCategory category =
         ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
@@ -137,17 +140,8 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfEmptyBatchResponse()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
-    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
-    mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
-
     BatchAnnotateImagesResponse batchResponse = BatchAnnotateImagesResponse.newBuilder().build();
-    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenReturn(batchResponse);
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
@@ -158,20 +152,11 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfResponseHasError()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
-    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
-    mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
-
     AnnotateImageResponse response =
         AnnotateImageResponse.newBuilder().setError(Status.getDefaultInstance()).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
-    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenReturn(batchResponse);
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
@@ -182,19 +167,10 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfEmptyTextAnnotationsList()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
-    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
-    mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
-
     AnnotateImageResponse response = AnnotateImageResponse.newBuilder().build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
-    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenReturn(batchResponse);
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
@@ -205,18 +181,9 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfImageRequestFails()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
-    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
-    mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
-
     StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
     ApiException clientException = new ApiException(null, statusCode, false);
-    when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
-        .thenThrow(clientException);
+    when(imageClient.batchAnnotateImages(anyList())).thenThrow(clientException);
 
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
@@ -228,24 +195,12 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfTextRequestFails()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
-    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
-    mockStatic(ImageAnnotatorClient.class);
-    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
-
     EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
     AnnotateImageResponse imageResponse =
         AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
-
-    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
-    mockStatic(LanguageServiceClient.class);
-    when(LanguageServiceClient.create()).thenReturn(languageClient);
 
     StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
     ApiException clientException = new ApiException(null, statusCode, false);
