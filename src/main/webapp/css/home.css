@@ -1,3 +1,7 @@
+body {
+  display: none;
+}
+
 .time-range-form {
   background: #fff;
   border: 1px solid #ccc;
