@@ -26,8 +26,11 @@ function loadReceiptAnalysis() {
   document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
   document.getElementById('total').innerText = `Total Price: $${total}`;
 
+  const categoriesContainer = document.getElementById('categories-container');
+  categoriesContainer.innerHTML = '';
+
   for (let i = 0; i < categories.length && i < 3; i++) {
-    document.getElementById('category-' + i).innerText = categories[i];
+    categoriesContainer.appendChild(buildCategoryElement(categories[i]));
   }
 
   document.getElementById('receipt-image').src = imageUrl;
@@ -38,4 +41,15 @@ function getDateFromTimestamp(timestamp) {
   const time = parseInt(timestamp);
   const timeZoneId = new Intl.DateTimeFormat().resolvedOptions().timeZone;
   return new Date(time).toLocaleString('en-US', {timeZone: timeZoneId});
+}
+
+/** Builds the div element for a category along with its children. */
+function buildCategoryElement(category) {
+  const categoryElement = document.createElement('div');
+  categoryElement.className = 'col d-flex justify-content-center';
+  categoryElement.innerHTML =
+      '<h4><span class="badge badge-pill badge-secondary">' +
+      `${category}</span></h4>`;
+
+  return categoryElement;
 }
