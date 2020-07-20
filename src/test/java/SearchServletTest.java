@@ -112,7 +112,6 @@ public final class SearchServletTest {
     writer.flush();
 
     // Make sure receipt is retrieved by finding the receipt id in the writer.
-    System.out.println(stringWriter.toString());
     Assert.assertTrue(stringWriter.toString().contains("\"id\":1"));
   }
 
@@ -131,7 +130,7 @@ public final class SearchServletTest {
     // Add mock receipts to datastore.
     TestUtils.addTestReceipts(datastore);
 
-    // Perform doGet - this should retrieve one receipts.
+    // Perform doGet - this should retrieve one receipt.
     TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, /*store=*/"", MIN_PRICE, MAX_PRICE);
     servlet.doGet(request, response);
