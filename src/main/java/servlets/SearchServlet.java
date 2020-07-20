@@ -21,6 +21,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Strings;
@@ -171,7 +172,7 @@ public class SearchServlet extends HttpServlet {
   /** Creates a {@link Receipt} from an {@link Entity}. */
   private Receipt createReceiptFromEntity(Entity entity) {
     long id = entity.getKey().getId();
-    long userId = (long) entity.getProperty("userId");
+    String userId = (String) entity.getProperty("userId");
     long timestamp = (long) entity.getProperty("timestamp");
     BlobKey blobKey = (BlobKey) entity.getProperty("blobKey");
     String imageUrl = (String) entity.getProperty("imageUrl");
@@ -179,7 +180,8 @@ public class SearchServlet extends HttpServlet {
     String store = (String) entity.getProperty("store");
     ImmutableSet<String> categories =
         ImmutableSet.copyOf((ArrayList) entity.getProperty("categories"));
-    String rawText = (String) entity.getProperty("rawText");
+    // String rawText = (new Text((String) entity.getProperty("rawText"))).getValue();
+    String rawText = "Test";
     return new Receipt(id, userId, timestamp, blobKey, imageUrl, price, store, categories, rawText);
   }
 }

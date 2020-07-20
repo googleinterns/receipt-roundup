@@ -52,7 +52,7 @@ public final class DeleteReceiptServletTest {
       "No Authentication: User must be logged in to delete a receipt.";
 
   // Test fields.
-  private static final long USER_ID = 1;
+  private static final String USER_ID = "1";
   private static final long TIMESTAMP = 6292020;
   private static final BlobKey BLOB_KEY = new BlobKey("Test");
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";

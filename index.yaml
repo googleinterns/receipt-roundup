@@ -1,0 +1,17 @@
+indexes:
+
+- kind: Receipt
+  properties:
+  - name: store
+  - name: timestamp
+
+- kind: Receipt
+  properties:
+  - name: categories
+  - name: timestamp
+
+- kind: Receipt
+  properties:
+  - name: store
+  - name: categories
+  - name: timestamp
