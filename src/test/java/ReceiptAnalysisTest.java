@@ -83,12 +83,17 @@ public final class ReceiptAnalysisTest {
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of(GENERAL_CATEGORY_NAME, SPECIFIC_CATEGORY_NAME);
 
+  private URL url;
   private ImageAnnotatorClient imageClient;
   private LanguageServiceClient languageClient;
 
   @Before
   public void setUp() throws IOException {
     MockitoAnnotations.initMocks(this);
+
+    url = mock(URL.class);
+    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
+    when(url.openStream()).thenReturn(inputStream);
 
     imageClient = mock(ImageAnnotatorClient.class);
     mockStatic(ImageAnnotatorClient.class);
@@ -102,10 +107,6 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
     EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
     AnnotateImageResponse imageResponse =
         AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
@@ -140,10 +141,6 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfEmptyBatchResponse()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
     BatchAnnotateImagesResponse batchResponse = BatchAnnotateImagesResponse.newBuilder().build();
     when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
         .thenReturn(batchResponse);
@@ -157,10 +154,6 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfResponseHasError()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
     AnnotateImageResponse response =
         AnnotateImageResponse.newBuilder().setError(Status.getDefaultInstance()).build();
     BatchAnnotateImagesResponse batchResponse =
@@ -177,10 +170,6 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfEmptyTextAnnotationsList()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
     AnnotateImageResponse response = AnnotateImageResponse.newBuilder().build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
@@ -196,10 +185,6 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfImageRequestFails()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
     StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
     ApiException clientException = new ApiException(null, statusCode, false);
     when(imageClient.batchAnnotateImages(Mockito.<AnnotateImageRequest>anyList()))
@@ -215,10 +200,6 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtThrowsIfTextRequestFails()
       throws IOException, ReceiptAnalysisException {
-    URL url = mock(URL.class);
-    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
-    when(url.openStream()).thenReturn(inputStream);
-
     EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
     AnnotateImageResponse imageResponse =
         AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
