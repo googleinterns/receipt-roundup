@@ -26,6 +26,7 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class QueryInformationTest {
+  // Threshold used for testing with doubles.
   private static final double ERROR_THRESHOLD = 0.1;
 
   // Values for a valid test.
@@ -89,7 +90,7 @@ public final class QueryInformationTest {
   }
 
   @Test
-  public void valideDateRangeParse() throws ParseException {
+  public void validDateRangeParse() throws ParseException {
     QueryInformation queryInformation =
         new QueryInformation(CST_TIMEZONE_ID, CATEGORY, DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
     Assert.assertEquals(JUNE_1_2020_START_OF_DAY, queryInformation.getStartTimestamp());
