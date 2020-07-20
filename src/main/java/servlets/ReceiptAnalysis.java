@@ -151,14 +151,14 @@ public class ReceiptAnalysis {
   }
 
   /** Generates categories for the provided text. */
-  private static ImmutableSet<String> categorizeText(String text) throws IOException {
+  private static ImmutableSet<String> categorizeText(String text)
+      throws IOException, ReceiptAnalysisException {
     ImmutableSet<String> categories = ImmutableSet.of();
 
     try (LanguageServiceClient client = LanguageServiceClient.create()) {
       Document document = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
       ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(document).build();
 
-      // TODO: Check if ApiException was thrown
       ClassifyTextResponse response = client.classifyText(request);
 
       // TODO: Parse category strings into more natural categories
@@ -166,6 +166,8 @@ public class ReceiptAnalysis {
                        .stream()
                        .map(category -> category.getName())
                        .collect(ImmutableSet.toImmutableSet());
+    } catch (ApiException e) {
+      throw new ReceiptAnalysisException("Classify text request failed.", e);
     }
 
     return categories;

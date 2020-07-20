@@ -69,7 +69,8 @@ public final class ReceiptAnalysisTest {
       "Received image annotation response with error.";
   private static final String EMPTY_TEXT_ANNOTATIONS_LIST_WARNING =
       "Received image annotation response without text annotations.";
-  private static final String REQUEST_FAILED_WARNING = "Image annotation request failed.";
+  private static final String IMAGE_REQUEST_FAILED_WARNING = "Image annotation request failed.";
+  private static final String TEXT_REQUEST_FAILED_WARNING = "Classify text request failed.";
 
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
   private static final String RAW_TEXT = "raw text";
@@ -196,7 +197,8 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void serveImageTextThrowsIfRequestFails() throws IOException, ReceiptAnalysisException {
+  public void serveImageTextThrowsIfImageRequestFails()
+      throws IOException, ReceiptAnalysisException {
     URL url = mock(URL.class);
     InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
     when(url.openStream()).thenReturn(inputStream);
@@ -213,7 +215,40 @@ public final class ReceiptAnalysisTest {
     ReceiptAnalysisException exception = Assertions.assertThrows(
         ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
 
-    Assert.assertEquals(REQUEST_FAILED_WARNING, exception.getMessage());
+    Assert.assertEquals(IMAGE_REQUEST_FAILED_WARNING, exception.getMessage());
+    Assert.assertEquals(clientException, exception.getCause());
+  }
+
+  @Test
+  public void serveImageTextThrowsIfTextRequestFails()
+      throws IOException, ReceiptAnalysisException {
+    URL url = mock(URL.class);
+    InputStream inputStream = new ByteArrayInputStream(IMAGE_BYTES.toByteArray());
+    when(url.openStream()).thenReturn(inputStream);
+
+    ImageAnnotatorClient imageClient = mock(ImageAnnotatorClient.class);
+    mockStatic(ImageAnnotatorClient.class);
+    when(ImageAnnotatorClient.create()).thenReturn(imageClient);
+
+    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
+    AnnotateImageResponse imageResponse =
+        AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
+    BatchAnnotateImagesResponse batchResponse =
+        BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
+
+    LanguageServiceClient languageClient = mock(LanguageServiceClient.class);
+    mockStatic(LanguageServiceClient.class);
+    when(LanguageServiceClient.create()).thenReturn(languageClient);
+
+    StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
+    ApiException clientException = new ApiException(null, statusCode, false);
+    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenThrow(clientException);
+
+    ReceiptAnalysisException exception = Assertions.assertThrows(
+        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.serveImageText(url); });
+
+    Assert.assertEquals(TEXT_REQUEST_FAILED_WARNING, exception.getMessage());
     Assert.assertEquals(clientException, exception.getCause());
   }
 }
