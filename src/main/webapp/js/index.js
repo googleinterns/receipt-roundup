@@ -17,7 +17,7 @@ async function getAllReceipts() {
   const params = new URLSearchParams();
   params.append('isNewLoad', 'true');
 
-  const response = await fetch('/search-receipts?' + params.toString());
+  const response = await fetch(`/search-receipts?${params.toString()}`);
   const receipts = await response.json();
 
   clearExistingDisplay();
@@ -51,7 +51,7 @@ async function searchReceipts() {
   const dateTimeFormat = new Intl.DateTimeFormat();
   params.append('timeZoneId', dateTimeFormat.resolvedOptions().timeZone);
 
-  const response = await fetch('/search-receipts?' + params.toString());
+  const response = await fetch(`/search-receipts?${params.toString()}`);
   const receipts = await response.json();
 
   clearExistingDisplay();
