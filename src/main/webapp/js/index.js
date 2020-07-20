@@ -36,7 +36,7 @@ async function searchReceipts() {
   params.append('max', document.getElementById('max-price-input').value);
   const dateTimeFormat = new Intl.DateTimeFormat();
   params.append('timeZoneId', dateTimeFormat.resolvedOptions().timeZone);
-
+  
   const response = await fetch('/search-receipts?' + params.toString());
   const receipts = await response.json();
 
