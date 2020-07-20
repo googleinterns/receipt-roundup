@@ -14,17 +14,26 @@
 
 package com.google.sps.data;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 /**
  * Object for holding the analysis results served by ReceiptAnalysisServlet.
  */
 public class AnalysisResults {
   private final String rawText;
+  private final ImmutableSet<String> categories;
 
-  public AnalysisResults(String rawText) {
+  public AnalysisResults(String rawText, Set<String> categories) {
     this.rawText = rawText;
+    this.categories = ImmutableSet.copyOf(categories);
   }
 
   public String getRawText() {
     return rawText;
+  }
+
+  public ImmutableSet<String> getCategories() {
+    return categories;
   }
 }
