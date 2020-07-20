@@ -18,7 +18,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.TimeZone;
 
 /** Class to hold query information. */
@@ -36,7 +35,7 @@ public class QueryInformation {
 
   public QueryInformation(String timeZoneId, String category, String dateRange, String store,
       String minPrice, String maxPrice)
-      throws ParseException, NumberFormatException, NullPointerException {
+      throws ParseException, NumberFormatException {
     this.timeZone = TimeZone.getTimeZone(timeZoneId);
 
     String formattedCategory = formatInput(category);
