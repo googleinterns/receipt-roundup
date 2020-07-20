@@ -205,7 +205,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
@@ -241,7 +241,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(BLOB_KEY)).thenReturn(ANALYSIS_RESULTS);
+    when(ReceiptAnalysis.analyzeImageAt(BLOB_KEY)).thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
 
@@ -276,7 +276,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
@@ -303,7 +303,7 @@ public final class UploadReceiptServletTest {
     Set<String> categories = ImmutableSet.of(USER_CATEGORIES[0], USER_CATEGORIES[2]);
     AnalysisResults analysisResults = new AnalysisResults(RAW_TEXT.getValue(), categories);
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
 
     servlet.doPost(request, response);
@@ -327,7 +327,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
@@ -356,7 +356,7 @@ public final class UploadReceiptServletTest {
     Set<String> generatedCategories = ImmutableSet.of("  dIninG ");
     AnalysisResults analysisResults = new AnalysisResults(RAW_TEXT.getValue(), generatedCategories);
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
 
     servlet.doPost(request, response);
@@ -472,7 +472,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis exception.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenThrow(IOException.class);
 
     servlet.doPost(request, response);
@@ -502,7 +502,7 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.serveImageText(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);

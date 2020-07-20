@@ -267,10 +267,10 @@ public class UploadReceiptServlet extends HttpServlet {
       // For the dev server, authentication is required to access the image served at the URL, so
       // fetch the bytes directly from Blobstore instead.
       if (baseUrl.equals(DEV_SERVER_BASE_URL)) {
-        results = ReceiptAnalysis.serveImageText(blobKey);
+        results = ReceiptAnalysis.analyzeImageAt(blobKey);
       } else {
         URL absoluteUrl = new URL(baseUrl + imageUrl);
-        results = ReceiptAnalysis.serveImageText(absoluteUrl);
+        results = ReceiptAnalysis.analyzeImageAt(absoluteUrl);
       }
     } catch (IOException e) {
       blobstoreService.delete(blobKey);
