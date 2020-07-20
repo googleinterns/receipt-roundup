@@ -56,7 +56,7 @@ public class SearchServlet extends HttpServlet {
 
   public SearchServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
-    userService = UserServiceFactory.getUserService(); 
+    userService = UserServiceFactory.getUserService();
   }
 
   public SearchServlet(DatastoreService datastore) {

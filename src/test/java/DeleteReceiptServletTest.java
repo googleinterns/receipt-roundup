@@ -58,7 +58,8 @@ public final class DeleteReceiptServletTest {
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";
   private static final double PRICE = 26.12;
   private static final String STORE = "Walmart";
-  private static final ImmutableSet<String> CATEGORIES = ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
+  private static final ImmutableSet<String> CATEGORIES =
+      ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
   private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
 
   // Local Datastore
@@ -88,7 +89,11 @@ public final class DeleteReceiptServletTest {
   @Test
   public void doPostDeletesReceiptFromDatastore() throws IOException {
     // Add mock receipt to datastore.
-    long id = TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT).getKey().getId();
+    long id = TestUtils
+                  .addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE,
+                      CATEGORIES, RAW_TEXT)
+                  .getKey()
+                  .getId();
 
     // Make sure receipt is added by checking if there is one entity returned.
     Query query = new Query("Receipt");
@@ -111,7 +116,11 @@ public final class DeleteReceiptServletTest {
     when(response.getWriter()).thenReturn(writer);
 
     // Add mock receipt to datastore.
-    long id = TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT).getKey().getId();
+    long id = TestUtils
+                  .addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE,
+                      CATEGORIES, RAW_TEXT)
+                  .getKey()
+                  .getId();
 
     // Pass in a String id instead of a long.
     when(request.getParameter("id")).thenReturn(String.valueOf(id) + "this should fail");

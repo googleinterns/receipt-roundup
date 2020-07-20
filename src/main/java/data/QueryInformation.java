@@ -34,8 +34,7 @@ public class QueryInformation {
   private final double maxPrice;
 
   public QueryInformation(String timeZoneId, String category, String dateRange, String store,
-      String minPrice, String maxPrice)
-      throws ParseException, NumberFormatException {
+      String minPrice, String maxPrice) throws ParseException, NumberFormatException {
     this.timeZone = TimeZone.getTimeZone(timeZoneId);
 
     String formattedCategory = formatInput(category);
