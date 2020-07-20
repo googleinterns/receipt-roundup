@@ -50,12 +50,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 public final class DeleteReceiptServletTest {
   private static final String INVALID_ID_MESSAGE =
       "Invalid ID: Receipt unable to be deleted at this time, please try again.";
+  private static final String NO_AUTHENTICATION_MESSAGE =
+      "No Authentication: User must be logged in to delete a receipt.";
 
   // Local Datastore
   private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
-          .setEnvIsAdmin(true)
-          .setEnvIsLoggedIn(true);
+      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()).setEnvIsLoggedIn(true);
 
   @Mock private DeleteReceiptServlet servlet;
   @Mock private HttpServletRequest request;
@@ -120,5 +120,22 @@ public final class DeleteReceiptServletTest {
     query.setFilter(matchingKeys);
     PreparedQuery results = datastore.prepare(query);
     Assert.assertEquals(1, results.countEntities(FetchOptions.Builder.withDefaults()));
+  }
+
+  @Test
+  public void checkAuthenticationErrorIsReturned() throws IOException {
+    // Will respond with status code 403 since the user is not logged in.
+
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    helper.setEnvIsLoggedIn(false);
+
+    servlet.doPost(request, response);
+    writer.flush();
+
+    Assert.assertTrue(stringWriter.toString().contains(NO_AUTHENTICATION_MESSAGE));
+    verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
   }
 }

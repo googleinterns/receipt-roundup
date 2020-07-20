@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -281,8 +282,7 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("imageUrl", imageUrl);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
-    // TODO: Add generated categories from Natural Language API.
-    receipt.setProperty("categories", getCategories(request));
+    receipt.setProperty("categories", getCategories(request, results.getCategories()));
 
     return receipt;
   }
@@ -305,11 +305,14 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
-   * Gets the set of user-assigned categories from the request.
+   * Gets the set of both user-assigned categories from the request and generated categories from
+   * the receipt analysis.
    */
-  private ImmutableSet<String> getCategories(HttpServletRequest request) {
-    return Arrays.asList(request.getParameterValues("categories"))
-        .stream()
+  private ImmutableSet<String> getCategories(
+      HttpServletRequest request, Set<String> generatedCategories) {
+    return Stream
+        .concat(
+            Arrays.stream(request.getParameterValues("categories")), generatedCategories.stream())
         .map(this::sanitize)
         .collect(ImmutableSet.toImmutableSet());
   }
