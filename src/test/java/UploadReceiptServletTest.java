@@ -341,7 +341,8 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostSanitizesCategories() throws IOException, ReceiptAnalysisException {
+  public void doPostSanitizesUserAndGeneratedCategories()
+      throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     String[] userCategories =
