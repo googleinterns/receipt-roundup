@@ -41,4 +41,12 @@ public class Receipt {
     this.categories = ImmutableSet.copyOf(categories); // creates a deep copy
     this.rawText = rawText;
   }
+
+  public long getId() {
+    return id;
+  }
+
+  public double getPrice() {
+    return price;
+  }
 }
