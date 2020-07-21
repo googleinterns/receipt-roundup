@@ -163,7 +163,7 @@ async function deleteReceipt(receipt) {
  * https://www.daterangepicker.com/.
  */
 $(function() {
-  const start = moment().subtract(29, 'days');
+  const start = moment().subtract(182, 'days');
   const end = moment();
 
   function cb(start, end) {
@@ -209,7 +209,7 @@ $(document).ready(function() {
 
   noUiSlider.create(
       keypressSlider,
-      {start: [20, 80], connect: true, step: 1, range: {min: [0], max: [250]}});
+      {start: [0, 80], connect: true, step: 1, range: {min: [0], max: [250]}});
 
   keypressSlider.noUiSlider.on('update', function(values, handle) {
     inputs[handle].value = values[handle];
