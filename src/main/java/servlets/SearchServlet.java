@@ -184,4 +184,43 @@ public class SearchServlet extends HttpServlet {
     String rawText = "Test";
     return new Receipt(id, userId, timestamp, blobKey, imageUrl, price, store, categories, rawText);
   }
+
+  /* Add receipts to database for testing purposes. */
+  private void addTestReceipts() {
+    addTestReceipt(1, "123", 1045237591000L, new BlobKey("test"), "img/walmart-receipt.jpg", 26.12,
+        "walmart", ImmutableSet.of("candy", "drink", "personal"), "");
+
+    addTestReceipt(2, "123", 1513103400000L, new BlobKey("test"), "img/canes-receipt.jpg", 32.38,
+        "raising cane's chicken fingers", ImmutableSet.of("chicken", "drink", "lunch"), "");
+
+    addTestReceipt(3, "123", 1560193140000L, new BlobKey("test"), "img/contoso-receipt.jpg", 14.51,
+        "contoso", ImmutableSet.of("cappuccino", "sandwich", "lunch"), "");
+
+    addTestReceipt(4, "123", 1491582960000L, new BlobKey("test"), "img/restaurant-receipt.jpeg",
+        29.01, "main street restaurant", ImmutableSet.of("food", "meal", "lunch"), "");
+
+    addTestReceipt(5, "123", 1551461940000L, new BlobKey("test"), "img/target-receipt.jpg", 118.94,
+        "target", ImmutableSet.of("disney", "lion", "personal"), "");
+
+    addTestReceipt(5, "123", 1131818640000L, new BlobKey("test"), "img/trader-joes-receipt.jpg",
+        4.32, "trader joe's", ImmutableSet.of("cat", "food", "random"), "");
+  }
+
+  /* Add mock receipt to datastore. */
+  private void addTestReceipt(long id, String userId, long timestamp, BlobKey blobKey,
+      String imageUrl, double price, String store, ImmutableSet<String> categories,
+      String rawText) {
+    Entity receiptEntity = new Entity("Receipt");
+    receiptEntity.setProperty("userId", userId);
+    receiptEntity.setProperty("timestamp", timestamp);
+    receiptEntity.setProperty("blobKey", blobKey);
+    receiptEntity.setProperty("imageUrl", imageUrl);
+    receiptEntity.setProperty("price", price);
+    receiptEntity.setProperty("store", store);
+    receiptEntity.setProperty("categories", categories);
+    receiptEntity.setProperty("rawText", rawText);
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.put(receiptEntity);
+  }
 }
