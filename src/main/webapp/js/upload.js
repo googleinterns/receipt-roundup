@@ -23,13 +23,19 @@ function cancelUpload() {
  * Verifies that the user is logged in and sets the date input to the current
  * date.
  */
-function loadPage() {
-  checkAuthentication();
-  loadDateInput();
+async function loadPage() {
+  const loggedIn = await checkAuthentication();
+
+  if (loggedIn) {
+    document.body.style.display = 'block';
+    loadDateInput();
+  }
 }
 
 /**
- * Fetches the login status and adds a URL to the logout button.
+ * Fetches the login status and redirects to the login page if the user is
+ * logged out.
+ * @return {boolean} Whether the user is logged in or not.
  */
 async function checkAuthentication() {
   const response = await fetch('/login-status');
@@ -38,7 +44,10 @@ async function checkAuthentication() {
   // Redirect to the login page if the user is not logged in.
   if (!account.loggedIn) {
     window.location.replace('/login.html');
+    return false;
   }
+
+  return true;
 }
 
 /**
