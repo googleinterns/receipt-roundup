@@ -16,6 +16,7 @@
  * Checks that the user is logged in then loads the logout button and receipts.
  */
 function load() {
+  /* global loadPage */
   loadPage(loadLogoutButton, getAllReceipts);
 }
 
