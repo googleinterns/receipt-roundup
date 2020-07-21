@@ -51,7 +51,7 @@ function buildCategoryElement(category) {
   const categoryElement = document.createElement('div');
   categoryElement.className = 'col d-flex justify-content-center';
   categoryElement.innerHTML =
-      '<h4><span class="badge badge-pill badge-secondary">' +
+      '<h4><span class="badge badge-pill badge-secondary text-wrap">' +
       `${category}</span></h4>`;
 
   return categoryElement;
