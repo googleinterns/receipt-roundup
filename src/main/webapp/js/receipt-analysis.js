@@ -12,6 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * Loads the page if the user is logged in. Otherwise, redirects to the
+ * login page.
+ */
+async function loadPage() {
+  const loggedIn = await checkAuthentication();
+
+  if (loggedIn) {
+    document.body.style.display = 'block';
+    loadReceiptAnalysis();
+  }
+}
+
+/**
+ * Fetches the login status and redirects to the login page if the user is
+ * logged out.
+ * @return {boolean} Whether the user is logged in or not.
+ */
+async function checkAuthentication() {
+  const response = await fetch('/login-status');
+  const account = await response.json();
+
+  // Redirect to the login page if the user is not logged in.
+  if (!account.loggedIn) {
+    window.location.replace('/login.html');
+    return false;
+  }
+
+  return true;
+}
+
 /** Fetches receipt properties from the server and adds them to the page. */
 function loadReceiptAnalysis() {
   const parameters = new URLSearchParams(location.search);
