@@ -17,7 +17,7 @@
  */
 function load() {
   /* global loadPage */
-  loadPage(loadLogoutButton, getAllReceipts);
+  loadPage(getAllReceipts, loadLogoutButton);
 }
 
 /**
