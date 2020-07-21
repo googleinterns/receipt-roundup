@@ -13,41 +13,19 @@
 // limitations under the License.
 
 /**
+ * Verifies that the user is logged in and sets the date input to the current
+ * date.
+ */
+async function load() {
+  /* global loadPage */
+  loadPage(loadDateInput);
+}
+
+/**
  * Redirects the user back to the home page when the cancel button is clicked.
  */
 function cancelUpload() {
   window.location.href = 'index.html';
-}
-
-/**
- * Verifies that the user is logged in and sets the date input to the current
- * date.
- */
-async function loadPage() {
-  const loggedIn = await checkAuthentication();
-
-  if (loggedIn) {
-    document.body.style.display = 'block';
-    loadDateInput();
-  }
-}
-
-/**
- * Fetches the login status and redirects to the login page if the user is
- * logged out.
- * @return {boolean} Whether the user is logged in or not.
- */
-async function checkAuthentication() {
-  const response = await fetch('/login-status');
-  const account = await response.json();
-
-  // Redirect to the login page if the user is not logged in.
-  if (!account.loggedIn) {
-    window.location.replace('/login.html');
-    return false;
-  }
-
-  return true;
 }
 
 /**
