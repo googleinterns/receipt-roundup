@@ -1,3 +1,7 @@
+body {
+  display: none;
+}
+
 .card {
   max-width: 600px;
 }
