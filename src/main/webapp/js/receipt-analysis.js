@@ -57,6 +57,18 @@ function buildCategoryElement(category) {
   return categoryElement;
 }
 
+/**
+ * Sends a request to update the receipt.
+ */
+async function updateReceipt(event) {
+  // Prevent the default action of reloading the page on form submission.
+  event.preventDefault();
+
+  // TODO: Get current values.
+
+  // TODO: Send request to servlet.
+}
+
 /** Capitalize the first letter of each word in a string. */
 function capitalizeFirstLetters(lowercasedString) {
   return lowercasedString.split(' ')
