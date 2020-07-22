@@ -12,19 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/** Sets callbacks for chart instance. */
 google.charts.load('current', {'packages': ['corechart']});
-google.charts.setOnLoadCallback(drawChart);
+google.charts.setOnLoadCallback(drawStoresChart);
 
-/** Creates a chart and adds it to the page. */
-function drawChart() {
+/** Intializes and draws map onto DOM. */
+function drawStoresChart() {
   const data = new google.visualization.DataTable();
-  data.addColumn('string', 'Animal');
-  data.addColumn('number', 'Count');
-  data.addRows([['Lions', 10], ['Tigers', 5], ['Bears', 15]]);
+  // TODO: Add real data here.
+  data.addColumn('string', 'Store');
+  data.addColumn('number', 'Total');
+  data.addRows([
+    ['Walmart', 10],
+    ['Target', 5],
+    ['Main Street Restaurant', 15],
+    ['Burger King', 7],
+    ['Gap', 13],
+    ['Walgreens', 4],
+    ['Jewel-Osco', 11],
+    ['Shell', 2],
+    ['Starbucks', 12],
+    ['H&M', 20],
+  ]);
 
-  const options = {'title': 'Zoo Animals', 'width': 500, 'height': 400};
+  const chartWidth =
+      document.getElementById('stores-chart').getBoundingClientRect().width;
+  const chartHeight =
+      document.getElementById('stores-chart').getBoundingClientRect().height;
+
+  const options = {
+    title: 'Spending habits by store',
+    pieHole: 0.3,
+    width: chartWidth,
+    legend: {alignment: 'center'},
+    chartArea: {width: chartWidth, height: chartHeight * 0.6},
+  };
 
   const chart = new google.visualization.PieChart(
-      document.getElementById('chart-container'));
+      document.getElementById('stores-chart'));
   chart.draw(data, options);
 }
+
+/** Handles sizing of chart to be responsive on different screen sizes. */
+$(window).resize(function() {
+  drawStoresChart();
+});
