@@ -40,6 +40,10 @@ public class AnalysisResults {
     return categories;
   }
 
+  public Optional<String> getStore() {
+    return this.store;
+  }
+
   public static class Builder {
     private final String rawText;
     private ImmutableSet<String> categories;
