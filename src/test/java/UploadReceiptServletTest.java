@@ -56,6 +56,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -123,7 +124,7 @@ public final class UploadReceiptServletTest {
   private static final String STORE = "mcdonald's";
   private static final String INVALID_DATE_TYPE = "2020-05-20";
   private static final AnalysisResults ANALYSIS_RESULTS =
-      new AnalysisResults(RAW_TEXT.getValue(), GENERATED_CATEGORIES);
+      new AnalysisResults(RAW_TEXT.getValue(), GENERATED_CATEGORIES, Optional.of(STORE));
 
   private static final String IMAGE_URL = "/serve-image?blob-key=" + BLOB_KEY.getKeyString();
   private static final String LIVE_SERVER_BASE_URL =
@@ -303,7 +304,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     Set<String> categories = ImmutableSet.of(USER_CATEGORIES[0], USER_CATEGORIES[2]);
-    AnalysisResults analysisResults = new AnalysisResults(RAW_TEXT.getValue(), categories);
+    AnalysisResults analysisResults =
+        new AnalysisResults(RAW_TEXT.getValue(), categories, Optional.of(STORE));
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
@@ -356,7 +358,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     Set<String> generatedCategories = ImmutableSet.of("  dIninG ");
-    AnalysisResults analysisResults = new AnalysisResults(RAW_TEXT.getValue(), generatedCategories);
+    AnalysisResults analysisResults =
+        new AnalysisResults(RAW_TEXT.getValue(), generatedCategories, Optional.of(STORE));
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
