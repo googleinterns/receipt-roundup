@@ -165,7 +165,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
-    receipt.setProperty("blobKey", blobKey);
+    receipt.setUnindexedProperty("blobKey", blobKey);
     // TODO: Use store, price, and timestamp from receipt analysis and parsing.
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("store", sanitize(store));
@@ -280,7 +280,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
-    receipt.setProperty("imageUrl", imageUrl);
+    receipt.setUnindexedProperty("imageUrl", imageUrl);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
     receipt.setProperty("categories", getCategories(request, results.getCategories()));
