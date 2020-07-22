@@ -15,6 +15,7 @@
 package com.google.sps.data;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -23,10 +24,12 @@ import java.util.Set;
 public class AnalysisResults {
   private final String rawText;
   private final ImmutableSet<String> categories;
+  private final Optional<String> store;
 
-  public AnalysisResults(String rawText, Set<String> categories) {
+  public AnalysisResults(String rawText, Set<String> categories, Optional<String> store) {
     this.rawText = rawText;
     this.categories = ImmutableSet.copyOf(categories);
+    this.store = store;
   }
 
   public String getRawText() {
@@ -35,5 +38,38 @@ public class AnalysisResults {
 
   public ImmutableSet<String> getCategories() {
     return categories;
+  }
+
+  public static class Builder {
+    private final String rawText;
+    private ImmutableSet<String> categories;
+    private Optional<String> store;
+
+    public Builder(String rawText) {
+      this.rawText = rawText;
+    }
+
+    public String getRawText() {
+      return this.rawText;
+    }
+
+    public Builder setCategories(Set<String> categories) {
+      this.categories = ImmutableSet.copyOf(categories);
+      return this;
+    }
+
+    public Builder setStore(String store) {
+      this.store = Optional.of(store);
+      return this;
+    }
+
+    public AnalysisResults build() {
+      // No logo was detected.
+      if (this.store == null) {
+        this.store = Optional.empty();
+      }
+
+      return new AnalysisResults(this.rawText, this.categories, this.store);
+    }
   }
 }
