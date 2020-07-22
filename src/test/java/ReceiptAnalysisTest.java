@@ -89,6 +89,7 @@ public final class ReceiptAnalysisTest {
 
   private static final Optional<String> STORE = Optional.of("Google");
   private static final float LOGO_CONFIDENCE = 0.6f;
+  private static final float LOGO_CONFIDENCE_BELOW_THRESHOLD = 0.2f;
 
   private URL url;
   private ImageAnnotatorClient imageClient;
@@ -114,29 +115,13 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
-    EntityAnnotation logoAnnotation =
-        EntityAnnotation.newBuilder().setDescription(STORE.get()).setScore(LOGO_CONFIDENCE).build();
-    AnnotateImageResponse imageResponse =
-        createImageResponseWithText().addLogoAnnotations(logoAnnotation).build();
-    BatchAnnotateImagesResponse batchResponse =
-        BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
-    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
-
+    stubAnnotationResponse(LOGO_CONFIDENCE);
     stubTextClassification();
-
-    Image image = Image.newBuilder().setContent(IMAGE_BYTES).build();
-    List<Feature> features =
-        Arrays.asList(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
-            Feature.newBuilder().setType(Feature.Type.LOGO_DETECTION).build());
-    AnnotateImageRequest imageRequest =
-        AnnotateImageRequest.newBuilder().addAllFeatures(features).setImage(image).build();
-    ImmutableList<AnnotateImageRequest> imageRequests = ImmutableList.of(imageRequest);
-
-    Document document = Document.newBuilder().setContent(RAW_TEXT).setType(Type.PLAIN_TEXT).build();
-    ClassifyTextRequest classifyRequest =
-        ClassifyTextRequest.newBuilder().setDocument(document).build();
+    ImmutableList<AnnotateImageRequest> imageRequests = createImageRequest();
+    ClassifyTextRequest classifyRequest = createClassifyRequest();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
     Assert.assertEquals(RAW_TEXT, results.getRawText());
     Assert.assertEquals(CATEGORIES, results.getCategories());
     Assert.assertEquals(STORE, results.getStore());
@@ -153,6 +138,19 @@ public final class ReceiptAnalysisTest {
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
     stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(Optional.empty(), results.getStore());
+  }
+
+  @Test
+  public void analyzeImageAtUrlIgnoresLogoIfLowConfidence()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD);
+    stubTextClassification();
+    ImmutableList<AnnotateImageRequest> imageRequests = createImageRequest();
+    ClassifyTextRequest classifyRequest = createClassifyRequest();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
@@ -235,6 +233,16 @@ public final class ReceiptAnalysisTest {
     Assert.assertEquals(clientException, exception.getCause());
   }
 
+  private void stubAnnotationResponse(float confidenceScore) {
+    EntityAnnotation logoAnnotation =
+        EntityAnnotation.newBuilder().setDescription(STORE.get()).setScore(confidenceScore).build();
+    AnnotateImageResponse imageResponse =
+        createImageResponseWithText().addLogoAnnotations(logoAnnotation).build();
+    BatchAnnotateImagesResponse batchResponse =
+        BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
+  }
+
   private AnnotateImageResponse.Builder createImageResponseWithText() {
     EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
     return AnnotateImageResponse.newBuilder().addTextAnnotations(annotation);
@@ -246,5 +254,20 @@ public final class ReceiptAnalysisTest {
     ClassifyTextResponse classifyResponse =
         ClassifyTextResponse.newBuilder().addCategories(category).build();
     when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
+  }
+
+  private ImmutableList<AnnotateImageRequest> createImageRequest() {
+    Image image = Image.newBuilder().setContent(IMAGE_BYTES).build();
+    List<Feature> features =
+        Arrays.asList(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
+            Feature.newBuilder().setType(Feature.Type.LOGO_DETECTION).build());
+    AnnotateImageRequest imageRequest =
+        AnnotateImageRequest.newBuilder().addAllFeatures(features).setImage(image).build();
+    return ImmutableList.of(imageRequest);
+  }
+
+  private ClassifyTextRequest createClassifyRequest() {
+    Document document = Document.newBuilder().setContent(RAW_TEXT).setType(Type.PLAIN_TEXT).build();
+    return ClassifyTextRequest.newBuilder().setDocument(document).build();
   }
 }
