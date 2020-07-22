@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,6 +87,9 @@ public final class ReceiptAnalysisTest {
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of(GENERAL_CATEGORY_NAME, SPECIFIC_CATEGORY_NAME);
 
+  private static final Optional<String> STORE = Optional.of("Google");
+  private static final float LOGO_CONFIDENCE = 0.6f;
+
   private URL url;
   private ImageAnnotatorClient imageClient;
   private LanguageServiceClient languageClient;
@@ -110,18 +114,15 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
-    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
+    EntityAnnotation logoAnnotation =
+        EntityAnnotation.newBuilder().setDescription(STORE.get()).setScore(LOGO_CONFIDENCE).build();
     AnnotateImageResponse imageResponse =
-        AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
+        createImageResponseWithText().addLogoAnnotations(logoAnnotation).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
-    ClassificationCategory category =
-        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
-    ClassifyTextResponse classifyResponse =
-        ClassifyTextResponse.newBuilder().addCategories(category).build();
-    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
+    stubTextClassification();
 
     Image image = Image.newBuilder().setContent(IMAGE_BYTES).build();
     List<Feature> features =
@@ -136,11 +137,26 @@ public final class ReceiptAnalysisTest {
         ClassifyTextRequest.newBuilder().setDocument(document).build();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
-
     Assert.assertEquals(RAW_TEXT, results.getRawText());
     Assert.assertEquals(CATEGORIES, results.getCategories());
+    Assert.assertEquals(STORE, results.getStore());
     verify(imageClient).batchAnnotateImages(imageRequests);
     verify(languageClient).classifyText(classifyRequest);
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsAnalysisResultsWithNoStore()
+      throws IOException, ReceiptAnalysisException {
+    AnnotateImageResponse imageResponse = createImageResponseWithText().build();
+    BatchAnnotateImagesResponse batchResponse =
+        BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
+
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(Optional.empty(), results.getStore());
   }
 
   @Test
@@ -217,5 +233,18 @@ public final class ReceiptAnalysisTest {
 
     Assert.assertEquals(TEXT_REQUEST_FAILED_WARNING, exception.getMessage());
     Assert.assertEquals(clientException, exception.getCause());
+  }
+
+  private AnnotateImageResponse.Builder createImageResponseWithText() {
+    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
+    return AnnotateImageResponse.newBuilder().addTextAnnotations(annotation);
+  }
+
+  private void stubTextClassification() {
+    ClassificationCategory category =
+        ClassificationCategory.newBuilder().setName(CATEGORY_NAME).build();
+    ClassifyTextResponse classifyResponse =
+        ClassifyTextResponse.newBuilder().addCategories(category).build();
+    when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
   }
 }
