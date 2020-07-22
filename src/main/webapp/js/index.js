@@ -163,7 +163,7 @@ async function deleteReceipt(receipt) {
  * https://www.daterangepicker.com/.
  */
 $(function() {
-  const start = moment().subtract(182, 'days');
+  const start = moment().subtract(29, 'days');
   const end = moment();
 
   function cb(start, end) {
@@ -190,6 +190,7 @@ $(function() {
                 moment().subtract(1, 'month').endOf('month'),
               ],
             },
+            showDropdowns: true,
           },
 
           cb);
