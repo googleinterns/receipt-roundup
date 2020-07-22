@@ -23,7 +23,7 @@ function loadReceiptAnalysis() {
   const imageUrl = parameters.get('image-url');
 
   document.getElementById('date').innerText = `Transaction Date: ${date}`;
-  document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
+  document.getElementById('store-input').value = storeName;
   document.getElementById('total').innerText = `Total Price: $${total}`;
 
   const categoriesContainer = document.getElementById('categories-container');
@@ -64,7 +64,12 @@ async function updateReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
-  // TODO: Get current values.
+  // TODO: Get other input values.
+  const store = document.getElementById('store-input').value;
+
+  const formData = new FormData();
+
+  formData.append('store', store);
 
   // TODO: Send request to servlet.
 }
