@@ -49,6 +49,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,9 +124,11 @@ public final class ReceiptAnalysisTest {
     when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenReturn(classifyResponse);
 
     Image image = Image.newBuilder().setContent(IMAGE_BYTES).build();
-    Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
+    List<Feature> features =
+        Arrays.asList(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
+            Feature.newBuilder().setType(Feature.Type.LOGO_DETECTION).build());
     AnnotateImageRequest imageRequest =
-        AnnotateImageRequest.newBuilder().addFeatures(feature).setImage(image).build();
+        AnnotateImageRequest.newBuilder().addAllFeatures(features).setImage(image).build();
     ImmutableList<AnnotateImageRequest> imageRequests = ImmutableList.of(imageRequest);
 
     Document document = Document.newBuilder().setContent(RAW_TEXT).setType(Type.PLAIN_TEXT).build();
