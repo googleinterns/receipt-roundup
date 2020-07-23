@@ -57,7 +57,10 @@ function buildCategoryElement(category) {
   return categoryElement;
 }
 
-/** Capitalizes the first letter of each word in a string. */
+/**
+ * Capitalizes the first letter of each word in a string.
+ * TODO: Move this function to a shared JS file.
+ */
 function capitalizeFirstLetters(lowercasedString) {
   return lowercasedString.split(' ')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
