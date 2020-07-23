@@ -54,6 +54,10 @@ import javax.servlet.http.HttpServletResponse;
  * as well as some categories the text falls into using the Cloud Natural Language API.
  */
 public class ReceiptAnalysis {
+  // Confidence scores are values in the range [0,1] that indicate how accurate the Cloud Vision API
+  // is in identifying the detected logo, with higher scores meaning higher certainty. This is the
+  // minimum confidence score that a detected logo must have to be considered significant for
+  // receipt analysis.
   private static final double LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4;
 
   /** Returns the text and categorization of the image at the requested URL. */
