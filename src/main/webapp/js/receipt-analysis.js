@@ -18,7 +18,7 @@
  */
 function load() {
   /* global loadPage */
-  loadPage(loadReceiptAnalysis);
+  loadPage(loadReceiptAnalysis);  // From js/script.js.
 }
 
 /** Fetches receipt properties from the server and adds them to the page. */
