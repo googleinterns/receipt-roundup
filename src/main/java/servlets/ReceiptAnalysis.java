@@ -176,10 +176,10 @@ public class ReceiptAnalysis {
 
   /*
    * Parse category strings into more natural categories
-   * e.g. "/Food & Drink/Restaurants" becomes "Food & Drink" and "Restaurants"
+   * e.g. "/Food & Drink/Restaurants" becomes "Food", "Drink", and "Restaurants"
    */
   private static Stream<String> parseCategory(ClassificationCategory category) {
-    return Stream.of(category.getName().substring(1).split("/"));
+    return Stream.of(category.getName().substring(1).split("/| & "));
   }
 
   public static class ReceiptAnalysisException extends Exception {
