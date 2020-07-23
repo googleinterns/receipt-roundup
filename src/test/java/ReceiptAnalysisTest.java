@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
@@ -258,8 +257,8 @@ public final class ReceiptAnalysisTest {
 
   private ImmutableList<AnnotateImageRequest> createImageRequest() {
     Image image = Image.newBuilder().setContent(IMAGE_BYTES).build();
-    List<Feature> features =
-        Arrays.asList(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
+    ImmutableList<Feature> features =
+        ImmutableList.of(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
             Feature.newBuilder().setType(Feature.Type.LOGO_DETECTION).build());
     AnnotateImageRequest imageRequest =
         AnnotateImageRequest.newBuilder().addAllFeatures(features).setImage(image).build();
