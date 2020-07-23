@@ -18,7 +18,7 @@
  */
 async function load() {
   /* global loadPage */
-  loadPage(loadDateInput);
+  loadPage(loadDateInput);  // From js/script.js
 }
 
 /**
