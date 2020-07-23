@@ -57,7 +57,7 @@ async function updateReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
-  // TODO: Get transaction date.
+  const date = document.getElementById('date-input').valueAsNumber;
   const store = document.getElementById('store-input').value;
   const price =
       convertStringToNumber(document.getElementById('price-input').value);
@@ -65,6 +65,7 @@ async function updateReceipt(event) {
 
   const formData = new FormData();
 
+  formData.append('date', date);
   formData.append('store', store);
   formData.append('price', price);
 
