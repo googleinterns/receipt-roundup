@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 public class EditReceiptServlet extends HttpServlet {
   private static final String USER_NOT_LOGGED_IN_WARNING =
       "User must be logged in to edit a receipt.";
-  private static final String ID_NOT_PARSABLE_WARNING = "ID is not parsable.";
 
   // Logs to System.err by default.
   private static final Logger logger = Logger.getLogger(UploadReceiptServlet.class.getName());
