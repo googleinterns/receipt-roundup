@@ -17,6 +17,7 @@ package com.google.sps;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -29,6 +30,7 @@ import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.common.collect.ImmutableSet;
 import com.google.sps.servlets.DeleteReceiptServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,20 +44,27 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@PowerMockIgnore("jdk.internal.reflect.*")
-@RunWith(PowerMockRunner.class)
 public final class DeleteReceiptServletTest {
   private static final String INVALID_ID_MESSAGE =
       "Invalid ID: Receipt unable to be deleted at this time, please try again.";
+  private static final String NO_AUTHENTICATION_MESSAGE =
+      "No Authentication: User must be logged in to delete a receipt.";
+
+  // Test fields.
+  private static final String USER_ID = "1";
+  private static final long TIMESTAMP = 6292020;
+  private static final BlobKey BLOB_KEY = new BlobKey("Test");
+  private static final String IMAGE_URL = "img/walmart-receipt.jpg";
+  private static final double PRICE = 26.12;
+  private static final String STORE = "Walmart";
+  private static final ImmutableSet<String> CATEGORIES =
+      ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
+  private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
 
   // Local Datastore
   private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
-          .setEnvIsAdmin(true)
-          .setEnvIsLoggedIn(true);
+      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()).setEnvIsLoggedIn(true);
 
   @Mock private DeleteReceiptServlet servlet;
   @Mock private HttpServletRequest request;
@@ -80,7 +89,11 @@ public final class DeleteReceiptServletTest {
   @Test
   public void doPostDeletesReceiptFromDatastore() throws IOException {
     // Add mock receipt to datastore.
-    long id = TestUtils.addReceiptToMockDatastore(datastore);
+    long id = TestUtils
+                  .addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE,
+                      CATEGORIES, RAW_TEXT)
+                  .getKey()
+                  .getId();
 
     // Make sure receipt is added by checking if there is one entity returned.
     Query query = new Query("Receipt");
@@ -103,9 +116,13 @@ public final class DeleteReceiptServletTest {
     when(response.getWriter()).thenReturn(writer);
 
     // Add mock receipt to datastore.
-    long id = TestUtils.addReceiptToMockDatastore(datastore);
+    long id = TestUtils
+                  .addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE,
+                      CATEGORIES, RAW_TEXT)
+                  .getKey()
+                  .getId();
 
-    // Pass in an String id instead of a long.
+    // Pass in a String id instead of a long.
     when(request.getParameter("id")).thenReturn(String.valueOf(id) + "this should fail");
     servlet.doPost(request, response);
     writer.flush();
@@ -120,5 +137,21 @@ public final class DeleteReceiptServletTest {
     query.setFilter(matchingKeys);
     PreparedQuery results = datastore.prepare(query);
     Assert.assertEquals(1, results.countEntities(FetchOptions.Builder.withDefaults()));
+  }
+
+  @Test
+  public void checkAuthenticationErrorIsReturned() throws IOException {
+    // Will respond with status code 403 since the user is not logged in.
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(writer);
+
+    helper.setEnvIsLoggedIn(false);
+
+    servlet.doPost(request, response);
+    writer.flush();
+
+    Assert.assertTrue(stringWriter.toString().contains(NO_AUTHENTICATION_MESSAGE));
+    verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
   }
 }
