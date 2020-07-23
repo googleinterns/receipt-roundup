@@ -36,7 +36,21 @@
           </div>
           <input id="store-input" class="form-control mb-3" type="text" name="store" placeholder="Store" required />
 
-          <p id="total" class="card-text align-self-center"></p>
+          <div class="d-flex justify-content-center">
+            <label for="price-input">Total Price:</label>
+          </div>
+          <input
+            id="price-input"
+            class="form-control mb-3"
+            type="text"
+            name="price"
+            value="0.00"
+            min="0"
+            step="0.01"
+            onfocus="convertPricetoValue(event)"
+            onblur="formatCurrency(event)"
+            required
+          />
 
           <div class="d-flex justify-content-center">
             <label for="categories-input">Categories:</label>
