@@ -30,10 +30,6 @@ input {
   margin: auto;
 }
 
-#date-input {
-  width: 12em;
-}
-
 .custom-file {
   font-size: 0.5rem;
 }
@@ -80,10 +76,6 @@ small {
   #store-input {
     font-size: 20px;
     width: 20em;
-  }
-
-  #date-input {
-    font-size: 20px;
   }
 
   .custom-file {
