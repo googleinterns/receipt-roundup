@@ -225,7 +225,7 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(CATEGORIES_COLLECTION, receipt.getProperty("categories"));
     Assert.assertEquals(USER_ID, receipt.getProperty("userId"));
 
-    String response = extractProperties(stringWriter.toString());
+    String response = TestUtils.extractProperties(stringWriter.toString());
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
         PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
     Assert.assertEquals(expectedResponse, response);
@@ -260,7 +260,7 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(PAST_TIMESTAMP, receipt.getProperty("timestamp"));
     Assert.assertEquals(USER_ID, receipt.getProperty("userId"));
 
-    String response = extractProperties(stringWriter.toString());
+    String response = TestUtils.extractProperties(stringWriter.toString());
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
         PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
     Assert.assertEquals(expectedResponse, response);
@@ -583,15 +583,7 @@ public final class UploadReceiptServletTest {
 
     String json = new Gson().toJson(receipt);
 
-    return extractProperties(json) + "\n";
-  }
-
-  /**
-   * Removes the unique ID property from the receipt entity JSON string, leaving only the receipt
-   * properties.
-   */
-  private String extractProperties(String json) {
-    return json.substring(json.indexOf("propertyMap"));
+    return TestUtils.extractProperties(json) + "\n";
   }
 
   /**
