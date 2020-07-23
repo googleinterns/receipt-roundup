@@ -13,30 +13,18 @@
 // limitations under the License.
 
 /**
+ * Verifies that the user is logged in.
+ */
+async function load() {
+  /* global loadPage */
+  loadPage(loadDateInput);  // From js/common.js
+}
+
+/**
  * Redirects the user back to the home page when the cancel button is clicked.
  */
 function cancelUpload() {
   window.location.href = 'index.html';
-}
-
-/**
- * Verifies that the user is logged in.
- */
-function loadPage() {
-  checkAuthentication();
-}
-
-/**
- * Fetches the login status and adds a URL to the logout button.
- */
-async function checkAuthentication() {
-  const response = await fetch('/login-status');
-  const account = await response.json();
-
-  // Redirect to the login page if the user is not logged in.
-  if (!account.loggedIn) {
-    window.location.replace('/login.html');
-  }
 }
 
 /**
@@ -60,14 +48,12 @@ async function uploadReceipt(event) {
 
   const uploadUrl = await fetchBlobstoreUrl();
   const categories = document.getElementById('categories-input').value;
-  const store = document.getElementById('store-input').value;
   const image = fileInput.files[0];
 
   const formData = new FormData();
   createCategoryList(categories).forEach((category) => {
     formData.append('categories', category);
   });
-  formData.append('store', store);
   formData.append('receipt-image', image);
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});

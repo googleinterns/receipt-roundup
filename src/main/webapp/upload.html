@@ -11,12 +11,13 @@
   crossorigin="anonymous"
 />
 
-<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/common.css" />
 <link rel="stylesheet" href="css/upload.css" />
 
+<script src="js/common.js"></script>
 <script src="js/upload.js"></script>
 
-<body onload="loadPage()">
+<body onload="load()">
   <button id="cancel-button" class="ml-2 btn btn-info" type="button" onclick="cancelUpload()">Cancel</button>
   <h1>Upload a Receipt</h1>
   <br />
@@ -31,9 +32,6 @@
       placeholder="Category 1, Category 2, Category 3"
       required
     />
-
-    <label for="store">Enter the store name:</label>
-    <input id="store-input" class="form-control" type="text" name="store" placeholder="Store" required />
 
     <label id="receipt-image-label" for="receipt-image-input">Upload a receipt image:</label>
     <div class="custom-file">
