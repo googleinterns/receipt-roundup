@@ -122,8 +122,8 @@ public class ReceiptAnalysis {
     AnalysisResults.Builder analysisBuilder;
 
     Image image = Image.newBuilder().setContent(imageBytes).build();
-    List<Feature> features =
-        Arrays.asList(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
+    ImmutableList<Feature> features =
+        ImmutableList.of(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
             Feature.newBuilder().setType(Feature.Type.LOGO_DETECTION).build());
     AnnotateImageRequest request =
         AnnotateImageRequest.newBuilder().addAllFeatures(features).setImage(image).build();
