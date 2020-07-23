@@ -48,16 +48,17 @@ function getDateFromTimestamp(timestamp) {
 
 /** Builds the div element for a category along with its children. */
 function buildCategoryElement(category) {
-  const categoryElement = document.createElement('div');
-  categoryElement.className = 'col d-flex justify-content-center';
-  categoryElement.innerHTML =
-      '<h4><span class="badge badge-pill badge-secondary text-wrap">' +
-      `${category}</span></h4>`;
+  const categoryElement =
+      document.querySelector('#category-template').content.cloneNode(true);
+  categoryElement.querySelector('#category-name').innerText = category;
 
   return categoryElement;
 }
 
-/** Capitalize the first letter of each word in a string. */
+/**
+ * Capitalizes the first letter of each word in a string.
+ * TODO: Move this function to a shared JS file.
+ */
 function capitalizeFirstLetters(lowercasedString) {
   return lowercasedString.split(' ')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

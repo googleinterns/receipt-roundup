@@ -19,6 +19,8 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import java.io.IOException;
 import java.lang.NumberFormatException;
 import javax.servlet.annotation.WebServlet;
@@ -29,18 +31,30 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet responsible for deleting a single receipt. */
 @WebServlet("/delete-receipt")
 public class DeleteReceiptServlet extends HttpServlet {
+  private static final String NO_AUTHENTICATION_MESSAGE =
+      "No Authentication: User must be logged in to delete a receipt.";
+
   private final DatastoreService datastore;
+  private final UserService userService;
 
   public DeleteReceiptServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
+    userService = UserServiceFactory.getUserService();
   }
 
   public DeleteReceiptServlet(DatastoreService datastore) {
     this.datastore = datastore;
+    userService = UserServiceFactory.getUserService();
   }
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.getWriter().println(NO_AUTHENTICATION_MESSAGE);
+      return;
+    }
+
     long id = 0;
 
     try {
