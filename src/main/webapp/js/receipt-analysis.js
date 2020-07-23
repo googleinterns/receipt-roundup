@@ -22,7 +22,7 @@ function loadReceiptAnalysis() {
   const categories = parameters.get('categories').split(',');
   const imageUrl = parameters.get('image-url');
 
-  document.getElementById('date').innerText = `Upload Date: ${date}`;
+  document.getElementById('date').innerText = `Transaction Date: ${date}`;
   document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
   document.getElementById('total').innerText = `Total Price: $${total}`;
 
@@ -39,8 +39,9 @@ function loadReceiptAnalysis() {
 /** Converts a timestamp string into the equivalent date string. */
 function getDateFromTimestamp(timestamp) {
   const time = parseInt(timestamp);
-  const timeZoneId = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return new Date(time).toLocaleString('en-US', {timeZone: timeZoneId});
+
+  // Only return the year, month, and day
+  return new Date(time).toISOString().substring(0, 10);
 }
 
 /** Builds the div element for a category along with its children. */
