@@ -59,17 +59,27 @@ async function updateReceipt(event) {
 
   // TODO: Get other input values.
   const store = document.getElementById('store-input').value;
+  const categories = document.getElementById('categories-input').value;
 
   const formData = new FormData();
 
   formData.append('store', store);
 
+  createCategoryList(categories).forEach((category) => {
+    formData.append('categories', category);
+  });
+
   // TODO: Send request to servlet.
 }
 
-/** Capitalize the first letter of each word in a string. */
+/** Capitalizes the first letter of each word in a string. */
 function capitalizeFirstLetters(lowercasedString) {
   return lowercasedString.split(' ')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+}
+
+/** Converts the comma-separated categories string into a list of categories. */
+function createCategoryList(categories) {
+  return categories.split(',').map((category) => category.trim());
 }
