@@ -30,10 +30,6 @@ input {
   margin: auto;
 }
 
-#price-input {
-  width: 7em;
-}
-
 #date-input {
   width: 12em;
 }
@@ -86,8 +82,7 @@ small {
     width: 20em;
   }
 
-  #date-input,
-  #price-input {
+  #date-input {
     font-size: 20px;
   }
 
