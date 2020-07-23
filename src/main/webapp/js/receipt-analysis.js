@@ -57,13 +57,16 @@ async function updateReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
-  // TODO: Get other input values.
+  // TODO: Get transaction date.
   const store = document.getElementById('store-input').value;
+  const price =
+      convertStringToNumber(document.getElementById('price-input').value);
   const categories = document.getElementById('categories-input').value;
 
   const formData = new FormData();
 
   formData.append('store', store);
+  formData.append('price', price);
 
   createCategoryList(categories).forEach((category) => {
     formData.append('categories', category);
