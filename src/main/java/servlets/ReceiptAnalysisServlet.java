@@ -25,12 +25,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet with a GET handler that serves the text of the specified image using the Cloud Vision
- * API.
+ * Servlet with a GET handler that serves the text of a specified image using the Cloud Vision API,
+ * as well as some categories the text falls into using the Cloud Natural Language API.
  */
 @WebServlet("/receipt-analysis")
 public class ReceiptAnalysisServlet extends HttpServlet {
-  /** Serves the text of the image at the requested URL. */
+  /** Serves the text and categorization of the image at the requested URL. */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String url = request.getParameter("url");
@@ -42,7 +42,7 @@ public class ReceiptAnalysisServlet extends HttpServlet {
     }
 
     try {
-      results = ReceiptAnalysis.serveImageText(new URL(url));
+      results = ReceiptAnalysis.analyzeImageAt(new URL(url));
     } catch (ReceiptAnalysisException e) {
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       response.getWriter().println(e.toString());
