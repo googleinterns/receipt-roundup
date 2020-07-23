@@ -151,7 +151,7 @@ public class UploadReceiptServlet extends HttpServlet {
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
              InvalidPriceException, InvalidDateException, ReceiptAnalysisException {
-    long timestamp = getTimestamp(request);
+    long timestamp = getTimestamp(request, this.clock);
     double price = roundPrice(request.getParameter("price"));
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
 
@@ -178,7 +178,8 @@ public class UploadReceiptServlet extends HttpServlet {
    * Converts the date parameter from the request to a timestamp and verifies that the date is in
    * the past.
    */
-  private long getTimestamp(HttpServletRequest request) throws InvalidDateException {
+  public static long getTimestamp(HttpServletRequest request, Clock clock)
+      throws InvalidDateException {
     long currentTimestamp = clock.instant().toEpochMilli();
     long transactionTimestamp;
 
@@ -237,7 +238,7 @@ public class UploadReceiptServlet extends HttpServlet {
   /**
    * Converts a price string into a double rounded to 2 decimal places.
    */
-  private static double roundPrice(String price) throws InvalidPriceException {
+  public static double roundPrice(String price) throws InvalidPriceException {
     double parsedPrice;
     try {
       parsedPrice = Double.parseDouble(price);
@@ -313,7 +314,7 @@ public class UploadReceiptServlet extends HttpServlet {
     return Stream
         .concat(
             Arrays.stream(request.getParameterValues("categories")), generatedCategories.stream())
-        .map(this::sanitize)
+        .map(UploadReceiptServlet::sanitize)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -321,7 +322,7 @@ public class UploadReceiptServlet extends HttpServlet {
    * Converts the input to all lowercase with exactly 1 whitespace separating words and no leading
    * or trailing whitespace.
    */
-  private String sanitize(String input) {
+  public static String sanitize(String input) {
     return input.trim().replaceAll("\\s+", " ").toLowerCase();
   }
 
