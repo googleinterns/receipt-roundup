@@ -144,6 +144,7 @@ public class ReceiptAnalysis {
       if (response.hasError()) {
         throw new ReceiptAnalysisException("Received image annotation response with error.");
       } else if (response.getTextAnnotationsList().isEmpty()) {
+        // TODO: Handle case with no raw text by depending on user-assigned categories.
         throw new ReceiptAnalysisException(
             "Received image annotation response without text annotations.");
       }
