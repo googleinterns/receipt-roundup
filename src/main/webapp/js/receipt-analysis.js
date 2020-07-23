@@ -23,7 +23,7 @@ function loadReceiptAnalysis() {
       capitalizeFirstLetters(parameters.get('categories').replace(/,/gi, ', '));
   const imageUrl = parameters.get('image-url');
 
-  document.getElementById('date').innerText = `Transaction Date: ${date}`;
+  document.getElementById('date-input').value = date;
   document.getElementById('store-input').value = storeName;
   document.getElementById('price-input').value = `$${price}`;
   document.getElementById('categories-input').value = categories;

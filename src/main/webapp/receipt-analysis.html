@@ -29,7 +29,10 @@
     <div class="card m-auto p-3">
       <form id="update-receipt-form" action="#" onsubmit="updateReceipt(event)">
         <div class="card border-0">
-          <p id="date" class="card-text align-self-center"></p>
+          <div class="d-flex justify-content-center">
+            <label for="date-input">Transaction Date:</label>
+          </div>
+          <input id="date-input" class="form-control mb-3" type="date" name="date" />
 
           <div class="d-flex justify-content-center">
             <label for="store-input">Store Name:</label>
