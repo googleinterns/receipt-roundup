@@ -17,7 +17,7 @@
  */
 async function load() {
   /* global loadPage */
-  loadPage(loadDateInput);  // From js/common.js
+  loadPage();  // From js/common.js
 }
 
 /**
