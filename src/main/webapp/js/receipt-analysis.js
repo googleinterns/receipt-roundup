@@ -46,11 +46,9 @@ function getDateFromTimestamp(timestamp) {
 
 /** Builds the div element for a category along with its children. */
 function buildCategoryElement(category) {
-  const categoryElement = document.createElement('div');
-  categoryElement.className = 'col d-flex justify-content-center';
-  categoryElement.innerHTML =
-      '<h4><span class="badge badge-pill badge-secondary">' +
-      `${category}</span></h4>`;
+  const categoryElement =
+      document.querySelector('#category-template').content.cloneNode(true);
+  categoryElement.querySelector('#category-name').innerText = category;
 
   return categoryElement;
 }

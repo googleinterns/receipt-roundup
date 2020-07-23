@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -164,7 +165,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
-    receipt.setProperty("blobKey", blobKey);
+    receipt.setUnindexedProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("store", sanitize(store));
     receipt.setProperty("price", price);
@@ -266,10 +267,10 @@ public class UploadReceiptServlet extends HttpServlet {
       // For the dev server, authentication is required to access the image served at the URL, so
       // fetch the bytes directly from Blobstore instead.
       if (baseUrl.equals(DEV_SERVER_BASE_URL)) {
-        results = ReceiptAnalysis.serveImageText(blobKey);
+        results = ReceiptAnalysis.analyzeImageAt(blobKey);
       } else {
         URL absoluteUrl = new URL(baseUrl + imageUrl);
-        results = ReceiptAnalysis.serveImageText(absoluteUrl);
+        results = ReceiptAnalysis.analyzeImageAt(absoluteUrl);
       }
     } catch (IOException e) {
       blobstoreService.delete(blobKey);
@@ -278,11 +279,10 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
-    receipt.setProperty("imageUrl", imageUrl);
+    receipt.setUnindexedProperty("imageUrl", imageUrl);
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
-    // TODO: Add generated categories from Natural Language API.
-    receipt.setProperty("categories", getCategories(request));
+    receipt.setProperty("categories", getCategories(request, results.getCategories()));
 
     return receipt;
   }
@@ -305,11 +305,14 @@ public class UploadReceiptServlet extends HttpServlet {
   }
 
   /**
-   * Gets the set of user-assigned categories from the request.
+   * Gets the set of both user-assigned categories from the request and generated categories from
+   * the receipt analysis.
    */
-  private ImmutableSet<String> getCategories(HttpServletRequest request) {
-    return Arrays.asList(request.getParameterValues("categories"))
-        .stream()
+  private ImmutableSet<String> getCategories(
+      HttpServletRequest request, Set<String> generatedCategories) {
+    return Stream
+        .concat(
+            Arrays.stream(request.getParameterValues("categories")), generatedCategories.stream())
         .map(this::sanitize)
         .collect(ImmutableSet.toImmutableSet());
   }
