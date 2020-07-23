@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * Loads the page if the user is logged in. Otherwise, redirects to the
+ * login page.
+ */
+function load() {
+  /* global loadPage */
+  loadPage(loadReceiptAnalysis);  // From js/common.js.
+}
+
 /** Fetches receipt properties from the server and adds them to the page. */
 function loadReceiptAnalysis() {
   const parameters = new URLSearchParams(location.search);
