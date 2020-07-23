@@ -80,8 +80,7 @@ small {
     padding: 1.5%;
   }
 
-  #categories-input,
-  #store-input {
+  #categories-input {
     font-size: 20px;
     width: 20em;
   }
