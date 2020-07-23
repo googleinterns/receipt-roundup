@@ -41,7 +41,7 @@ public class AnalysisResults {
   }
 
   public Optional<String> getStore() {
-    return this.store;
+    return store;
   }
 
   public static class Builder {
@@ -54,7 +54,7 @@ public class AnalysisResults {
     }
 
     public String getRawText() {
-      return this.rawText;
+      return rawText;
     }
 
     public Builder setCategories(Set<String> categories) {
@@ -69,11 +69,11 @@ public class AnalysisResults {
 
     public AnalysisResults build() {
       // No logo was detected.
-      if (this.store == null) {
-        this.store = Optional.empty();
+      if (store == null) {
+        store = Optional.empty();
       }
 
-      return new AnalysisResults(this.rawText, this.categories, this.store);
+      return new AnalysisResults(rawText, categories, store);
     }
   }
 }
