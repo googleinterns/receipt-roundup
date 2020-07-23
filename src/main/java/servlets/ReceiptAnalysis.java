@@ -58,7 +58,7 @@ public class ReceiptAnalysis {
   // is in identifying the detected logo, with higher scores meaning higher certainty. This is the
   // minimum confidence score that a detected logo must have to be considered significant for
   // receipt analysis.
-  private static final double LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4;
+  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4f;
 
   /** Returns the text and categorization of the image at the requested URL. */
   public static AnalysisResults analyzeImageAt(URL url)
