@@ -17,7 +17,7 @@ function loadReceiptAnalysis() {
   const parameters = new URLSearchParams(location.search);
 
   const date = getDateFromTimestamp(parameters.get('timestamp'));
-  const storeName = parameters.get('store');
+  const storeName = capitalizeFirstLetters(parameters.get('store'));
   const total = parameters.get('price');
   const categories = parameters.get('categories').split(',');
   const imageUrl = parameters.get('image-url');
@@ -30,7 +30,9 @@ function loadReceiptAnalysis() {
   categoriesContainer.innerHTML = '';
 
   for (let i = 0; i < categories.length && i < 3; i++) {
-    categoriesContainer.appendChild(buildCategoryElement(categories[i]));
+    const categoryName = capitalizeFirstLetters(categories[i]);
+    const categoryElement = buildCategoryElement(categoryName);
+    categoriesContainer.appendChild(categoryElement);
   }
 
   document.getElementById('receipt-image').src = imageUrl;
@@ -51,4 +53,14 @@ function buildCategoryElement(category) {
   categoryElement.querySelector('#category-name').innerText = category;
 
   return categoryElement;
+}
+
+/**
+ * Capitalizes the first letter of each word in a string.
+ * TODO: Move this function to a shared JS file.
+ */
+function capitalizeFirstLetters(lowercasedString) {
+  return lowercasedString.split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
 }
