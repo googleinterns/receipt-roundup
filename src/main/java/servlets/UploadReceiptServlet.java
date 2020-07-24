@@ -33,7 +33,6 @@ import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.FormatUtils;
 import com.google.sps.servlets.FormatUtils.InvalidDateException;
 import com.google.sps.servlets.FormatUtils.InvalidPriceException;
-;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -154,9 +153,8 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
-             InvalidPriceException, FormatUtils.InvalidDateException, ReceiptAnalysisException {
+             InvalidPriceException, InvalidDateException, ReceiptAnalysisException {
     long timestamp = FormatUtils.getTimestamp(request, this.clock);
-    double price = FormatUtils.roundPrice(request.getParameter("price"));
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
 
     if (!userService.isUserLoggedIn()) {
@@ -172,7 +170,6 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setUnindexedProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("store", FormatUtils.sanitize(store));
-    receipt.setProperty("price", price);
     receipt.setProperty("userId", userId);
 
     return receipt;
@@ -222,7 +219,7 @@ public class UploadReceiptServlet extends HttpServlet {
    * entity populated with the extracted fields.
    */
   private Entity analyzeReceiptImage(BlobKey blobKey, HttpServletRequest request)
-      throws ReceiptAnalysisException {
+      throws ReceiptAnalysisException, InvalidPriceException {
     String imageUrl = getBlobServingUrl(blobKey);
     String baseUrl = getBaseUrl(request);
 
@@ -245,6 +242,8 @@ public class UploadReceiptServlet extends HttpServlet {
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
     receipt.setUnindexedProperty("imageUrl", imageUrl);
+    // TODO: Replace with parsed price.
+    receipt.setProperty("price", FormatUtils.roundPrice(request.getParameter("price")));
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
     receipt.setProperty("categories", getCategories(request, results.getCategories()));
