@@ -12,6 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * Checks that the user is logged in then loads the logout button and receipts.
+ */
+function load() {
+  /* global loadPage */
+  loadPage(getAllReceipts, loadLogoutButton);  // From js/common.js
+}
+
+/**
+ * Adds a URL to the logout button and displays user's email.
+ * @param {object} account
+ */
+async function loadLogoutButton(account) {
+  document.getElementById('logout-button').href = account.logoutUrl;
+  
+  document.getElementById('user-display').innerHTML =
+      `You are signed in as ${account.email}`;
+}
+
 /** Fetches all receipts from the server and adds them to the DOM. */
 async function getAllReceipts() {
   const params = new URLSearchParams();
@@ -22,23 +41,6 @@ async function getAllReceipts() {
 
   clearExistingDisplay();
   displayReceipts(receipts);
-}
-
-/** Fetches the login status and adds a URL to the logout button. */
-async function checkAuthentication() {
-  const response = await fetch('/login-status');
-  const account = await response.json();
-
-  // Redirect to the login page if the user is not logged in.
-  if (!account.loggedIn) {
-    window.location.replace('/login.html');
-  }
-
-  document.getElementById('user-display').innerHTML =
-      `You are signed in as ${account.email}`;
-
-  const logoutButton = document.getElementById('logout-button');
-  logoutButton.href = account.logoutUrl;
 }
 
 /** Fetches matching receipts from the server and adds them to the DOM. */
@@ -193,6 +195,7 @@ $(function() {
                 moment().subtract(1, 'month').endOf('month'),
               ],
             },
+            showDropdowns: true,
           },
 
           cb);
@@ -212,7 +215,7 @@ $(document).ready(function() {
 
   noUiSlider.create(
       keypressSlider,
-      {start: [20, 80], connect: true, step: 1, range: {min: [0], max: [250]}});
+      {start: [0, 80], connect: true, step: 1, range: {min: [0], max: [250]}});
 
   keypressSlider.noUiSlider.on('update', function(values, handle) {
     inputs[handle].value = values[handle];

@@ -572,10 +572,10 @@ public final class UploadReceiptServletTest {
   private String createReceiptEntity(String imageUrl, double price, String store, Text rawText,
       BlobKey blobKey, long timestamp, Collection<String> categories, String userId) {
     Entity receipt = new Entity("Receipt");
-    receipt.setProperty("imageUrl", imageUrl);
+    receipt.setUnindexedProperty("imageUrl", imageUrl);
     receipt.setUnindexedProperty("rawText", rawText);
     receipt.setProperty("categories", categories);
-    receipt.setProperty("blobKey", blobKey);
+    receipt.setUnindexedProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("store", store);
     receipt.setProperty("price", price);
