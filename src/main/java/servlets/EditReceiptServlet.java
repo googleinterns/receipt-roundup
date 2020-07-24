@@ -78,10 +78,10 @@ public class EditReceiptServlet extends HttpServlet {
       long id = Long.parseLong(request.getParameter("id"));
       receipt = createUpdatedReceipt(request, id);
     } catch (EntityNotFoundException | InvalidPriceException | InvalidDateException
-        | NumberFormatException e) {
-      logger.warning(e.toString());
+        | NumberFormatException formatException) {
+      logger.warning(formatException.toString());
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.getWriter().println(e.toString());
+      response.getWriter().println(formatException.toString());
       return;
     }
 
