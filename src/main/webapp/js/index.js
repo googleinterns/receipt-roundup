@@ -34,8 +34,6 @@ async function checkAuthentication() {
     window.location.replace('/login.html');
   }
 
-  // TODO: account.email will get the person's email
-
   const logoutButton = document.getElementById('logout-button');
   logoutButton.href = account.logoutUrl;
 }
