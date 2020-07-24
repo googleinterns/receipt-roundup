@@ -14,7 +14,10 @@
 
 package com.google.sps.servlets;
 
+import com.google.common.collect.ImmutableSet;
 import java.time.Clock;
+import java.util.Arrays;
+import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -26,6 +29,20 @@ public final class FormatUtils {
    */
   private FormatUtils() {
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Sanitizes and formats the set of categories from the request.
+   */
+  public static ImmutableSet<String> getCategories(HttpServletRequest request) {
+    return sanitizeCategories(Arrays.stream(request.getParameterValues("categories")));
+  }
+
+  /**
+   * Sanitizes and formats the given stream of categories.
+   */
+  public static ImmutableSet<String> sanitizeCategories(Stream<String> categories) {
+    return categories.map(FormatUtils::sanitize).collect(ImmutableSet.toImmutableSet());
   }
 
   /**
