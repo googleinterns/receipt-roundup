@@ -87,7 +87,6 @@ public final class SpendingAnalyticsServletTest {
 
   @Test
   public void doGetWithNoReceiptsInDatastore() throws IOException {
-    // Perform doGet.
     servlet.doGet(request, response);
     writer.flush();
 
