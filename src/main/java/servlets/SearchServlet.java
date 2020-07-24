@@ -33,7 +33,6 @@ import com.google.sps.data.Receipt;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
