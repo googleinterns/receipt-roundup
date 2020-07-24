@@ -86,13 +86,13 @@ public final class UploadReceiptServletTest {
   private static final String USER_NOT_LOGGED_IN_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.\n";
   private static final String INVALID_DATE_RANGE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be in the past.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be in the past.\n";
   private static final String INVALID_DATE_FORMAT_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be a long.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be a long.\n";
   private static final String PRICE_NOT_PARSABLE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidPriceException: Price could not be parsed.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price could not be parsed.\n";
   private static final String PRICE_NEGATIVE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidPriceException: Price must be positive.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price must be positive.\n";
   private static final String RECEIPT_ANALYSIS_FAILED_WARNING =
       "com.google.sps.servlets.ReceiptAnalysis$ReceiptAnalysisException: Receipt analysis failed.\n";
 
