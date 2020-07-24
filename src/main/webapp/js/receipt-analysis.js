@@ -57,6 +57,7 @@ async function updateReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
+  // TODO: Get receipt ID from URL.
   const date = document.getElementById('date-input').valueAsNumber;
   const store = document.getElementById('store-input').value;
   const price =
