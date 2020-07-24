@@ -34,6 +34,9 @@ async function checkAuthentication() {
     window.location.replace('/login.html');
   }
 
+  document.getElementById('user-display').innerHTML =
+      `You are signed in as ${account.email}`;
+
   const logoutButton = document.getElementById('logout-button');
   logoutButton.href = account.logoutUrl;
 }
