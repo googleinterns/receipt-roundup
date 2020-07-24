@@ -24,8 +24,8 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
-import com.google.sps.servlets.UploadReceiptServlet.InvalidDateException;
-import com.google.sps.servlets.UploadReceiptServlet.InvalidPriceException;
+import com.google.sps.servlets.FormatUtils.InvalidDateException;
+import com.google.sps.servlets.FormatUtils.InvalidPriceException;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.Arrays;
@@ -102,9 +102,9 @@ public class EditReceiptServlet extends HttpServlet {
     Key key = KeyFactory.createKey("Receipt", id);
     Entity receipt = datastore.get(key);
 
-    String store = UploadReceiptServlet.sanitize(request.getParameter("store"));
-    double price = UploadReceiptServlet.roundPrice(request.getParameter("price"));
-    long timestamp = UploadReceiptServlet.getTimestamp(request, clock);
+    String store = FormatUtils.sanitize(request.getParameter("store"));
+    double price = FormatUtils.roundPrice(request.getParameter("price"));
+    long timestamp = FormatUtils.getTimestamp(request, clock);
 
     receipt.setProperty("categories", getCategories(request));
     receipt.setProperty("store", store);
@@ -119,7 +119,7 @@ public class EditReceiptServlet extends HttpServlet {
    */
   private ImmutableSet<String> getCategories(HttpServletRequest request) {
     return Arrays.stream(request.getParameterValues("categories"))
-        .map(UploadReceiptServlet::sanitize)
+        .map(FormatUtils::sanitize)
         .collect(ImmutableSet.toImmutableSet());
   }
 }
