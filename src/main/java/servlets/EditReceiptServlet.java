@@ -14,6 +14,7 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.datastore.DatastoreFailureException;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -85,7 +86,14 @@ public class EditReceiptServlet extends HttpServlet {
       return;
     }
 
-    datastore.put(receipt);
+    try {
+      datastore.put(receipt);
+    } catch (DatastoreFailureException datastoreException) {
+      logger.warning(datastoreException.toString());
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.getWriter().println(datastoreException.toString());
+      return;
+    }
 
     // Send the JSON receipt as the response.
     String json = new Gson().toJson(receipt);
