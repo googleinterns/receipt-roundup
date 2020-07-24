@@ -505,10 +505,6 @@ public final class UploadReceiptServletTest {
   public void doPostRoundPrice() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
     double price = 17.236;
@@ -535,10 +531,6 @@ public final class UploadReceiptServletTest {
   public void doPostThrowsIfPriceNotParsable() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
@@ -562,10 +554,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostThrowsIfPriceNegative() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
