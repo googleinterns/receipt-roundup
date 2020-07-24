@@ -435,13 +435,19 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfDateIsInTheFuture() throws IOException {
+  public void doPostThrowsIfDateIsInTheFuture() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, futureTimestamp);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -451,10 +457,19 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfInvalidDateFormat() throws IOException {
+  public void doPostThrowsIfInvalidDateFormat() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
     when(request.getParameter("date")).thenReturn(INVALID_DATE_TYPE);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
     writer.flush();
