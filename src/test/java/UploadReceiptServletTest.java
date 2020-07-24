@@ -377,7 +377,6 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_0MB);
-    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -395,8 +394,6 @@ public final class UploadReceiptServletTest {
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
 
-    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
-
     servlet.doPost(request, response);
     writer.flush();
 
@@ -409,7 +406,6 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, INVALID_CONTENT_TYPE, INVALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -438,9 +434,9 @@ public final class UploadReceiptServletTest {
   public void doPostThrowsIfDateIsInTheFuture() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
-    long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, futureTimestamp);
+    long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
+    when(request.getParameter("date")).thenReturn(Long.toString(futureTimestamp));
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -483,7 +479,6 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
