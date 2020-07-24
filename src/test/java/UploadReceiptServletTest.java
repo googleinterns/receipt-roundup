@@ -124,7 +124,10 @@ public final class UploadReceiptServletTest {
   private static final String STORE = "mcdonald's";
   private static final String INVALID_DATE_TYPE = "2020-05-20";
   private static final AnalysisResults ANALYSIS_RESULTS =
-      new AnalysisResults(RAW_TEXT.getValue(), GENERATED_CATEGORIES, Optional.of(STORE));
+      new AnalysisResults.Builder(RAW_TEXT.getValue())
+          .setCategories(GENERATED_CATEGORIES)
+          .setStore(STORE)
+          .build();
 
   private static final String IMAGE_URL = "/serve-image?blob-key=" + BLOB_KEY.getKeyString();
   private static final String LIVE_SERVER_BASE_URL =
@@ -278,8 +281,10 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     String store = "    TraDeR   JOE's  ";
-    AnalysisResults analysisResults =
-        new AnalysisResults(RAW_TEXT.getValue(), GENERATED_CATEGORIES, Optional.of(store));
+    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+                                          .setCategories(GENERATED_CATEGORIES)
+                                          .setStore(store)
+                                          .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
@@ -304,8 +309,9 @@ public final class UploadReceiptServletTest {
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
-    AnalysisResults analysisResults =
-        new AnalysisResults(RAW_TEXT.getValue(), GENERATED_CATEGORIES, /*store=*/Optional.empty());
+    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+                                          .setCategories(GENERATED_CATEGORIES)
+                                          .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
@@ -331,8 +337,10 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     Set<String> categories = ImmutableSet.of(USER_CATEGORIES[0], USER_CATEGORIES[2]);
-    AnalysisResults analysisResults =
-        new AnalysisResults(RAW_TEXT.getValue(), categories, Optional.of(STORE));
+    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+                                          .setCategories(categories)
+                                          .setStore(STORE)
+                                          .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
@@ -385,8 +393,10 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     Set<String> generatedCategories = ImmutableSet.of("  dIninG ");
-    AnalysisResults analysisResults =
-        new AnalysisResults(RAW_TEXT.getValue(), generatedCategories, Optional.of(STORE));
+    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+                                          .setCategories(generatedCategories)
+                                          .setStore(STORE)
+                                          .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);

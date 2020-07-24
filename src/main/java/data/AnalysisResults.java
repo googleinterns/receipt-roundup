@@ -26,7 +26,7 @@ public class AnalysisResults {
   private final ImmutableSet<String> categories;
   private final Optional<String> store;
 
-  public AnalysisResults(String rawText, Set<String> categories, Optional<String> store) {
+  private AnalysisResults(String rawText, Set<String> categories, Optional<String> store) {
     this.rawText = rawText;
     this.categories = ImmutableSet.copyOf(categories);
     this.store = store;
