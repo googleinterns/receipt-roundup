@@ -517,16 +517,25 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfPriceNotParsable() throws IOException {
+  public void doPostThrowsIfPriceNotParsable() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    String invalidPrice = "text";
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
+
+    String invalidPrice = "text";
     when(request.getParameter("price")).thenReturn(invalidPrice);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -536,16 +545,25 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfPriceNegative() throws IOException {
+  public void doPostThrowsIfPriceNegative() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    String negativePrice = "-12.55";
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
+
+    String negativePrice = "-12.55";
     when(request.getParameter("price")).thenReturn(negativePrice);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
     writer.flush();
