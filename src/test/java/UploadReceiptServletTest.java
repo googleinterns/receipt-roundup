@@ -166,6 +166,7 @@ public final class UploadReceiptServletTest {
   public void setUp() throws IOException {
     MockitoAnnotations.initMocks(this);
     helper.setUp();
+    helper.setEnvIsLoggedIn(true);
     datastore = DatastoreServiceFactory.getDatastoreService();
 
     // Create a fixed time clock that always returns the same instant.
@@ -198,8 +199,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostUploadsReceiptToDatastoreLiveServer()
       throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
@@ -234,8 +233,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostUploadsReceiptToDatastoreDevServer()
       throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
@@ -268,8 +265,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostSanitizesStore() throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     String store = "    TraDeR   JOE's  ";
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, USER_CATEGORIES, store, PRICE, PAST_TIMESTAMP);
@@ -294,8 +289,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostRemovesDuplicateUserAndGeneratedCategories()
       throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, USER_CATEGORIES, STORE, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
@@ -319,8 +312,6 @@ public final class UploadReceiptServletTest {
   }
 
   public void doPostRemovesDuplicateUserCategories() throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     String[] categories = new String[] {"lunch", "restaurant", "lunch", "lunch", "restaurant"};
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, categories, STORE, PRICE, PAST_TIMESTAMP);
@@ -345,8 +336,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostSanitizesUserAndGeneratedCategories()
       throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     String[] userCategories =
         new String[] {"   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH"};
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
@@ -374,8 +363,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfFileNotSelectedLiveServer() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_0MB);
 
     servlet.doPost(request, response);
@@ -389,8 +376,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfFileNotSelectedDevServer() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
 
@@ -403,8 +388,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfInvalidFile() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, INVALID_CONTENT_TYPE, INVALID_FILENAME, IMAGE_SIZE_1MB);
 
     servlet.doPost(request, response);
@@ -418,7 +401,6 @@ public final class UploadReceiptServletTest {
 
   public void doPostThrowsIfUserIsLoggedOut() throws IOException {
     helper.setEnvIsLoggedIn(false);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
     servlet.doPost(request, response);
@@ -432,8 +414,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfDateIsInTheFuture() throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
     when(request.getParameter("date")).thenReturn(Long.toString(futureTimestamp));
@@ -454,8 +434,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfInvalidDateFormat() throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
@@ -476,8 +454,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfReceiptAnalysisFails() throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
@@ -498,8 +474,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostRoundPrice() throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
     double price = 17.236;
@@ -524,8 +498,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfPriceNotParsable() throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
@@ -548,8 +520,6 @@ public final class UploadReceiptServletTest {
 
   @Test
   public void doPostThrowsIfPriceNegative() throws IOException, ReceiptAnalysisException {
-    helper.setEnvIsLoggedIn(true);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
