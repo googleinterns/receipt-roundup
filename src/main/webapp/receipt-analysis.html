@@ -28,17 +28,30 @@
   <div class="container-fluid">
     <p class="text-center">Success! The following receipt has been added to your account:</p>
 
-    <div class="card m-auto p-3 box-shadow">
-      <p id="date" class="card-text align-self-center"></p>
-      <p id="store-name" class="card-text align-self-center"></p>
-      <p id="total" class="card-text align-self-center"></p>
-      <p class="card-text align-self-center mb-1">Categories:</p>
-      <div id="categories-container" class="row align-items-center"></div>
+    <div class="card m-auto p-3">
+      <form id="update-receipt-form" action="#" onsubmit="updateReceipt(event)">
+        <div class="card border-0">
+          <p id="date" class="card-text align-self-center"></p>
+
+          <div class="d-flex justify-content-center">
+            <label for="store-input">Store Name:</label>
+          </div>
+          <input id="store-input" class="form-control mb-3" type="text" name="store" placeholder="Store" required />
+
+          <p id="total" class="card-text align-self-center"></p>
+          <p class="card-text align-self-center mb-1">Categories:</p>
+          <div id="categories-container" class="row align-items-center"></div>
+        </div>
+
+        <div class="my-3 d-flex justify-content-center">
+          <button id="submit-receipt" class="btn btn-outline-info" type="submit">Save Changes</button>
+        </div>
+      </form>
       <img id="receipt-image" src="-" alt="Receipt image" class="d-block p-2 img-fluid" />
     </div>
 
     <div class="my-4 d-flex justify-content-center">
-      <a href="/" class="btn btn-info">Return to Home</a>
+      <a href="/" class="btn btn-lg btn-info">Return to Home</a>
     </div>
   </div>
 
