@@ -154,7 +154,6 @@ public class UploadReceiptServlet extends HttpServlet {
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
              InvalidPriceException, InvalidDateException, ReceiptAnalysisException {
-    long timestamp = FormatUtils.getTimestamp(request, this.clock);
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
 
     if (!userService.isUserLoggedIn()) {
@@ -168,7 +167,6 @@ public class UploadReceiptServlet extends HttpServlet {
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setUnindexedProperty("blobKey", blobKey);
-    receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("store", FormatUtils.sanitize(store));
     receipt.setProperty("userId", userId);
 
@@ -219,7 +217,7 @@ public class UploadReceiptServlet extends HttpServlet {
    * entity populated with the extracted fields.
    */
   private Entity analyzeReceiptImage(BlobKey blobKey, HttpServletRequest request)
-      throws ReceiptAnalysisException, InvalidPriceException {
+      throws ReceiptAnalysisException, InvalidPriceException, InvalidDateException {
     String imageUrl = getBlobServingUrl(blobKey);
     String baseUrl = getBaseUrl(request);
 
@@ -242,7 +240,8 @@ public class UploadReceiptServlet extends HttpServlet {
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
     receipt.setUnindexedProperty("imageUrl", imageUrl);
-    // TODO: Replace with parsed price.
+    // TODO: Replace with parsed price and timestamp.
+    receipt.setProperty("timestamp", FormatUtils.getTimestamp(request, this.clock));
     receipt.setProperty("price", FormatUtils.roundPrice(request.getParameter("price")));
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
