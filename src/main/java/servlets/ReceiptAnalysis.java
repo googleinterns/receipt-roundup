@@ -48,19 +48,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Class with a method that returns the text of the specified image using the Cloud Vision API.
+ * Class with static methods that return the text of a specified image using the Cloud Vision API,
+ * as well as some categories the text falls into using the Cloud Natural Language API.
  */
 public class ReceiptAnalysis {
-  /** Returns the text of the image at the requested URL. */
-  public static AnalysisResults serveImageText(URL url)
+  /** Returns the text and categorization of the image at the requested URL. */
+  public static AnalysisResults analyzeImageAt(URL url)
       throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(url);
 
     return analyzeImage(imageBytes);
   }
 
-  /** Returns the text of the image at the requested blob key. */
-  public static AnalysisResults serveImageText(BlobKey blobKey)
+  /** Returns the text and categorization of the image at the requested blob key. */
+  public static AnalysisResults analyzeImageAt(BlobKey blobKey)
       throws IOException, ReceiptAnalysisException {
     ByteString imageBytes = readImageBytes(blobKey);
 
@@ -175,10 +176,10 @@ public class ReceiptAnalysis {
 
   /*
    * Parse category strings into more natural categories
-   * e.g. "/Food & Drink/Restaurants" becomes "Food & Drink" and "Restaurants"
+   * e.g. "/Food & Drink/Restaurants" becomes "Food", "Drink", and "Restaurants"
    */
   private static Stream<String> parseCategory(ClassificationCategory category) {
-    return Stream.of(category.getName().substring(1).split("/"));
+    return Stream.of(category.getName().substring(1).split("/| & "));
   }
 
   public static class ReceiptAnalysisException extends Exception {

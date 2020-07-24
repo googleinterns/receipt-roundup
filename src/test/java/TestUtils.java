@@ -14,48 +14,66 @@
 
 package com.google.sps;
 
+import static org.mockito.Mockito.when;
+
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
+import com.google.common.collect.ImmutableSet;
+import javax.servlet.http.HttpServletRequest;
 
 /** Class that contains helpful methods used for testing. */
 public final class TestUtils {
-  private static final long USER_ID = 1;
-  private static final long TIMESTAMP = 6292020;
-  private static final BlobKey BLOB_KEY = new BlobKey("Test");
-  private static final String IMAGE_URL = "img/walmart-receipt.jpg";
-  private static final double PRICE = 26.12;
-  private static final String STORE = "Walmart";
-  private static final String LABEL = "test";
-  private static final HashSet<String> CATEGORIES =
-      new HashSet<>(Arrays.asList("Cappuccino", "Sandwich", "Lunch"));
-  private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
-
   /** Private constructor to prevent instantiation. */
   private TestUtils() {
     throw new UnsupportedOperationException();
   }
 
-  /** Adds a test receipt to the mock datastore and returns the id of that entity. */
-  public static long addReceiptToMockDatastore(DatastoreService datastore) throws IOException {
-    // Set entity fields.
-    Entity receiptEntity = new Entity("Receipt");
-    receiptEntity.setProperty("userId", USER_ID);
-    receiptEntity.setProperty("timestamp", TIMESTAMP);
-    receiptEntity.setProperty("blobkey", BLOB_KEY);
-    receiptEntity.setProperty("imageUrl", IMAGE_URL);
-    receiptEntity.setProperty("price", PRICE);
-    receiptEntity.setProperty("store", STORE);
-    receiptEntity.setProperty("label", LABEL);
-    receiptEntity.setProperty("categories", CATEGORIES);
-    receiptEntity.setProperty("rawText", RAW_TEXT);
+  /* Add receipts to database for testing purposes. */
+  public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
+    ImmutableSet<Entity> testReceipts = ImmutableSet.of(
+        addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1045237591000L,
+            new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
+            ImmutableSet.of("candy", "drink", "personal"), ""),
 
-    // Add receipt to datastore and return ID.
-    Key key = datastore.put(receiptEntity);
-    return key.getId();
+        addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1560193140000L,
+            new BlobKey("test"), "img/contoso-receipt.jpg", 14.51, "contoso",
+            ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
+
+        addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1491582960000L,
+            new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
+            ImmutableSet.of("food", "meal", "lunch"), ""));
+    return testReceipts;
+  }
+
+  /** Adds a test receipt to the mock datastore and returns the id of that entity. */
+  public static Entity addTestReceipt(DatastoreService datastore, String userId, long timestamp,
+      BlobKey blobkey, String imageUrl, double price, String store, ImmutableSet<String> categories,
+      String rawText) {
+    Entity receiptEntity = new Entity("Receipt");
+    receiptEntity.setProperty("userId", userId);
+    receiptEntity.setProperty("timestamp", timestamp);
+    receiptEntity.setProperty("blobkey", blobkey);
+    receiptEntity.setProperty("imageUrl", imageUrl);
+    receiptEntity.setProperty("price", price);
+    receiptEntity.setProperty("store", store);
+    receiptEntity.setProperty("categories", categories);
+    receiptEntity.setProperty("rawText", rawText);
+
+    datastore.put(receiptEntity);
+    return receiptEntity;
+  }
+
+  /** Set all necessary parameters that SearchServlet will ask for in a doGet. */
+  public static void setSearchServletRequestParameters(HttpServletRequest request,
+      String timeZoneId, String categories, String dateRange, String store, String minPrice,
+      String maxPrice) {
+    when(request.getParameter("isNewLoad")).thenReturn("false");
+    when(request.getParameter("timeZoneId")).thenReturn(timeZoneId);
+    when(request.getParameter("category")).thenReturn(categories);
+    when(request.getParameter("dateRange")).thenReturn(dateRange);
+    when(request.getParameter("store")).thenReturn(store);
+    when(request.getParameter("min")).thenReturn(minPrice);
+    when(request.getParameter("max")).thenReturn(maxPrice);
   }
 }
