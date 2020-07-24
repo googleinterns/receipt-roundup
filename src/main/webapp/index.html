@@ -58,18 +58,23 @@
 <body onload="load()">
   <div class="container-fluid">
     <div class="row ml-1 mt-2">
-      <div class="col-9">
+      <div class="col-6">
         <div class="row">
-          You are signed in as test@test.com
+          <p>You are signed in as test@test.com</p>
           <a id="logout-button" href="#" class="ml-2 btn btn-info">
             <span class="pull-right glyphicon glyphicon-log-out"></span> Log out
           </a>
         </div>
       </div>
-      <div class="col-3">
-        <a href="/upload.html" class="btn btn-info btn-sm float-right">
-          <span class="glyphicon glyphicon-log-out"></span> Add a receipt
-        </a>
+      <div class="col-6">
+        <div class="row justify-content-end">
+          <div class="col-auto mb-2">
+            <a href="/analytics.html" class="btn btn-info btn-sm">Spending analytics</a>
+          </div>
+          <div class="col-auto">
+            <a href="/upload.html" class="btn btn-info btn-sm">Add a receipt</a>
+          </div>
+        </div>
       </div>
     </div>
     <h1 class="text-center">Home</h1>
