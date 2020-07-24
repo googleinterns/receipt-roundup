@@ -573,7 +573,7 @@ public final class UploadReceiptServletTest {
   }
 
   /**
-   * Stubs the request with the given label, store, and price parameters.
+   * Stubs the request with the given categories, store, price, and date parameters.
    */
   private void stubRequestBody(
       HttpServletRequest request, String[] categories, String store, double price, long timestamp) {
