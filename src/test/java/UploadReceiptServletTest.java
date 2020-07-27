@@ -87,13 +87,13 @@ public final class UploadReceiptServletTest {
   private static final String USER_NOT_LOGGED_IN_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.\n";
   private static final String INVALID_DATE_RANGE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be in the past.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be in the past.\n";
   private static final String INVALID_DATE_FORMAT_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidDateException: Transaction date must be a long.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be a long.\n";
   private static final String PRICE_NOT_PARSABLE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidPriceException: Price could not be parsed.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price could not be parsed.\n";
   private static final String PRICE_NEGATIVE_WARNING =
-      "com.google.sps.servlets.UploadReceiptServlet$InvalidPriceException: Price must be positive.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price must be positive.\n";
   private static final String RECEIPT_ANALYSIS_FAILED_WARNING =
       "com.google.sps.servlets.ReceiptAnalysis$ReceiptAnalysisException: Receipt analysis failed.\n";
 
@@ -229,7 +229,7 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(CATEGORIES_COLLECTION, receipt.getProperty("categories"));
     Assert.assertEquals(USER_ID, receipt.getProperty("userId"));
 
-    String response = extractProperties(stringWriter.toString());
+    String response = TestUtils.extractProperties(stringWriter.toString());
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
         PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
     Assert.assertEquals(expectedResponse, response);
@@ -264,7 +264,7 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(PAST_TIMESTAMP, receipt.getProperty("timestamp"));
     Assert.assertEquals(USER_ID, receipt.getProperty("userId"));
 
-    String response = extractProperties(stringWriter.toString());
+    String response = TestUtils.extractProperties(stringWriter.toString());
     String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
         PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
     Assert.assertEquals(expectedResponse, response);
@@ -557,16 +557,25 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfPriceNotParsable() throws IOException {
+  public void doPostThrowsIfPriceNotParsable() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    String invalidPrice = "text";
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
+
+    String invalidPrice = "text";
     when(request.getParameter("price")).thenReturn(invalidPrice);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -576,16 +585,25 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfPriceNegative() throws IOException {
+  public void doPostThrowsIfPriceNegative() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     StringWriter stringWriter = new StringWriter();
     PrintWriter writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
 
-    String negativePrice = "-12.55";
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
     when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
+
+    String negativePrice = "-12.55";
     when(request.getParameter("price")).thenReturn(negativePrice);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -623,15 +641,7 @@ public final class UploadReceiptServletTest {
 
     String json = new Gson().toJson(receipt);
 
-    return extractProperties(json) + "\n";
-  }
-
-  /**
-   * Removes the unique ID property from the receipt entity JSON string, leaving only the receipt
-   * properties.
-   */
-  private String extractProperties(String json) {
-    return json.substring(json.indexOf("propertyMap"));
+    return TestUtils.extractProperties(json) + "\n";
   }
 
   /**

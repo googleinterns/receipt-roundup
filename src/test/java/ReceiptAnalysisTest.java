@@ -78,12 +78,13 @@ public final class ReceiptAnalysisTest {
   private static final String RAW_TEXT = "raw text";
 
   private static final String GENERAL_CATEGORY_NAME = "General";
+  private static final String BROADER_CATEGORY_NAME = "Broader";
   private static final String SPECIFIC_CATEGORY_NAME = "Specific";
   private static final String CATEGORY_NAME =
-      "/" + GENERAL_CATEGORY_NAME + "/" + SPECIFIC_CATEGORY_NAME;
+      "/" + GENERAL_CATEGORY_NAME + " & " + BROADER_CATEGORY_NAME + "/" + SPECIFIC_CATEGORY_NAME;
 
   private static final ImmutableSet<String> CATEGORIES =
-      ImmutableSet.of(GENERAL_CATEGORY_NAME, SPECIFIC_CATEGORY_NAME);
+      ImmutableSet.of(GENERAL_CATEGORY_NAME, BROADER_CATEGORY_NAME, SPECIFIC_CATEGORY_NAME);
 
   private static final Optional<String> STORE = Optional.of("Google");
   private static final float LOGO_CONFIDENCE = 0.6f;
