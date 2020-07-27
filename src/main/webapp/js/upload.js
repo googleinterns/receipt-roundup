@@ -41,14 +41,10 @@ async function uploadReceipt(event) {
     return;
   }
 
-  // Change to the loading cursor and disable the submit button.
-  document.body.style.cursor = 'wait';
-  const submitButton = document.getElementById('submit-receipt');
-  submitButton.disabled = true;
+  const loadingIntervalId = startLoading();
 
   const uploadUrl = await fetchBlobstoreUrl();
   const image = fileInput.files[0];
-
   const formData = new FormData();
   formData.append('receipt-image', image);
 
@@ -59,8 +55,18 @@ async function uploadReceipt(event) {
 
   // Create an alert and re-enable the submit button if there is an error.
   if (response.status !== 200) {
+    const submitButton = document.getElementById('submit-receipt');
+    submitButton.innerText = 'Error!';
+
+    // Stop the loading animation.
+    document.getElementById('loading').style.display = 'none';
+    clearInterval(loadingIntervalId);
+
     alert(await response.text());
+
+    // Restore the submit button.
     submitButton.disabled = false;
+    submitButton.innerText = 'Add Receipt';
     return;
   }
 
@@ -84,6 +90,36 @@ async function fetchBlobstoreUrl() {
   const response = await fetch('/upload-receipt');
   const imageUploadUrl = await response.text();
   return imageUploadUrl;
+}
+
+/**
+ * Displays the loading animation and disables the submit button.
+ * @return {number} The ID value of the setInterval() timer.
+ */
+function startLoading() {
+  document.body.style.cursor = 'wait';
+
+  const submitButton = document.getElementById('submit-receipt');
+  submitButton.disabled = true;
+  submitButton.innerText = 'Analyzing...';
+
+  // Display the loading image, which is hidden by default.
+  const loadingBar = document.getElementsByClassName('ldBar')[0].ldBar;
+  loadingBar.set(1);
+  document.getElementById('loading').style.display = 'block';
+
+  // Start the loading animation loop.
+  let increment = 1;
+  return setInterval(() => {
+    const value = loadingBar.value;
+
+    // Flip directions when the bar is filled and empty.
+    if (value >= 100 || value <= 0) {
+      increment *= -1;
+    }
+
+    loadingBar.set(value + increment);
+  }, 20);
 }
 
 /**
