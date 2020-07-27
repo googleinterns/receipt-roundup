@@ -16,7 +16,6 @@ package com.google.sps;
 
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
@@ -76,12 +75,20 @@ public final class SpendingAnalyticsServletTest {
     writer.flush();
 
     // Make sure all stores returned in HashMap.
-    HashMap<String, Double> storeAnalytics =
-        new ObjectMapper().readValue(stringWriter.toString(), HashMap.class);
+    HashMap<String, Double> storeAnalytics = TestUtils.parseStoreAnalytics(stringWriter.toString());
     Assert.assertEquals(3, storeAnalytics.size());
     Assert.assertTrue(storeAnalytics.containsKey("walmart"));
     Assert.assertTrue(storeAnalytics.containsKey("contoso"));
     Assert.assertTrue(storeAnalytics.containsKey("main street restaurant"));
+
+    // Make sure all categories returned in HashMap.
+    HashMap<String, Double> categoryAnalytics =
+        TestUtils.parseCategoryAnalytics(stringWriter.toString());
+    Assert.assertEquals(4, categoryAnalytics.size());
+    Assert.assertTrue(categoryAnalytics.containsKey("candy"));
+    Assert.assertTrue(categoryAnalytics.containsKey("drink"));
+    Assert.assertTrue(categoryAnalytics.containsKey("cappuccino"));
+    Assert.assertTrue(categoryAnalytics.containsKey("food"));
   }
 
   @Test
@@ -89,9 +96,13 @@ public final class SpendingAnalyticsServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure empty HashMap is returned.
-    HashMap<String, Double> storeAnalytics =
-        new ObjectMapper().readValue(stringWriter.toString(), HashMap.class);
+    // Make sure empty stores HashMap is returned.
+    HashMap<String, Double> storeAnalytics = TestUtils.parseStoreAnalytics(stringWriter.toString());
     Assert.assertTrue(storeAnalytics.isEmpty());
+
+    // Make sure empty categories HashMap is returned.
+    HashMap<String, Double> categoryAnalytics =
+        TestUtils.parseCategoryAnalytics(stringWriter.toString());
+    Assert.assertTrue(categoryAnalytics.isEmpty());
   }
 }

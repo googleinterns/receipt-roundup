@@ -19,6 +19,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.sps.data.SpendingAnalytics;
@@ -45,15 +46,15 @@ public class SpendingAnalyticsServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    HashMap<String, Double> storeAnalytics = getStoreAnalytics();
+    ImmutableList<HashMap<String, Double>> analytics = getAnalytics();
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
-    response.getWriter().println(gson.toJson(storeAnalytics));
+    response.getWriter().println(gson.toJson(analytics));
   }
 
-  /** Returns analytics HashMap mapping a store to the total amount spent there. */
-  private HashMap<String, Double> getStoreAnalytics() {
+  /** Returns ImmutableList with information for both category and store analytics. */
+  private ImmutableList<HashMap<String, Double>> getAnalytics() {
     Query query = new Query("Receipt");
     ImmutableSet<Entity> allReceipts = datastore.prepare(query)
                                            .asList(FetchOptions.Builder.withDefaults())
@@ -61,6 +62,7 @@ public class SpendingAnalyticsServlet extends HttpServlet {
                                            .collect(ImmutableSet.toImmutableSet());
 
     SpendingAnalytics analytics = new SpendingAnalytics(allReceipts);
-    return analytics.getStoreAnalytics();
+
+    return ImmutableList.of(analytics.getStoreAnalytics(), analytics.getCategoryAnalytics());
   }
 }

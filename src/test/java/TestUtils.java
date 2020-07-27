@@ -16,11 +16,14 @@ package com.google.sps;
 
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 
 /** Class that contains helpful methods used for testing. */
@@ -46,15 +49,15 @@ public final class TestUtils {
     ImmutableSet<Entity> entities =
         ImmutableSet.of(createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L,
                             new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
-                            ImmutableSet.of("candy", "drink", "personal"), ""),
+                            ImmutableSet.of("candy", "drink"), ""),
 
             createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L,
                 new BlobKey("test"), "img/contoso-receipt.jpg", 14.51, "contoso",
-                ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
+                ImmutableSet.of("cappuccino", "food"), ""),
 
             createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L,
                 new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
-                ImmutableSet.of("food", "meal", "lunch"), ""));
+                ImmutableSet.of("food"), ""));
 
     entities.stream().forEach(entity -> datastore.put(entity));
 
@@ -92,5 +95,17 @@ public final class TestUtils {
     when(request.getParameter("store")).thenReturn(store);
     when(request.getParameter("min")).thenReturn(minPrice);
     when(request.getParameter("max")).thenReturn(maxPrice);
+  }
+
+    /** Parses a string containing store analytics into a hashmap representation. */
+  public static HashMap<String, Double> parseStoreAnalytics(String str) throws IOException {
+    String stores = str.substring(str.indexOf("{"), str.indexOf("}") + 1);
+    return new ObjectMapper().readValue(stores, HashMap.class);
+  }
+
+  /** Parses a string containing category analytics into a hashmap representation. */
+  public static HashMap<String, Double> parseCategoryAnalytics(String str) throws IOException {
+    String analytics = str.substring(str.lastIndexOf("{"), str.lastIndexOf("}") + 1);
+    return new ObjectMapper().readValue(analytics, HashMap.class);
   }
 }
