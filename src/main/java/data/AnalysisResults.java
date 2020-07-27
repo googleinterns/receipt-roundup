@@ -68,11 +68,7 @@ public class AnalysisResults {
     }
 
     public AnalysisResults build() {
-      // No logo was detected.
-      if (store == null) {
-        store = Optional.empty();
-      }
-
+      store = Optional.ofNullable(store).map(value -> value.get());
       return new AnalysisResults(rawText, categories, store);
     }
   }
