@@ -34,8 +34,6 @@ public class SpendingAnalytics {
 
       // Don't add to hashmap if either store or price are invalid.
       if (!Strings.isNullOrEmpty(store) && price != null) {
-        store = capitalizeFirstLetters(store);
-
         if (storeAnalytics.containsKey(store)) {
           storeAnalytics.put(store, storeAnalytics.get(store) + price);
         } else {
@@ -43,13 +41,6 @@ public class SpendingAnalytics {
         }
       }
     }
-  }
-
-  /** Capitalizes the first letter of each word in a string. */
-  private String capitalizeFirstLetters(String lowercasedString) {
-    return Arrays.stream(lowercasedString.split("\\s+"))
-        .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase())
-        .collect(Collectors.joining(" "));
   }
 
   public HashMap<String, Double> getStoreAnalytics() {
