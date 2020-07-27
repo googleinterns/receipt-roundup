@@ -414,7 +414,6 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_0MB);
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -432,8 +431,6 @@ public final class UploadReceiptServletTest {
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
 
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
-
     servlet.doPost(request, response);
     writer.flush();
 
@@ -446,7 +443,6 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, INVALID_CONTENT_TYPE, INVALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -472,13 +468,19 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfDateIsInTheFuture() throws IOException {
+  public void doPostThrowsIfDateIsInTheFuture() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
-    stubRequestBody(request, USER_CATEGORIES, PRICE, futureTimestamp);
+    when(request.getParameter("date")).thenReturn(Long.toString(futureTimestamp));
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -488,10 +490,19 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfInvalidDateFormat() throws IOException {
+  public void doPostThrowsIfInvalidDateFormat() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
+    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
+    stubUrlComponents(
+        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+
     when(request.getParameter("date")).thenReturn(INVALID_DATE_TYPE);
+
+    // Mock receipt analysis.
+    mockStatic(ReceiptAnalysis.class);
+    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
+        .thenReturn(ANALYSIS_RESULTS);
 
     servlet.doPost(request, response);
     writer.flush();
@@ -505,7 +516,6 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -526,10 +536,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostRoundPrice() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
@@ -557,10 +563,6 @@ public final class UploadReceiptServletTest {
   public void doPostThrowsIfPriceNotParsable() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
-
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
@@ -584,10 +586,6 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostThrowsIfPriceNegative() throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
-
-    StringWriter stringWriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(stringWriter);
-    when(response.getWriter()).thenReturn(writer);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
