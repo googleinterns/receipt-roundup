@@ -8,7 +8,9 @@
     "jquery": true
   },
   "globals": {
-    "moment": true
+    "moment": true,
+    "noUiSlider": true,
+    "google": true
   },
   "extends": ["eslint:recommended", "google"],
   "rules": {
