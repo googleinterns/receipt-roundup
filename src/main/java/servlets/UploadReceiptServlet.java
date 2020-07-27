@@ -33,23 +33,16 @@ import com.google.sps.data.AnalysisResults;
 import com.google.sps.servlets.FormatUtils;
 import com.google.sps.servlets.FormatUtils.InvalidDateException;
 import com.google.sps.servlets.FormatUtils.InvalidPriceException;
-;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -154,9 +147,8 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
-             InvalidPriceException, FormatUtils.InvalidDateException, ReceiptAnalysisException {
+             InvalidPriceException, InvalidDateException, ReceiptAnalysisException {
     long timestamp = FormatUtils.getTimestamp(request, this.clock);
-    double price = FormatUtils.roundPrice(request.getParameter("price"));
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
 
     if (!userService.isUserLoggedIn()) {
@@ -164,15 +156,13 @@ public class UploadReceiptServlet extends HttpServlet {
       throw new UserNotLoggedInException("User must be logged in to upload a receipt.");
     }
 
-    String store = request.getParameter("store");
     String userId = userService.getCurrentUser().getUserId();
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setUnindexedProperty("blobKey", blobKey);
+    // TODO: Use price and timestamp from receipt parsing.
     receipt.setProperty("timestamp", timestamp);
-    receipt.setProperty("store", FormatUtils.sanitize(store));
-    receipt.setProperty("price", price);
     receipt.setProperty("userId", userId);
 
     return receipt;
@@ -222,7 +212,7 @@ public class UploadReceiptServlet extends HttpServlet {
    * entity populated with the extracted fields.
    */
   private Entity analyzeReceiptImage(BlobKey blobKey, HttpServletRequest request)
-      throws ReceiptAnalysisException {
+      throws ReceiptAnalysisException, InvalidPriceException {
     String imageUrl = getBlobServingUrl(blobKey);
     String baseUrl = getBaseUrl(request);
 
@@ -245,10 +235,15 @@ public class UploadReceiptServlet extends HttpServlet {
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
     receipt.setUnindexedProperty("imageUrl", imageUrl);
+    // TODO: Replace with parsed price.
+    receipt.setProperty("price", FormatUtils.roundPrice(request.getParameter("price")));
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
     receipt.setProperty(
         "categories", FormatUtils.sanitizeCategories(results.getCategories().stream()));
+    // If a logo was detected, set the store name.
+    results.getStore().ifPresent(
+        store -> { receipt.setProperty("store", FormatUtils.sanitize(store)); });
 
     return receipt;
   }

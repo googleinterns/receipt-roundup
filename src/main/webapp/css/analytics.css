@@ -1,0 +1,8 @@
+.chart {
+  min-height: 50vh;
+  width: 100%;
+}
+
+.row {
+  margin: 0 !important;
+}

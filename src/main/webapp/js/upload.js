@@ -13,32 +13,18 @@
 // limitations under the License.
 
 /**
+ * Verifies that the user is logged in.
+ */
+async function load() {
+  /* global loadPage */
+  loadPage();  // From js/common.js
+}
+
+/**
  * Redirects the user back to the home page when the cancel button is clicked.
  */
 function cancelUpload() {
   window.location.href = 'index.html';
-}
-
-/**
- * Verifies that the user is logged in and sets the date input to the current
- * date.
- */
-function loadPage() {
-  checkAuthentication();
-  loadDateInput();
-}
-
-/**
- * Fetches the login status and adds a URL to the logout button.
- */
-async function checkAuthentication() {
-  const response = await fetch('/login-status');
-  const account = await response.json();
-
-  // Redirect to the login page if the user is not logged in.
-  if (!account.loggedIn) {
-    window.location.replace('/login.html');
-  }
 }
 
 /**
@@ -61,20 +47,9 @@ async function uploadReceipt(event) {
   submitButton.disabled = true;
 
   const uploadUrl = await fetchBlobstoreUrl();
-  const categories = document.getElementById('categories-input').value;
-  const store = document.getElementById('store-input').value;
-  const price =
-      convertStringToNumber(document.getElementById('price-input').value);
-  const date = document.getElementById('date-input').valueAsNumber;
   const image = fileInput.files[0];
 
   const formData = new FormData();
-  createCategoryList(categories).forEach((category) => {
-    formData.append('categories', category);
-  });
-  formData.append('store', store);
-  formData.append('price', price);
-  formData.append('date', date);
   formData.append('receipt-image', image);
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
@@ -89,13 +64,15 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const json = (await response.json()).propertyMap;
+  const json = (await response.json());
+  const receipt = json.propertyMap;
   const params = new URLSearchParams();
-  params.append('categories', json.categories);
-  params.append('image-url', json.imageUrl);
-  params.append('price', json.price);
-  params.append('store', json.store);
-  params.append('timestamp', json.timestamp);
+  params.append('id', json.key.id);
+  params.append('categories', receipt.categories);
+  params.append('image-url', receipt.imageUrl);
+  params.append('price', receipt.price);
+  params.append('store', receipt.store);
+  params.append('timestamp', receipt.timestamp);
 
   // Redirect to the receipt analysis page.
   window.location.href = `/receipt-analysis.html?${params.toString()}`;
@@ -109,50 +86,6 @@ async function fetchBlobstoreUrl() {
   const response = await fetch('/upload-receipt');
   const imageUploadUrl = await response.text();
   return imageUploadUrl;
-}
-
-/**
- * Converts the comma-separated categories string into a list of categories.
- * @return {(string|Array)} List of categories.
- */
-function createCategoryList(categories) {
-  return categories.split(',').map((category) => category.trim());
-}
-
-/**
- * Converts the formatted price back to a number when the user
- * selects the price input.
- */
-function convertPricetoValue(event) {
-  const value = event.target.value;
-  event.target.value = value ? convertStringToNumber(value) : '';
-}
-
-/**
- * Converts a string value into a number, removing all non-numeric characters.
- */
-function convertStringToNumber(string) {
-  return Number(String(string).replace(/[^0-9.]+/g, ''));
-}
-
-/**
- * Converts the number inputted by the user to a formatted string when
- * the user unfocuses from the price input.
- */
-function formatCurrency(event) {
-  const value = event.target.value;
-
-  if (value) {
-    event.target.value =
-        convertStringToNumber(value).toLocaleString(undefined, {
-          maximumFractionDigits: 2,
-          currency: 'USD',
-          style: 'currency',
-          currencyDisplay: 'symbol',
-        });
-  } else {
-    event.target.value = '';
-  }
 }
 
 /**
@@ -192,26 +125,4 @@ function checkFileSize() {
   }
 
   return true;
-}
-
-/**
- * Sets the value and max value of the transaction date input field to the
- * current date.
- */
-function loadDateInput() {
-  const dateInput = document.getElementById('date-input');
-  dateInput.value = dateInput.max = formatDate(new Date());
-}
-
-/**
- * Converts a date to 'YYYY-MM-DD' format, corresponding to the value attribute
- * of the date input.
- * @param {Date} date The date to convert.
- * @return {string} The formatted date.
- */
-function formatDate(date) {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${year}-${month}-${day}`;
 }
