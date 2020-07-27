@@ -107,12 +107,13 @@ public final class SpendingAnalyticsTest {
     // null store name should be ignored:
     // null: $26.12, Walmart: $26.12
 
-    ImmutableSet<Entity> receipts = new ImmutableSet.Builder<Entity>()
-                                        .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY,
-                                            IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT))
-                                        .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY,
-                                            IMAGE_URL, PRICE, /*store=*/null, CATEGORIES, RAW_TEXT))
-                                        .build();
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(
+                USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE,
+                /* store = */ null, CATEGORIES, RAW_TEXT))
+            .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
 
@@ -126,12 +127,13 @@ public final class SpendingAnalyticsTest {
     // empty store name should be ignored:
     // "": $26.12, Walmart: $26.12
 
-    ImmutableSet<Entity> receipts = new ImmutableSet.Builder<Entity>()
-                                        .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY,
-                                            IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT))
-                                        .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY,
-                                            IMAGE_URL, PRICE, /*store=*/"", CATEGORIES, RAW_TEXT))
-                                        .build();
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(
+                USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE,
+                /* store = */ "", CATEGORIES, RAW_TEXT))
+            .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
 
@@ -147,7 +149,7 @@ public final class SpendingAnalyticsTest {
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /*price=*/null,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /* price = */ null,
                 "CONTOSO", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(
                 USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT))
