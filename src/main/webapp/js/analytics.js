@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* global capitalizeFirstLetters */
+
 /** Sets callbacks for Google Charts instance. */
 google.charts.load('current', {'packages': ['corechart']});
 google.charts.setOnLoadCallback(computeStoreChartsAnalytics);
@@ -29,7 +31,7 @@ async function computeStoreChartsAnalytics() {
   storeData.addColumn('number', 'Total');
 
   for (const [store, total] of Object.entries(analytics)) {
-    storeData.addRow([store, total]);
+    storeData.addRow([capitalizeFirstLetters(store), total]);
   }
 
   drawStoresChart(storeData);

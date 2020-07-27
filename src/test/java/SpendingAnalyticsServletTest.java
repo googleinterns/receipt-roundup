@@ -80,9 +80,9 @@ public final class SpendingAnalyticsServletTest {
     HashMap<String, Double> storeAnalytics =
         new ObjectMapper().readValue(stringWriter.toString(), HashMap.class);
     Assert.assertEquals(3, storeAnalytics.size());
-    Assert.assertTrue(storeAnalytics.containsKey("Walmart"));
-    Assert.assertTrue(storeAnalytics.containsKey("Contoso"));
-    Assert.assertTrue(storeAnalytics.containsKey("Main Street Restaurant"));
+    Assert.assertTrue(storeAnalytics.containsKey("walmart"));
+    Assert.assertTrue(storeAnalytics.containsKey("contoso"));
+    Assert.assertTrue(storeAnalytics.containsKey("main street restaurant"));
   }
 
   @Test
