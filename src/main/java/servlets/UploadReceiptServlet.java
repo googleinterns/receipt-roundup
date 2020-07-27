@@ -30,6 +30,10 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.sps.data.AnalysisResults;
+import com.google.sps.servlets.FormatUtils;
+import com.google.sps.servlets.FormatUtils.InvalidDateException;
+import com.google.sps.servlets.FormatUtils.InvalidPriceException;
+;
 import com.google.sps.servlets.ReceiptAnalysis.ReceiptAnalysisException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -150,9 +154,9 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private Entity createReceiptEntity(HttpServletRequest request)
       throws FileNotSelectedException, InvalidFileException, UserNotLoggedInException,
-             InvalidPriceException, InvalidDateException, ReceiptAnalysisException {
-    long timestamp = getTimestamp(request);
-    double price = roundPrice(request.getParameter("price"));
+             InvalidPriceException, FormatUtils.InvalidDateException, ReceiptAnalysisException {
+    long timestamp = FormatUtils.getTimestamp(request, this.clock);
+    double price = FormatUtils.roundPrice(request.getParameter("price"));
     BlobKey blobKey = getUploadedBlobKey(request, "receipt-image");
 
     if (!userService.isUserLoggedIn()) {
@@ -167,32 +171,11 @@ public class UploadReceiptServlet extends HttpServlet {
     Entity receipt = analyzeReceiptImage(blobKey, request);
     receipt.setUnindexedProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
-    receipt.setProperty("store", sanitize(store));
+    receipt.setProperty("store", FormatUtils.sanitize(store));
     receipt.setProperty("price", price);
     receipt.setProperty("userId", userId);
 
     return receipt;
-  }
-
-  /**
-   * Converts the date parameter from the request to a timestamp and verifies that the date is in
-   * the past.
-   */
-  private long getTimestamp(HttpServletRequest request) throws InvalidDateException {
-    long currentTimestamp = clock.instant().toEpochMilli();
-    long transactionTimestamp;
-
-    try {
-      transactionTimestamp = Long.parseLong(request.getParameter("date"));
-    } catch (NumberFormatException e) {
-      throw new InvalidDateException("Transaction date must be a long.");
-    }
-
-    if (transactionTimestamp > currentTimestamp) {
-      throw new InvalidDateException("Transaction date must be in the past.");
-    }
-
-    return transactionTimestamp;
   }
 
   /**
@@ -232,24 +215,6 @@ public class UploadReceiptServlet extends HttpServlet {
    */
   private static boolean isValidFilename(String filename) {
     return validFilename.matcher(filename).matches();
-  }
-
-  /**
-   * Converts a price string into a double rounded to 2 decimal places.
-   */
-  private static double roundPrice(String price) throws InvalidPriceException {
-    double parsedPrice;
-    try {
-      parsedPrice = Double.parseDouble(price);
-    } catch (NumberFormatException e) {
-      throw new InvalidPriceException("Price could not be parsed.");
-    }
-
-    if (parsedPrice < 0) {
-      throw new InvalidPriceException("Price must be positive.");
-    }
-
-    return Math.round(parsedPrice * 100.0) / 100.0;
   }
 
   /**
@@ -313,16 +278,8 @@ public class UploadReceiptServlet extends HttpServlet {
     return Stream
         .concat(
             Arrays.stream(request.getParameterValues("categories")), generatedCategories.stream())
-        .map(this::sanitize)
+        .map(FormatUtils::sanitize)
         .collect(ImmutableSet.toImmutableSet());
-  }
-
-  /**
-   * Converts the input to all lowercase with exactly 1 whitespace separating words and no leading
-   * or trailing whitespace.
-   */
-  private String sanitize(String input) {
-    return input.trim().replaceAll("\\s+", " ").toLowerCase();
   }
 
   public static class InvalidFileException extends Exception {
@@ -339,18 +296,6 @@ public class UploadReceiptServlet extends HttpServlet {
 
   public static class UserNotLoggedInException extends Exception {
     public UserNotLoggedInException(String errorMessage) {
-      super(errorMessage);
-    }
-  }
-
-  public static class InvalidDateException extends Exception {
-    public InvalidDateException(String errorMessage) {
-      super(errorMessage);
-    }
-  }
-
-  public static class InvalidPriceException extends Exception {
-    public InvalidPriceException(String errorMessage) {
       super(errorMessage);
     }
   }
