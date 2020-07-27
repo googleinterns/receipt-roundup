@@ -247,12 +247,25 @@ public class ReceiptAnalysis {
 
     try {
       ZonedDateTime dateAndTime = LocalDate.parse(date, formatter).atStartOfDay(ZoneOffset.UTC);
+      dateAndTime = fixYearIfInFuture(dateAndTime);
+
       long timestamp = dateAndTime.toInstant().toEpochMilli();
       analysisBuilder.setTimestamp(timestamp);
     } catch (DateTimeParseException e) {
       // Invalid month or day
       return;
     }
+  }
+
+  /**
+   * DateTimeFormatter assumes that two-digit years are in the 2000s. This method checks if the
+   * given date is after the current date and if so, subtracts 100 years to move it to the 1900s.
+   */
+  private static ZonedDateTime fixYearIfInFuture(ZonedDateTime dateAndTime) {
+    if (dateAndTime.isAfter(ZonedDateTime.now())) {
+      return dateAndTime.minusYears(100);
+    }
+    return dateAndTime;
   }
 
   /**
