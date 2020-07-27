@@ -47,7 +47,7 @@ public class AnalysisResults {
   public static class Builder {
     private final String rawText;
     private ImmutableSet<String> categories;
-    private Optional<String> store;
+    private Optional<String> store = Optional.empty();
 
     public Builder(String rawText) {
       this.rawText = rawText;
@@ -68,7 +68,6 @@ public class AnalysisResults {
     }
 
     public AnalysisResults build() {
-      store = Optional.ofNullable(store).map(value -> value.get());
       return new AnalysisResults(rawText, categories, store);
     }
   }
