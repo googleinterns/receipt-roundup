@@ -28,21 +28,14 @@ function loadReceiptAnalysis() {
   const date = getDateFromTimestamp(parameters.get('timestamp'));
   const storeName = capitalizeFirstLetters(parameters.get('store'));
   const total = parameters.get('price');
-  const categories = parameters.get('categories').split(',');
+  const categories =
+      capitalizeFirstLetters(parameters.get('categories').replace(/,/gi, ', '));
   const imageUrl = parameters.get('image-url');
 
   document.getElementById('date').innerText = `Transaction Date: ${date}`;
   document.getElementById('store-input').value = storeName;
   document.getElementById('total').innerText = `Total Price: $${total}`;
-
-  const categoriesContainer = document.getElementById('categories-container');
-  categoriesContainer.innerHTML = '';
-
-  for (let i = 0; i < categories.length && i < 3; i++) {
-    const categoryName = capitalizeFirstLetters(categories[i]);
-    const categoryElement = buildCategoryElement(categoryName);
-    categoriesContainer.appendChild(categoryElement);
-  }
+  document.getElementById('categories-input').value = categories;
 
   document.getElementById('receipt-image').src = imageUrl;
 }
@@ -73,10 +66,15 @@ async function updateReceipt(event) {
 
   // TODO: Get other input values.
   const store = document.getElementById('store-input').value;
+  const categories = document.getElementById('categories-input').value;
 
   const formData = new FormData();
 
   formData.append('store', store);
+
+  createCategoryList(categories).forEach((category) => {
+    formData.append('categories', category);
+  });
 
   // TODO: Send request to servlet.
 }
@@ -89,4 +87,9 @@ function capitalizeFirstLetters(lowercasedString) {
   return lowercasedString.split(' ')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+}
+
+/** Converts the comma-separated categories string into a list of categories. */
+function createCategoryList(categories) {
+  return categories.split(',').map((category) => category.trim());
 }
