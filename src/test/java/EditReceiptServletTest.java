@@ -116,6 +116,7 @@ public final class EditReceiptServletTest {
   public void setUp() throws IOException {
     MockitoAnnotations.initMocks(this);
     helper.setUp();
+    helper.setEnvIsLoggedIn(true);
     datastore = DatastoreServiceFactory.getDatastoreService();
     receiptId = addReceipt();
 
@@ -136,8 +137,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostEditsReceipt() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
 
     servlet.doPost(request, response);
@@ -163,8 +162,6 @@ public final class EditReceiptServletTest {
   @Test
   public void doPostEditsReceiptWithNoInitialProperties()
       throws IOException, EntityNotFoundException {
-    helper.setEnvIsLoggedIn(true);
-
     Entity originalReceipt = new Entity("Receipt");
     datastore.put(originalReceipt);
     long id = originalReceipt.getKey().getId();
@@ -184,8 +181,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostSanitizesStore() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     String store = "    TraDeR   JOE's  ";
     stubRequestBody(request, receiptId, NEW_CATEGORIES, store, NEW_PRICE, NEW_TIMESTAMP);
 
@@ -199,8 +194,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostRemovesDuplicateCategories() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     String[] categories = new String[] {"lunch", "restaurant", "lunch", "lunch", "restaurant"};
     stubRequestBody(request, receiptId, categories, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
 
@@ -214,8 +207,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostSanitizesCategories() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     String[] categories =
         new String[] {"   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH"};
     stubRequestBody(request, receiptId, categories, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
@@ -242,8 +233,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostThrowsIfDateIsInTheFuture() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, NEW_PRICE, futureTimestamp);
 
@@ -256,8 +245,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostThrowsIfInvalidDateFormat() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
 
     String invalidDateType = "2020-05-20";
@@ -272,8 +259,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostRoundPrice() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     double price = 17.236;
     double roundedPrice = 17.24;
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, price, NEW_TIMESTAMP);
@@ -287,8 +272,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostThrowsIfPriceNotParsable() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
 
     String invalidPrice = "text";
@@ -303,8 +286,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostThrowsIfPriceNegative() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     double negativePrice = -12.55;
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, negativePrice, NEW_TIMESTAMP);
 
@@ -317,8 +298,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostThrowsIfInvalidIdFormat() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     when(request.getParameter("id")).thenReturn("invalid");
 
     servlet.doPost(request, response);
@@ -330,8 +309,6 @@ public final class EditReceiptServletTest {
 
   @Test
   public void doPostThrowsIfEntityNotFound() throws IOException {
-    helper.setEnvIsLoggedIn(true);
-
     when(request.getParameter("id")).thenReturn(String.valueOf(-1));
 
     servlet.doPost(request, response);
