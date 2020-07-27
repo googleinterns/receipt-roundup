@@ -14,4 +14,6 @@ async function getLoginUrl() {
 
   const loginLink = document.getElementById('login-link');
   loginLink.href = json.loginUrl;
+
+  document.body.style.display = 'block';
 }
