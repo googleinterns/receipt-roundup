@@ -68,13 +68,15 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const json = (await response.json()).propertyMap;
+  const json = (await response.json());
+  const receipt = json.propertyMap;
   const params = new URLSearchParams();
-  params.append('categories', json.categories);
-  params.append('image-url', json.imageUrl);
-  params.append('price', json.price);
-  params.append('store', json.store);
-  params.append('timestamp', json.timestamp);
+  params.append('id', json.key.id);
+  params.append('categories', receipt.categories);
+  params.append('image-url', receipt.imageUrl);
+  params.append('price', receipt.price);
+  params.append('store', receipt.store);
+  params.append('timestamp', receipt.timestamp);
 
   // Redirect to the receipt analysis page.
   window.location.href = `/receipt-analysis.html?${params.toString()}`;
