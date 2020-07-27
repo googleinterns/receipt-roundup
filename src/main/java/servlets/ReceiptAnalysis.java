@@ -42,6 +42,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,6 +63,11 @@ public class ReceiptAnalysis {
   // minimum confidence score that a detected logo must have to be considered significant for
   // receipt analysis.
   private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4f;
+  // Matches strings containing at least one digit.
+  private static final Pattern digitRegex = Pattern.compile(".*\\d.*");
+  // Matches strings in U.S. date format.
+  private static final Pattern dateRegex =
+      Pattern.compile("\\d?\\d([/-])\\d?\\d\\1\\d{2}(\\d{2})?");
 
   /** Returns the text and categorization of the image at the requested URL. */
   public static AnalysisResults analyzeImageAt(URL url)
@@ -114,6 +126,10 @@ public class ReceiptAnalysis {
       throws IOException, ReceiptAnalysisException {
     AnalysisResults.Builder analysisBuilder = retrieveText(imageBytes);
     ImmutableSet<String> categories = categorizeText(analysisBuilder.getRawText());
+
+    Stream<String> tokens = getTokensFromRawText(analysisBuilder.getRawText());
+    checkForParsableDate(analysisBuilder, tokens);
+
     return analysisBuilder.setCategories(categories).build();
   }
 
@@ -189,12 +205,76 @@ public class ReceiptAnalysis {
     return categories;
   }
 
-  /*
+  /**
    * Parse category strings into more natural categories
    * e.g. "/Food & Drink/Restaurants" becomes "Food & Drink" and "Restaurants"
    */
   private static Stream<String> parseCategory(ClassificationCategory category) {
     return Stream.of(category.getName().substring(1).split("/"));
+  }
+
+  /**
+   * Checks the provided tokens for a date that can be parsed. If one is found, it is added to the
+   * builder as a timestamp.
+   */
+  private static void checkForParsableDate(
+      AnalysisResults.Builder analysisBuilder, Stream<String> tokens) {
+    Stream<String> dates = tokens.filter(ReceiptAnalysis::isDate);
+    // Assume that the first date on the receipt is the transaction date.
+    Optional<String> firstDate = dates.findFirst();
+
+    if (firstDate.isPresent()) {
+      addDateIfValid(analysisBuilder, firstDate.get());
+    }
+  }
+
+  /**
+   * Adds a valid date to the builder as a timestamp. If the date has an invalid month or day, then
+   * nothing is added.
+   */
+  private static void addDateIfValid(AnalysisResults.Builder analysisBuilder, String date) {
+    String separator = date.contains("-") ? "-" : "/";
+    String formatterPattern = "M" + separator + "d" + separator;
+
+    // Determine if the date has 2 or 4 digits for the year
+    if (date.lastIndexOf(separator) + 3 == date.length()) {
+      formatterPattern += "yy";
+    } else {
+      formatterPattern += "yyyy";
+    }
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatterPattern);
+
+    try {
+      ZonedDateTime dateAndTime = LocalDate.parse(date, formatter).atStartOfDay(ZoneOffset.UTC);
+      long timestamp = dateAndTime.toInstant().toEpochMilli();
+      analysisBuilder.setTimestamp(timestamp);
+    } catch (DateTimeParseException e) {
+      // Invalid month or day
+      return;
+    }
+  }
+
+  /**
+   * Splits a string into a stream of strings, and filters out any that don't have at least one
+   * digit.
+   */
+  private static Stream<String> getTokensFromRawText(String rawText) {
+    return Stream.of(rawText.split("\\s")).filter(ReceiptAnalysis::hasDigit);
+  }
+
+  /**
+   * Checks if the token contains at least one digit.
+   */
+  private static boolean hasDigit(String token) {
+    return digitRegex.matcher(token).matches();
+  }
+
+  /**
+   * Checks if the token is formatted as a date.
+   */
+  private static boolean isDate(String token) {
+    return dateRegex.matcher(token).matches();
   }
 
   public static class ReceiptAnalysisException extends Exception {
