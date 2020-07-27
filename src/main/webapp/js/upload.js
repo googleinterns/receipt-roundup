@@ -51,6 +51,9 @@ async function uploadReceipt(event) {
 
   const formData = new FormData();
   formData.append('receipt-image', image);
+  // TODO: Remove price and date from form data
+  formData.append('price', 9.99);
+  formData.append('date', new Date().getTime());
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
 
