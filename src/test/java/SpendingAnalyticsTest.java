@@ -42,7 +42,7 @@ public final class SpendingAnalyticsTest {
   private static final BlobKey BLOB_KEY = new BlobKey("Test");
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";
   private static final double PRICE = 26.12;
-  private static final String STORE = "Walmart";
+  private static final String STORE = "walmart";
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
   private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
@@ -70,11 +70,11 @@ public final class SpendingAnalyticsTest {
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
 
     Assert.assertEquals(
-        WALMART_TOTAL_SPENT, analytics.getStoreAnalytics().get("Walmart"), ERROR_THRESHOLD);
+        WALMART_TOTAL_SPENT, analytics.getStoreAnalytics().get("walmart"), ERROR_THRESHOLD);
     Assert.assertEquals(
-        CONTOSO_TOTAL_SPENT, analytics.getStoreAnalytics().get("Contoso"), ERROR_THRESHOLD);
+        CONTOSO_TOTAL_SPENT, analytics.getStoreAnalytics().get("contoso"), ERROR_THRESHOLD);
     Assert.assertEquals(MAIN_STREET_RESTAURANT_SPENT,
-        analytics.getStoreAnalytics().get("Main Street Restaurant"), ERROR_THRESHOLD);
+        analytics.getStoreAnalytics().get("main street restaurant"), ERROR_THRESHOLD);
   }
 
   @Test
@@ -95,11 +95,11 @@ public final class SpendingAnalyticsTest {
 
     // Each total should be doubled since two of the same total was added for each store.
     Assert.assertEquals(
-        WALMART_TOTAL_SPENT * 2, analytics.getStoreAnalytics().get("Walmart"), ERROR_THRESHOLD);
+        WALMART_TOTAL_SPENT * 2, analytics.getStoreAnalytics().get("walmart"), ERROR_THRESHOLD);
     Assert.assertEquals(
-        CONTOSO_TOTAL_SPENT * 2, analytics.getStoreAnalytics().get("Contoso"), ERROR_THRESHOLD);
+        CONTOSO_TOTAL_SPENT * 2, analytics.getStoreAnalytics().get("contoso"), ERROR_THRESHOLD);
     Assert.assertEquals(MAIN_STREET_RESTAURANT_SPENT * 2,
-        analytics.getStoreAnalytics().get("Main Street Restaurant"), ERROR_THRESHOLD);
+        analytics.getStoreAnalytics().get("main street restaurant"), ERROR_THRESHOLD);
   }
 
   @Test
@@ -118,7 +118,7 @@ public final class SpendingAnalyticsTest {
 
     // Check that only one stores is returned and it's the expected one.
     Assert.assertEquals(1, analytics.getStoreAnalytics().size());
-    Assert.assertTrue(analytics.getStoreAnalytics().containsKey("Walmart"));
+    Assert.assertTrue(analytics.getStoreAnalytics().containsKey("walmart"));
   }
 
   @Test
@@ -137,7 +137,7 @@ public final class SpendingAnalyticsTest {
 
     // Check that only one store is returned and it's the expected one.
     Assert.assertEquals(1, analytics.getStoreAnalytics().size());
-    Assert.assertTrue(analytics.getStoreAnalytics().containsKey("Walmart"));
+    Assert.assertTrue(analytics.getStoreAnalytics().containsKey("walmart"));
   }
 
   @Test
@@ -157,6 +157,6 @@ public final class SpendingAnalyticsTest {
 
     // Check that only one store is returned and it's the expected one.
     Assert.assertEquals(1, analytics.getStoreAnalytics().size());
-    Assert.assertTrue(analytics.getStoreAnalytics().containsKey("Walmart"));
+    Assert.assertTrue(analytics.getStoreAnalytics().containsKey("walmart"));
   }
 }

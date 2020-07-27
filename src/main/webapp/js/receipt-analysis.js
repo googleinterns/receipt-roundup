@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* global capitalizeFirstLetters */
+
 /**
  * Loads the page if the user is logged in. Otherwise, redirects to the
  * login page.
@@ -79,14 +81,4 @@ async function updateReceipt(event) {
   formData.append('store', store);
 
   // TODO: Send request to servlet.
-}
-
-/**
- * Capitalizes the first letter of each word in a string.
- * TODO: Move this function to a shared JS file.
- */
-function capitalizeFirstLetters(lowercasedString) {
-  return lowercasedString.split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
 }
