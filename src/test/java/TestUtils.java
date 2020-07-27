@@ -42,15 +42,6 @@ public final class TestUtils {
 
   /** Adds multiple receipts to datastore. */
   public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
-    ImmutableSet<Entity> testReceipts = createEntities();
-
-    testReceipts.stream().forEach(receipt -> datastore.put(receipt));
-
-    return testReceipts;
-  }
-
-  /** Create multiple entities to be added to datastore. */
-  public static ImmutableSet<Entity> createEntities() {
     ImmutableSet<Entity> entities =
         ImmutableSet.of(createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L,
                             new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
@@ -63,6 +54,8 @@ public final class TestUtils {
             createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L,
                 new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
                 ImmutableSet.of("food", "meal", "lunch"), ""));
+
+    entities.stream().forEach(entity -> datastore.put(entity));
 
     return entities;
   }
