@@ -72,7 +72,6 @@ public final class SpendingAnalyticsServletTest {
     // Walmart: $26.12, Contoso: $14.51, Main Street Restaurant: $29.01
     TestUtils.addTestReceipts(datastore);
 
-    // Perform doGet.
     servlet.doGet(request, response);
     writer.flush();
 
