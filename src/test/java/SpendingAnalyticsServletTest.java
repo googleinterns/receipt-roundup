@@ -17,10 +17,12 @@ package com.google.sps;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.common.collect.ImmutableSet;
 import com.google.sps.servlets.SpendingAnalyticsServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -36,6 +38,15 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public final class SpendingAnalyticsServletTest {
+  // Test Receipt fields.
+  private static final String USER_ID = "1";
+  private static final long TIMESTAMP = 6292020;
+  private static final BlobKey BLOB_KEY = new BlobKey("Test");
+  private static final String IMAGE_URL = "img/walmart-receipt.jpg";
+  private static final ImmutableSet<String> CATEGORIES =
+      ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
+  private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
+
   // Local Datastore
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()).setEnvIsLoggedIn(true);
@@ -69,8 +80,14 @@ public final class SpendingAnalyticsServletTest {
   @Test
   public void doGetWithReceiptsInDatastore() throws IOException {
     // Receipts in datastore:
-    // Walmart: $26.12, Contoso: $14.51, Main Street Restaurant: $29.01
-    TestUtils.addTestReceipts(datastore);
+    // Walmart: $26.12, Contoso: $14.51, Target: $29.01
+
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+        /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT);
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+        /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT);
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+        /* price = */ 29.01, /* store = */ "target", CATEGORIES, RAW_TEXT);
 
     servlet.doGet(request, response);
     writer.flush();
@@ -81,7 +98,7 @@ public final class SpendingAnalyticsServletTest {
     Assert.assertEquals(3, storeAnalytics.size());
     Assert.assertTrue(storeAnalytics.containsKey("walmart"));
     Assert.assertTrue(storeAnalytics.containsKey("contoso"));
-    Assert.assertTrue(storeAnalytics.containsKey("main street restaurant"));
+    Assert.assertTrue(storeAnalytics.containsKey("target"));
   }
 
   @Test
