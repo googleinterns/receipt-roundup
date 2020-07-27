@@ -43,8 +43,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.stream.Stream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Class with static methods that return the text of a specified image using the Cloud Vision API,
