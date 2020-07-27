@@ -20,6 +20,7 @@ import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 
 /** Class that contains helpful methods used for testing. */
@@ -70,7 +71,11 @@ public final class TestUtils {
     receiptEntity.setProperty("imageUrl", imageUrl);
     receiptEntity.setProperty("price", price);
     receiptEntity.setProperty("store", store);
-    receiptEntity.setProperty("categories", categories);
+    if (categories == null) {
+      receiptEntity.setProperty("categories", null);
+    } else {
+      receiptEntity.setProperty("categories", new ArrayList(categories));
+    }
     receiptEntity.setProperty("rawText", rawText);
 
     return receiptEntity;

@@ -160,4 +160,90 @@ public final class SpendingAnalyticsTest {
     Assert.assertEquals(1, analytics.getStoreAnalytics().size());
     Assert.assertTrue(analytics.getStoreAnalytics().containsKey("walmart"));
   }
+
+  @Test
+  public void categoryAnalyticsWithUniqueCategoryNames() {
+    // Receipts categories:
+    // candy: $26.12, drink: $26.12, cappuccino: $14.51, food: $14.51
+
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 26.12, STORE, ImmutableSet.of("candy", "drink"), RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 14.51, STORE, ImmutableSet.of("cappuccino", "food"), RAW_TEXT))
+            .build();
+
+    SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+
+    Assert.assertEquals(26.12, analytics.getCategoryAnalytics().get("candy"), ERROR_THRESHOLD);
+    Assert.assertEquals(26.12, analytics.getCategoryAnalytics().get("drink"), ERROR_THRESHOLD);
+    Assert.assertEquals(14.51, analytics.getCategoryAnalytics().get("cappuccino"), ERROR_THRESHOLD);
+    Assert.assertEquals(14.51, analytics.getCategoryAnalytics().get("food"), ERROR_THRESHOLD);
+  }
+
+  @Test
+  public void categoryAnalyticsWithDuplicateCategoryNames() {
+    // Receipts categories:
+    // candy: $26.12, drink: $26.12, candy: $14.51, food: $14.51
+
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 26.12, STORE, ImmutableSet.of("candy", "drink"), RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 14.51, STORE, ImmutableSet.of("candy", "food"), RAW_TEXT))
+            .build();
+
+    SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+
+    // Check for no duplicates (3 categories rather than 4).
+    Assert.assertEquals(3, analytics.getCategoryAnalytics().size());
+
+    // Both "Candy" totals should be combined.
+    Assert.assertEquals(40.63, analytics.getCategoryAnalytics().get("candy"), ERROR_THRESHOLD);
+    Assert.assertEquals(26.12, analytics.getCategoryAnalytics().get("drink"), ERROR_THRESHOLD);
+    Assert.assertEquals(14.51, analytics.getCategoryAnalytics().get("food"), ERROR_THRESHOLD);
+  }
+
+  @Test
+  public void nullCategoryNotIncludedInAnalytics() {
+    // null category should be ignored:
+    // candy: $26.12, null: $26.12
+
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 26.12, STORE, ImmutableSet.of("candy"), RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 26.12, STORE,
+                /* categories = */ null, RAW_TEXT))
+            .build();
+
+    SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+
+    // Check that only one category is returned and it's the expected one.
+    Assert.assertEquals(1, analytics.getCategoryAnalytics().size());
+    Assert.assertTrue(analytics.getCategoryAnalytics().containsKey("candy"));
+  }
+
+  @Test
+  public void categoryWithNullPriceNotIncludedInAnalytics() {
+    // Category with null price should be ignored:
+    // drink: null, candy: $26.12
+
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /* price = */ null,
+                STORE, ImmutableSet.of("drink"), RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 26.12, STORE, ImmutableSet.of("candy"), RAW_TEXT))
+            .build();
+
+    SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+
+    // Check that only one category is returned and it's the expected one.
+    Assert.assertEquals(1, analytics.getCategoryAnalytics().size());
+    Assert.assertTrue(analytics.getCategoryAnalytics().containsKey("candy"));
+  }
 }
