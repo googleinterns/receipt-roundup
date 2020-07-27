@@ -32,7 +32,7 @@ function loadReceiptAnalysis() {
       capitalizeFirstLetters(parameters.get('categories').replace(/,/gi, ', '));
   const imageUrl = parameters.get('image-url');
 
-  document.getElementById('date').innerText = `Transaction Date: ${date}`;
+  document.getElementById('date-input').value = date;
   document.getElementById('store-input').value = storeName;
   document.getElementById('price-input').value = `$${price}`;
   document.getElementById('categories-input').value = categories;
@@ -64,7 +64,8 @@ async function updateReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
-  // TODO: Get transaction date.
+  // TODO: Get receipt ID from URL.
+  const date = document.getElementById('date-input').valueAsNumber;
   const store = document.getElementById('store-input').value;
   const price =
       convertStringToNumber(document.getElementById('price-input').value);
@@ -72,6 +73,7 @@ async function updateReceipt(event) {
 
   const formData = new FormData();
 
+  formData.append('date', date);
   formData.append('store', store);
   formData.append('price', price);
 
