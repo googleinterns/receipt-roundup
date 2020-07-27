@@ -76,4 +76,12 @@ public final class TestUtils {
     when(request.getParameter("min")).thenReturn(minPrice);
     when(request.getParameter("max")).thenReturn(maxPrice);
   }
+
+  /**
+   * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
+   * properties.
+   */
+  public static String extractProperties(String json) {
+    return json.substring(json.indexOf("propertyMap"));
+  }
 }
