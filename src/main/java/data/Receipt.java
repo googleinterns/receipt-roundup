@@ -20,18 +20,17 @@ import com.google.common.collect.ImmutableSet;
 /** Class to represent a receipt and its properties. */
 public class Receipt {
   private final long id;
-  private final long userId;
+  private final String userId;
   private final long timestamp;
   private final BlobKey blobKey;
   private final String imageUrl;
   private final double price;
   private final String store;
-  private final String label;
   private final ImmutableSet<String> categories;
   private final String rawText;
 
-  public Receipt(long id, long userId, long timestamp, BlobKey blobKey, String imageUrl,
-      double price, String store, String label, ImmutableSet<String> categories, String rawText) {
+  public Receipt(long id, String userId, long timestamp, BlobKey blobKey, String imageUrl,
+      double price, String store, ImmutableSet<String> categories, String rawText) {
     this.id = id;
     this.userId = userId;
     this.timestamp = timestamp;
@@ -39,8 +38,15 @@ public class Receipt {
     this.imageUrl = imageUrl;
     this.price = price;
     this.store = store;
-    this.label = label;
     this.categories = ImmutableSet.copyOf(categories); // creates a deep copy
     this.rawText = rawText;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public double getPrice() {
+    return price;
   }
 }

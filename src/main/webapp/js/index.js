@@ -12,29 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-/** Fetches the login status and adds a URL to the logout button. */
-async function checkAuthentication() {
-  const response = await fetch('/login-status');
-  const account = await response.json();
-
-  // Redirect to the login page if the user is not logged in.
-  if (!account.loggedIn) {
-    window.location.replace('/login.html');
-  }
-
-  const logoutButton = document.getElementById('logout-button');
-  logoutButton.href = account.logoutUrl;
+/**
+ * Checks that the user is logged in then loads the logout button and receipts.
+ */
+function load() {
+  /* global loadPage */
+  loadPage(getAllReceipts, loadLogoutButton);  // From js/common.js
 }
 
-/** Fetches receipts from the server and adds them to the DOM. */
-async function searchReceipts() {
-  const label = document.getElementById('search-input').value;
-  const response = await fetch(`/search-receipts?label=${label}`);
+/**
+ * Adds a URL to the logout button and displays user's email.
+ * @param {object} account
+ */
+async function loadLogoutButton(account) {
+  document.getElementById('logout-button').href = account.logoutUrl;
+
+  document.getElementById('user-display').innerHTML =
+      `You are signed in as ${account.email}`;
+}
+
+/** Fetches all receipts from the server and adds them to the DOM. */
+async function getAllReceipts() {
+  const params = new URLSearchParams();
+  params.append('isNewLoad', 'true');
+
+  const response = await fetch(`/search-receipts?${params.toString()}`);
   const receipts = await response.json();
 
   clearExistingDisplay();
-  displayReceipts(label, receipts);
+  displayReceipts(receipts);
+}
+
+/** Fetches matching receipts from the server and adds them to the DOM. */
+async function searchReceipts() {
+  const params = new URLSearchParams();
+  params.append('isNewLoad', 'false');
+  params.append('category', document.getElementById('category-input').value);
+  params.append(
+      'dateRange', document.getElementById('date-range-input').textContent);
+  params.append('store', document.getElementById('store-name-input').value);
+  params.append('min', document.getElementById('min-price-input').value);
+  params.append('max', document.getElementById('max-price-input').value);
+  const dateTimeFormat = new Intl.DateTimeFormat();
+  params.append('timeZoneId', dateTimeFormat.resolvedOptions().timeZone);
+
+  const response = await fetch(`/search-receipts?${params.toString()}`);
+  const receipts = await response.json();
+
+  clearExistingDisplay();
+  displayReceipts(receipts);
 }
 
 /** Clears out receipts display including old receipts and error messages. */
@@ -44,13 +70,12 @@ function clearExistingDisplay() {
 
 /**
  * Populates receipt display with newly queried receipts.
- * @param {string} label User-entered label.
  * @param {JSON Object} receipts Receipts returned from search query.
  */
-function displayReceipts(label, receipts) {
+function displayReceipts(receipts) {
   // If no receipts returned, display an error message. Else, display receipts.
   if (Object.keys(receipts).length == 0) {
-    createErrorMessageElement(label);
+    createErrorMessageElement();
   } else {
     receipts.forEach((receipt) => {
       createReceiptCardElement(receipt);
@@ -58,19 +83,15 @@ function displayReceipts(label, receipts) {
   }
 }
 
-/**
- * Creates error message based on existing HTML template.
- * @param {string} label User-entered label.
- */
-function createErrorMessageElement(label) {
+/** Creates error message based on existing HTML template. */
+function createErrorMessageElement() {
   // Clone error message from template.
   const errorMessageClone =
       document.querySelector('#error-message-template').content.cloneNode(true);
 
   // Fill in template fields with correct information.
   errorMessageClone.querySelector('h3').innerText =
-      `Sorry, no results found for "${label}". ` +
-      `Please try your search again or try a different query.`;
+      'Sorry, no results found. Please try again or refine your search.';
 
   // Attach error message clone to parent div.
   document.getElementById('receipts-display').appendChild(errorMessageClone);
@@ -88,14 +109,17 @@ function createReceiptCardElement(receipt) {
       document.querySelector('#receipt-card-template').content.cloneNode(true);
 
   // Fill in template fields with correct information.
-  receiptCardClone.querySelector('#timestamp').innerText = receipt.timestamp;
-  receiptCardClone.querySelector('#store-name').innerText = receipt.store;
+  const date = new Date(receipt.timestamp);
+  receiptCardClone.querySelector('#timestamp').innerText = date.toDateString();
+  receiptCardClone.querySelector('#store-name').innerText =
+      capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
       'Total: $' + receipt.price;
 
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length && i < 3; i++) {
-    receiptCardClone.querySelector('#c' + i).innerText = categories[i];
+    receiptCardClone.querySelector('#c' + i).innerText =
+        capitalizeFirstLetters(categories[i]);
   }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
@@ -106,6 +130,13 @@ function createReceiptCardElement(receipt) {
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
+}
+
+/** Capitalize the first letter of each word in a string. */
+function capitalizeFirstLetters(lowercasedString) {
+  return lowercasedString.split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
 }
 
 /**
@@ -164,8 +195,86 @@ $(function() {
                 moment().subtract(1, 'month').endOf('month'),
               ],
             },
+            showDropdowns: true,
           },
 
           cb);
   cb(start, end);
+});
+
+
+/**
+ * Price range slider setup:
+ * https://refreshless.com/nouislider/examples/#section-steps-api.
+ */
+$(document).ready(function() {
+  const keypressSlider = document.querySelector('.slider-keypress');
+  const input0 = document.querySelector('.input-with-keypress-0');
+  const input1 = document.querySelector('.input-with-keypress-1');
+  const inputs = [input0, input1];
+
+  noUiSlider.create(
+      keypressSlider,
+      {start: [0, 80], connect: true, step: 1, range: {min: [0], max: [250]}});
+
+  keypressSlider.noUiSlider.on('update', function(values, handle) {
+    inputs[handle].value = values[handle];
+
+    /* Begins listening to keypress on the input. */
+    function setSliderHandle(which, value) {
+      const handle = [null, null];
+      handle[which] = value;
+      keypressSlider.noUiSlider.set(handle);
+    }
+
+    // Listen to keydown events on the input field.
+    inputs.forEach(function(input, handle) {
+      input.addEventListener('change', function() {
+        setSliderHandle(handle, this.value);
+      });
+
+      input.addEventListener('keydown', function(event) {
+        const values = keypressSlider.noUiSlider.get();
+        const value = Number(values[handle]);
+        const steps = keypressSlider.noUiSlider.steps();
+        const step = steps[handle];
+        let position;
+
+        const ENTER = 13;
+        const UP = 38;
+        const DOWN = 40;
+
+        switch (event.which) {
+          case ENTER:
+            setSliderHandle(handle, this.value);
+            break;
+          case UP:
+            // Get step to go increase slider value (up).
+            position = step[1];
+
+            // false = no step is set.
+            if (position === false) {
+              position = 1;
+            }
+
+            // null = edge of slider.
+            if (position !== null) {
+              setSliderHandle(handle, value + position);
+            }
+            break;
+          case DOWN:
+            position = step[0];
+
+            if (position === false) {
+              position = 1;
+            }
+
+            if (position !== null) {
+              setSliderHandle(handle, value - position);
+            }
+            break;
+        }
+      });
+    });
+  });
 });

@@ -3,6 +3,7 @@
 <!-- Required meta tags -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="shortcut icon" href="img/favicon.png" type="image/x-icon" />
 
 <!-- Bootstrap CSS -->
 <link
@@ -13,14 +14,15 @@
 />
 
 <!-- Custom -->
-<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/common.css" />
 <link rel="stylesheet" href="css/receipt-analysis.css" />
 
+<script src="js/common.js"></script>
 <script src="js/receipt-analysis.js"></script>
 
 <title>Receipt Analysis</title>
 
-<body onload="loadReceiptAnalysis()">
+<body onload="load()">
   <h1 class="p-3 text-center">Receipt Analysis</h1>
 
   <div class="container-fluid">
@@ -76,4 +78,10 @@
       <a href="/" class="btn btn-lg btn-info">Return to Home</a>
     </div>
   </div>
+
+  <template id="category-template">
+    <div class="col d-flex justify-content-center">
+      <h4><span id="category-name" class="badge badge-pill badge-secondary text-wrap">-</span></h4>
+    </div>
+  </template>
 </body>

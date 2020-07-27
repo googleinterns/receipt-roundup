@@ -1,6 +1,7 @@
 .time-range-form {
   background: #fff;
   border: 1px solid #ccc;
+  border-radius: 5px;
   cursor: pointer;
   padding: 5px 10px;
   width: 100%;
@@ -14,4 +15,20 @@
 
 .error-message {
   padding: 5% 15%;
+}
+
+.search-bar {
+  background-color: #f7f7f7;
+  padding: 0.3% 0 0.8%;
+}
+
+.no-padding {
+  margin: 0 !important;
+  padding: 2% 0 0 !important;
+}
+
+.vertical-center {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
 }
