@@ -114,20 +114,11 @@ public class EditReceiptServlet extends HttpServlet {
     double price = FormatUtils.roundPrice(request.getParameter("price"));
     long timestamp = FormatUtils.getTimestamp(request, clock);
 
-    receipt.setProperty("categories", getCategories(request));
+    receipt.setProperty("categories", FormatUtils.getCategories(request));
     receipt.setProperty("store", store);
     receipt.setProperty("price", price);
     receipt.setProperty("timestamp", timestamp);
 
     return receipt;
-  }
-
-  /**
-   * Sanitizes and formats the set of categories from the request.
-   */
-  private ImmutableSet<String> getCategories(HttpServletRequest request) {
-    return Arrays.stream(request.getParameterValues("categories"))
-        .map(FormatUtils::sanitize)
-        .collect(ImmutableSet.toImmutableSet());
   }
 }

@@ -237,7 +237,8 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("price", FormatUtils.roundPrice(request.getParameter("price")));
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
-    receipt.setProperty("categories", getCategories(request, results.getCategories()));
+    receipt.setProperty(
+        "categories", FormatUtils.sanitizeCategories(results.getCategories().stream()));
     // If a logo was detected, set the store name.
     results.getStore().ifPresent(
         store -> { receipt.setProperty("store", FormatUtils.sanitize(store)); });
@@ -260,19 +261,6 @@ public class UploadReceiptServlet extends HttpServlet {
         + request.getServerPort() + request.getContextPath();
 
     return baseUrl;
-  }
-
-  /**
-   * Gets the set of both user-assigned categories from the request and generated categories from
-   * the receipt analysis.
-   */
-  private ImmutableSet<String> getCategories(
-      HttpServletRequest request, Set<String> generatedCategories) {
-    return Stream
-        .concat(
-            Arrays.stream(request.getParameterValues("categories")), generatedCategories.stream())
-        .map(FormatUtils::sanitize)
-        .collect(ImmutableSet.toImmutableSet());
   }
 
   public static class InvalidFileException extends Exception {

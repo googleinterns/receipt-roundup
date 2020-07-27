@@ -110,12 +110,10 @@ public final class UploadReceiptServletTest {
   private static final long IMAGE_SIZE_0MB = 0;
   private static final String HASH = "35454B055CC325EA1AF2126E27707052";
 
-  private static final String[] USER_CATEGORIES =
-      new String[] {"burger", "fast food", "restaurant"};
-  private static final Set<String> GENERATED_CATEGORIES = ImmutableSet.of("dining");
+  private static final Set<String> GENERATED_CATEGORIES =
+      ImmutableSet.of("burger", "fast food", "restaurant");
   private static final Collection<String> CATEGORIES_COLLECTION =
-      Stream.concat(Arrays.stream(USER_CATEGORIES), GENERATED_CATEGORIES.stream())
-          .collect(Collectors.toList());
+      GENERATED_CATEGORIES.stream().collect(Collectors.toList());
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
   private static final String STORE = "mcdonald's";
@@ -201,7 +199,7 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreLiveServer()
       throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -235,7 +233,7 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreDevServer()
       throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, DEV_SERVER_SCHEME, DEV_SERVER_NAME, DEV_SERVER_PORT, DEV_SERVER_CONTEXT_PATH);
 
@@ -267,7 +265,7 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostSanitizesStore() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -296,7 +294,7 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -318,67 +316,15 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostRemovesDuplicateUserAndGeneratedCategories()
-      throws IOException, ReceiptAnalysisException {
+  public void doPostSanitizesCategories() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, USER_CATEGORIES, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
-    Set<String> categories = ImmutableSet.of(USER_CATEGORIES[0], USER_CATEGORIES[2]);
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
-                                          .setCategories(categories)
-                                          .setStore(STORE)
-                                          .build();
-    mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
-        .thenReturn(analysisResults);
-
-    servlet.doPost(request, response);
-
-    Query query = new Query("Receipt");
-    PreparedQuery results = datastore.prepare(query);
-    Entity receipt = results.asSingleEntity();
-
-    Collection<String> expectedCategories = Arrays.asList(USER_CATEGORIES);
-    Assert.assertEquals(expectedCategories, receipt.getProperty("categories"));
-  }
-
-  public void doPostRemovesDuplicateUserCategories() throws IOException, ReceiptAnalysisException {
-    String[] categories = new String[] {"lunch", "restaurant", "lunch", "lunch", "restaurant"};
-    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, categories, PRICE, PAST_TIMESTAMP);
-    stubUrlComponents(
-        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
-
-    // Mock receipt analysis.
-    mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
-        .thenReturn(ANALYSIS_RESULTS);
-
-    servlet.doPost(request, response);
-
-    Query query = new Query("Receipt");
-    PreparedQuery results = datastore.prepare(query);
-    Entity receipt = results.asSingleEntity();
-
-    Collection<String> expectedCategories = Arrays.asList("lunch", "restaurant");
-    Assert.assertEquals(expectedCategories, receipt.getProperty("categories"));
-  }
-
-  @Test
-  public void doPostSanitizesUserAndGeneratedCategories()
-      throws IOException, ReceiptAnalysisException {
-    String[] userCategories =
-        new String[] {"   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH"};
-    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, userCategories, PRICE, PAST_TIMESTAMP);
-    stubUrlComponents(
-        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
-
-    // Mock receipt analysis.
-    Set<String> generatedCategories = ImmutableSet.of("  dIninG ");
+    Set<String> generatedCategories =
+        ImmutableSet.of("   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH", "  dIninG ");
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(generatedCategories)
                                           .setStore(STORE)
@@ -515,7 +461,7 @@ public final class UploadReceiptServletTest {
 
     double price = 17.236;
     double roundedPrice = 17.24;
-    stubRequestBody(request, USER_CATEGORIES, price, PAST_TIMESTAMP);
+    stubRequestBody(request, price, PAST_TIMESTAMP);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -610,11 +556,9 @@ public final class UploadReceiptServletTest {
   }
 
   /**
-   * Stubs the request with the given categories, store, price, and date parameters.
+   * Stubs the request with the given price and date parameters.
    */
-  private void stubRequestBody(
-      HttpServletRequest request, String[] categories, double price, long timestamp) {
-    when(request.getParameterValues("categories")).thenReturn(categories);
+  private void stubRequestBody(HttpServletRequest request, double price, long timestamp) {
     when(request.getParameter("price")).thenReturn(String.valueOf(price));
     when(request.getParameter("date")).thenReturn(Long.toString(timestamp));
   }
