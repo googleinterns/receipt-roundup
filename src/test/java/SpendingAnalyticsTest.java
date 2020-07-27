@@ -20,6 +20,7 @@ import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestC
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.common.collect.ImmutableSet;
 import com.google.sps.data.SpendingAnalytics;
+import java.lang.Character;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,6 +37,7 @@ public final class SpendingAnalyticsTest {
   private static final long TIMESTAMP = 6292020;
   private static final BlobKey BLOB_KEY = new BlobKey("Test");
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";
+  private static final String STORE = "walmart";
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
   private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
