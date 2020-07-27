@@ -248,7 +248,8 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
     receipt.setProperty("categories", getCategories(request, results.getCategories()));
     // If a logo was detected, set the store name.
-    results.getStore().ifPresent(store -> { receipt.setProperty("store", FormatUtils.sanitize(store)); });
+    results.getStore().ifPresent(
+        store -> { receipt.setProperty("store", FormatUtils.sanitize(store)); });
 
     return receipt;
   }
