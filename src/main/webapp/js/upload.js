@@ -13,12 +13,11 @@
 // limitations under the License.
 
 /**
- * Verifies that the user is logged in and sets the date input to the current
- * date.
+ * Verifies that the user is logged in.
  */
 async function load() {
   /* global loadPage */
-  loadPage(loadDateInput);  // From js/common.js
+  loadPage();  // From js/common.js
 }
 
 /**
@@ -49,14 +48,12 @@ async function uploadReceipt(event) {
 
   const uploadUrl = await fetchBlobstoreUrl();
   const categories = document.getElementById('categories-input').value;
-  const date = document.getElementById('date-input').valueAsNumber;
   const image = fileInput.files[0];
 
   const formData = new FormData();
   createCategoryList(categories).forEach((category) => {
     formData.append('categories', category);
   });
-  formData.append('date', date);
   formData.append('receipt-image', image);
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
@@ -138,26 +135,4 @@ function checkFileSize() {
   }
 
   return true;
-}
-
-/**
- * Sets the value and max value of the transaction date input field to the
- * current date.
- */
-function loadDateInput() {
-  const dateInput = document.getElementById('date-input');
-  dateInput.value = dateInput.max = formatDate(new Date());
-}
-
-/**
- * Converts a date to 'YYYY-MM-DD' format, corresponding to the value attribute
- * of the date input.
- * @param {Date} date The date to convert.
- * @return {string} The formatted date.
- */
-function formatDate(date) {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${year}-${month}-${day}`;
 }

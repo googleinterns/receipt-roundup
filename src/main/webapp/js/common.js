@@ -15,8 +15,8 @@
 /**
  * Loads the page elements if the user is logged in. Otherwise, redirects to the
  * login page.
- * @param {function(): undefined} loadElements Loads elements on the page if the
- *     user is logged in.
+ * @param {?function(): undefined} loadElements Loads elements on the page if
+ *     the user is logged in.
  * @param {?function(object): undefined} loginOperation Uses the account fetched
  *     from the login status servlet to manipulate the DOM.
  */
@@ -25,7 +25,9 @@ async function loadPage(loadElements, loginOperation) {
 
   if (loggedIn) {
     document.body.style.display = 'block';
-    loadElements();
+    if (loadElements) {
+      loadElements();
+    }
   }
 }
 
