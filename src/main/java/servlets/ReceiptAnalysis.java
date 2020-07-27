@@ -42,7 +42,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,6 +51,12 @@ import javax.servlet.http.HttpServletResponse;
  * as well as some categories the text falls into using the Cloud Natural Language API.
  */
 public class ReceiptAnalysis {
+  // Confidence scores are values in the range [0,1] that indicate how accurate the Cloud Vision API
+  // is in identifying the detected logo, with higher scores meaning higher certainty. This is the
+  // minimum confidence score that a detected logo must have to be considered significant for
+  // receipt analysis.
+  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4f;
+
   /** Returns the text and categorization of the image at the requested URL. */
   public static AnalysisResults analyzeImageAt(URL url)
       throws IOException, ReceiptAnalysisException {
@@ -107,22 +112,22 @@ public class ReceiptAnalysis {
   /** Analyzes the image represented by the given ByteString. */
   private static AnalysisResults analyzeImage(ByteString imageBytes)
       throws IOException, ReceiptAnalysisException {
-    String rawText = retrieveText(imageBytes);
-    ImmutableSet<String> categories = categorizeText(rawText);
-    AnalysisResults results = new AnalysisResults(rawText, categories);
-
-    return results;
+    AnalysisResults.Builder analysisBuilder = retrieveText(imageBytes);
+    ImmutableSet<String> categories = categorizeText(analysisBuilder.getRawText());
+    return analysisBuilder.setCategories(categories).build();
   }
 
-  /** Detects and retrieves text in the provided image. */
-  private static String retrieveText(ByteString imageBytes)
+  /** Detects and retrieves text and store logo in the provided image. */
+  private static AnalysisResults.Builder retrieveText(ByteString imageBytes)
       throws IOException, ReceiptAnalysisException {
-    String rawText = "";
+    AnalysisResults.Builder analysisBuilder;
 
     Image image = Image.newBuilder().setContent(imageBytes).build();
-    Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
+    ImmutableList<Feature> features =
+        ImmutableList.of(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
+            Feature.newBuilder().setType(Feature.Type.LOGO_DETECTION).build());
     AnnotateImageRequest request =
-        AnnotateImageRequest.newBuilder().addFeatures(feature).setImage(image).build();
+        AnnotateImageRequest.newBuilder().addAllFeatures(features).setImage(image).build();
     ImmutableList<AnnotateImageRequest> requests = ImmutableList.of(request);
 
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
@@ -137,19 +142,29 @@ public class ReceiptAnalysis {
       if (response.hasError()) {
         throw new ReceiptAnalysisException("Received image annotation response with error.");
       } else if (response.getTextAnnotationsList().isEmpty()) {
+        // TODO: Handle case with no raw text by depending on user-assigned categories.
         throw new ReceiptAnalysisException(
             "Received image annotation response without text annotations.");
       }
 
-      // First element has the entire raw text from the image
-      EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
+      // First element has the entire raw text from the image.
+      EntityAnnotation textAnnotation = response.getTextAnnotationsList().get(0);
 
-      rawText = annotation.getDescription();
+      String rawText = textAnnotation.getDescription();
+      analysisBuilder = new AnalysisResults.Builder(rawText);
+
+      // If a logo was detected with a confidence above the threshold, use it to set the store.
+      if (!response.getLogoAnnotationsList().isEmpty()
+          && response.getLogoAnnotationsList().get(0).getScore()
+              > LOGO_DETECTION_CONFIDENCE_THRESHOLD) {
+        String store = response.getLogoAnnotationsList().get(0).getDescription();
+        analysisBuilder.setStore(store);
+      }
     } catch (ApiException e) {
       throw new ReceiptAnalysisException("Image annotation request failed.", e);
     }
 
-    return rawText;
+    return analysisBuilder;
   }
 
   /** Generates categories for the provided text. */
