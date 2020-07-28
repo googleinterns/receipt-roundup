@@ -40,7 +40,7 @@ function handleStoreChart(analytics) {
   storeData.addColumn('string', 'Store');
   storeData.addColumn('number', 'Total');
 
-  for (const [store, total] of Object.entries(analytics[0])) {
+  for (const [store, total] of Object.entries(analytics.storeAnalytics)) {
     storeData.addRow([capitalizeFirstLetters(store), total]);
   }
 
@@ -57,7 +57,7 @@ function handleCategoryChart(analytics) {
   categoryData.addColumn('string', 'Category');
   categoryData.addColumn('number', 'Total');
 
-  for (const [store, total] of Object.entries(analytics[1])) {
+  for (const [store, total] of Object.entries(analytics.categoryAnalytics)) {
     categoryData.addRow([capitalizeFirstLetters(store), total]);
   }
 
