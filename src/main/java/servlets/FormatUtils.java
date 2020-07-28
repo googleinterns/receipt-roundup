@@ -51,7 +51,6 @@ public final class FormatUtils {
    */
   public static long getTimestamp(HttpServletRequest request, Clock clock)
       throws InvalidDateException {
-    long currentTimestamp = clock.instant().toEpochMilli();
     long transactionTimestamp;
 
     try {
@@ -60,11 +59,20 @@ public final class FormatUtils {
       throw new InvalidDateException("Transaction date must be a long.");
     }
 
+    checkTimestampIsInPast(transactionTimestamp, clock);
+    return transactionTimestamp;
+  }
+
+  /**
+   * Verifies that the timestamp is in the past.
+   */
+  public static void checkTimestampIsInPast(long transactionTimestamp, Clock clock)
+      throws InvalidDateException {
+    long currentTimestamp = clock.instant().toEpochMilli();
+
     if (transactionTimestamp > currentTimestamp) {
       throw new InvalidDateException("Transaction date must be in the past.");
     }
-
-    return transactionTimestamp;
   }
 
   /**
