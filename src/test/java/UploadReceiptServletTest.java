@@ -98,7 +98,7 @@ public final class UploadReceiptServletTest {
   private static final long PAST_TIMESTAMP =
       Instant.parse(INSTANT).minusMillis(1234).toEpochMilli();
 
-  private static final long MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+  private static final long MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
   private static final String UPLOAD_URL = "/blobstore/upload-receipt";
 
   private static final BlobKey BLOB_KEY = new BlobKey("blobKey");
