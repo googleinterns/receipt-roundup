@@ -30,14 +30,6 @@ input {
   margin: auto;
 }
 
-#price-input {
-  width: 7em;
-}
-
-#date-input {
-  width: 12em;
-}
-
 .custom-file {
   font-size: 0.5rem;
 }
@@ -78,16 +70,6 @@ small {
   #upload-form {
     margin: 0 5%;
     padding: 1.5%;
-  }
-
-  #categories-input {
-    font-size: 20px;
-    width: 20em;
-  }
-
-  #date-input,
-  #price-input {
-    font-size: 20px;
   }
 
   .custom-file {

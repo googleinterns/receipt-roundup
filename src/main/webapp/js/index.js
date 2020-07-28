@@ -22,11 +22,14 @@ function load() {
 }
 
 /**
- * Adds a URL to the logout button.
+ * Adds a URL to the logout button and displays user's email.
  * @param {object} account
  */
 async function loadLogoutButton(account) {
   document.getElementById('logout-button').href = account.logoutUrl;
+
+  document.getElementById('user-display').innerHTML =
+      `You are signed in as ${account.email}`;
 }
 
 /** Fetches all receipts from the server and adds them to the DOM. */
