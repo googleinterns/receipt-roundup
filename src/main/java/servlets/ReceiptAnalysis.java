@@ -63,8 +63,6 @@ public class ReceiptAnalysis {
   // minimum confidence score that a detected logo must have to be considered significant for
   // receipt analysis.
   private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4f;
-  // Matches strings containing at least one digit.
-  private static final Pattern digitRegex = Pattern.compile(".*\\d.*");
   // Matches strings in U.S. date format.
   private static final Pattern dateRegex =
       Pattern.compile("\\d?\\d([/-])\\d?\\d\\1\\d{2}(\\d{2})?");
@@ -269,18 +267,10 @@ public class ReceiptAnalysis {
   }
 
   /**
-   * Splits a string into a stream of strings, and filters out any that don't have at least one
-   * digit.
+   * Splits a string on whitespace and returns a stream of the resulting strings.
    */
   private static Stream<String> getTokensFromRawText(String rawText) {
-    return Stream.of(rawText.split("\\s")).filter(ReceiptAnalysis::hasDigit);
-  }
-
-  /**
-   * Checks if the token contains at least one digit.
-   */
-  private static boolean hasDigit(String token) {
-    return digitRegex.matcher(token).matches();
+    return Stream.of(rawText.split("\\s"));
   }
 
   /**
