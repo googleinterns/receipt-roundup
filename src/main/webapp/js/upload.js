@@ -108,7 +108,7 @@ function startLoading() {
   submitButton.innerText = 'Analyzing...';
 
   // Display the loading image, which is hidden by default.
-  const loadingBar = document.getElementsByClassName('ldBar')[0].ldBar;
+  const loadingBar = document.getElementsByClassName('loading-bar')[0].ldBar;
   loadingBar.set(1);
   document.getElementById('loading').classList.remove('hidden');
 

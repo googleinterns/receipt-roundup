@@ -214,10 +214,10 @@
             return root.ldBar;
           }
           cls = root.getAttribute('class') || '';
-          if (!~cls.indexOf('ldBar')) {
-            root.setAttribute('class', cls + ' ldBar');
+          if (!~cls.indexOf('loading-bar')) {
+            root.setAttribute('class', cls + ' loading-bar');
           }
-          idPrefix = 'ldBar-' + Math.random().toString(16).substring(2);
+          idPrefix = 'loading-bar-' + Math.random().toString(16).substring(2);
           id = {
             key: idPrefix,
             clip: idPrefix + '-clip',
@@ -404,7 +404,7 @@
           };
           svg = domTree('svg', dom);
           text = document.createElement('div');
-          text.setAttribute('class', 'ldBar-label');
+          text.setAttribute('class', 'loading-bar-label');
           root.appendChild(svg);
           root.appendChild(text);
           group = [0, 0];
@@ -717,7 +717,7 @@
         return window.addEventListener('load', function() {
           var i$, ref$, len$, node, results$ = [];
           for (i$ = 0,
-              len$ = (ref$ = document.querySelectorAll('.ldBar')).length;
+              len$ = (ref$ = document.querySelectorAll('.loading-bar')).length;
                i$ < len$; ++i$) {
             node = ref$[i$];
             if (!node.ldBar) {

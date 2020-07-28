@@ -50,16 +50,16 @@ small {
   font-size: 12px;
 }
 
-.ldBar {
+.loading-bar {
   margin: 0 calc(50% - 70px);
 }
 
-.ldBar rect {
+.loading-bar rect {
   height: 150px;
   width: 150px;
 }
 
-.ldBar svg {
+.loading-bar svg {
   overflow: inherit;
 }
 
@@ -69,7 +69,7 @@ small {
 }
 
 .hidden,
-.ldBar-label {
+.loading-bar-label {
   display: none;
 }
 
