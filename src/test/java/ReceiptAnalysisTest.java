@@ -49,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
@@ -88,6 +89,10 @@ public final class ReceiptAnalysisTest {
   private static final Optional<String> STORE = Optional.of("Google");
   private static final float LOGO_CONFIDENCE = 0.6f;
   private static final float LOGO_CONFIDENCE_BELOW_THRESHOLD = 0.2f;
+
+  private static final String RAW_TEXT_WITH_DATE = "the date is 05-08-2020";
+  private static final Instant INSTANT = Instant.parse("2020-05-08T00:00:00Z");
+  private static final Optional<Long> TIMESTAMP = Optional.of(Long.valueOf(INSTANT.toEpochMilli()));
 
   private URL url;
   private ImageAnnotatorClient imageClient;
@@ -153,6 +158,16 @@ public final class ReceiptAnalysisTest {
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
     Assert.assertEquals(Optional.empty(), results.getStore());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDate() throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
   }
 
   @Test
