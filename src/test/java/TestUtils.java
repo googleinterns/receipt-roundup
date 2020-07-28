@@ -16,7 +16,6 @@ package com.google.sps;
 
 import static org.mockito.Mockito.when;
 
-import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.ImmutableSet;
@@ -31,29 +30,28 @@ public final class TestUtils {
 
   /* Add receipts to database for testing purposes. */
   public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
-    ImmutableSet<Entity> testReceipts = ImmutableSet.of(
-        addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1045237591000L,
-            new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
-            ImmutableSet.of("candy", "drink", "personal"), ""),
+    ImmutableSet<Entity> testReceipts =
+        ImmutableSet.of(addTestReceipt(datastore, /* userId = */ "123",
+                            /* timestamp = */ 1045237591000L, "img/walmart-receipt.jpg", 26.12,
+                            "walmart", ImmutableSet.of("candy", "drink", "personal"), ""),
 
-        addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1560193140000L,
-            new BlobKey("test"), "img/contoso-receipt.jpg", 14.51, "contoso",
-            ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
+            addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1560193140000L,
+                "img/contoso-receipt.jpg", 14.51, "contoso",
+                ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
 
-        addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1491582960000L,
-            new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
-            ImmutableSet.of("food", "meal", "lunch"), ""));
+            addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1491582960000L,
+                "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
+                ImmutableSet.of("food", "meal", "lunch"), ""));
     return testReceipts;
   }
 
   /** Adds a test receipt to the mock datastore and returns the id of that entity. */
   public static Entity addTestReceipt(DatastoreService datastore, String userId, long timestamp,
-      BlobKey blobkey, String imageUrl, double price, String store, ImmutableSet<String> categories,
+      String imageUrl, double price, String store, ImmutableSet<String> categories,
       String rawText) {
     Entity receiptEntity = new Entity("Receipt");
     receiptEntity.setProperty("userId", userId);
     receiptEntity.setProperty("timestamp", timestamp);
-    receiptEntity.setProperty("blobkey", blobkey);
     receiptEntity.setProperty("imageUrl", imageUrl);
     receiptEntity.setProperty("price", price);
     receiptEntity.setProperty("store", store);
