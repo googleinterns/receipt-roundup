@@ -32,14 +32,14 @@ public class SpendingAnalytics {
     categoryAnalytics = new HashMap<>();
 
     for (Entity receipt : allReceipts) {
-      updateStoreAnalytics(receipt, storeAnalytics);
+      updateStoreAnalytics(receipt);
 
-      updateCategoryAnalytics(receipt, categoryAnalytics);
+      updateCategoryAnalytics(receipt);
     }
   }
 
   /** Updates storeAnalytics hashmap with store info from the passed in receipt. */
-  private void updateStoreAnalytics(Entity receipt, HashMap<String, Double> storeAnalytics) {
+  private void updateStoreAnalytics(Entity receipt) {
     String store = (String) receipt.getProperty("store");
     Double price = (Double) receipt.getProperty("price");
 
@@ -57,7 +57,7 @@ public class SpendingAnalytics {
   }
 
   /** Updates categoryAnalytics hashmap with category info from the passed in receipt. */
-  private void updateCategoryAnalytics(Entity receipt, HashMap<String, Double> categoryAnalytics) {
+  private void updateCategoryAnalytics(Entity receipt) {
     Double price = (Double) receipt.getProperty("price");
 
     // Don't add any categories to hashmap if price is invalid.
