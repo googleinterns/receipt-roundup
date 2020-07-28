@@ -62,12 +62,10 @@ public final class SpendingAnalyticsTest {
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
-            .add(
-                TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /* price = */ 14.51,
-                    /* store = */ "contoso", CATEGORIES, RAW_TEXT))
-            .add(
-                TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /* price = */ 29.01,
-                    /* store = */ "target", CATEGORIES, RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 29.01, /* store = */ "target", CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
@@ -86,9 +84,8 @@ public final class SpendingAnalyticsTest {
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
-            .add(
-                TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /* price = */ 14.51,
-                    /* store = */ "contoso", CATEGORIES, RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .build();
@@ -111,8 +108,8 @@ public final class SpendingAnalyticsTest {
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /* price = */ 5.13,
-                /* store = */ null, CATEGORIES, RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 5.13, /* store = */ null, CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
@@ -131,8 +128,8 @@ public final class SpendingAnalyticsTest {
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /* price = */ 5.13,
-                /* store = */ "", CATEGORIES, RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ 5.13, /* store = */ "", CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
@@ -149,8 +146,8 @@ public final class SpendingAnalyticsTest {
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, /* price = */ null,
-                "Contoso", CATEGORIES, RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+                /* price = */ null, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .build();

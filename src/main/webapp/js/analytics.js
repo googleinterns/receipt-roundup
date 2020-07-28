@@ -14,29 +14,34 @@
 
 /* global capitalizeFirstLetters */
 
-/** Sets callbacks for chart instance. */
+/** Sets callbacks for Google Charts instance. */
 google.charts.load('current', {'packages': ['corechart']});
-google.charts.setOnLoadCallback(drawStoresChart);
+google.charts.setOnLoadCallback(computeStoreChartsAnalytics);
 
-/** Intializes and draws map onto DOM. */
-function drawStoresChart() {
-  const data = new google.visualization.DataTable();
-  // TODO: Add real data here.
-  data.addColumn('string', 'Store');
-  data.addColumn('number', 'Total');
-  data.addRows([
-    [capitalizeFirstLetters('walmart'), 10],
-    [capitalizeFirstLetters('target'), 5],
-    [capitalizeFirstLetters('main Street Restaurant'), 15],
-    [capitalizeFirstLetters('burger King'), 7],
-    [capitalizeFirstLetters('gap'), 13],
-    [capitalizeFirstLetters('walgreens'), 4],
-    [capitalizeFirstLetters('jewel-Osco'), 11],
-    [capitalizeFirstLetters('shell'), 2],
-    [capitalizeFirstLetters('starbucks'), 12],
-    [capitalizeFirstLetters('h&M'), 20],
-  ]);
+let storeData;
 
+/** Computes and populates DataTable with analytics for stores chart. */
+async function computeStoreChartsAnalytics() {
+  const response = await fetch('/compute-analytics');
+  const analytics = await response.json();
+
+  storeData = new google.visualization.DataTable();
+
+  storeData.addColumn('string', 'Store');
+  storeData.addColumn('number', 'Total');
+
+  for (const [store, total] of Object.entries(analytics)) {
+    storeData.addRow([capitalizeFirstLetters(store), total]);
+  }
+
+  drawStoresChart(storeData);
+}
+
+/**
+ * Intializes and draws stores chart onto DOM.
+ * @param {DataTable} data Table with stores and their totals.
+ */
+function drawStoresChart(data) {
   const chartWidth =
       document.getElementById('stores-chart').getBoundingClientRect().width;
   const chartHeight =
@@ -57,5 +62,5 @@ function drawStoresChart() {
 
 /** Handles sizing of chart to be responsive on different screen sizes. */
 $(window).resize(function() {
-  drawStoresChart();
+  drawStoresChart(storeData);
 });
