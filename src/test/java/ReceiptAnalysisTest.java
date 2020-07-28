@@ -93,9 +93,13 @@ public final class ReceiptAnalysisTest {
   private static final String RAW_TEXT_WITH_DATE = "the date is 05-08-2020";
   private static final String RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS = "the date is 5-8-2020";
   private static final String RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR = "the date is 05-08-20";
+  private static final String RAW_TEXT_WITH_DATE_IN_1900S = "the date is 05-08-99";
 
   private static final Instant INSTANT = Instant.parse("2020-05-08T00:00:00Z");
   private static final Optional<Long> TIMESTAMP = Optional.of(Long.valueOf(INSTANT.toEpochMilli()));
+  private static final Instant INSTANT_IN_1900S = Instant.parse("1999-05-08T00:00:00Z");
+  private static final Optional<Long> TIMESTAMP_IN_1900S =
+      Optional.of(Long.valueOf(INSTANT_IN_1900S.toEpochMilli()));
 
   private URL url;
   private ImageAnnotatorClient imageClient;
@@ -193,6 +197,16 @@ public final class ReceiptAnalysisTest {
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
     Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateIn1900s() throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_IN_1900S);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP_IN_1900S, results.getTimestamp());
   }
 
   @Test
