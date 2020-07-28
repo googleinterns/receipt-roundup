@@ -28,27 +28,40 @@ public final class TestUtils {
     throw new UnsupportedOperationException();
   }
 
-  /* Add receipts to database for testing purposes. */
-  public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
-    ImmutableSet<Entity> testReceipts =
-        ImmutableSet.of(addTestReceipt(datastore, /* userId = */ "123",
-                            /* timestamp = */ 1045237591000L, "img/walmart-receipt.jpg", 26.12,
-                            "walmart", ImmutableSet.of("candy", "drink", "personal"), ""),
-
-            addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1560193140000L,
-                "img/contoso-receipt.jpg", 14.51, "contoso",
-                ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
-
-            addTestReceipt(datastore, /* userId = */ "123", /* timestamp = */ 1491582960000L,
-                "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
-                ImmutableSet.of("food", "meal", "lunch"), ""));
-    return testReceipts;
-  }
-
-  /** Adds a test receipt to the mock datastore and returns the id of that entity. */
+  /** Adds a test receipt to the mock datastore. */
   public static Entity addTestReceipt(DatastoreService datastore, String userId, long timestamp,
       String imageUrl, double price, String store, ImmutableSet<String> categories,
       String rawText) {
+    Entity receiptEntity =
+        createEntity(userId, timestamp, imageUrl, price, store, categories, rawText);
+
+    datastore.put(receiptEntity);
+    return receiptEntity;
+  }
+
+  /** Adds multiple receipts to datastore. */
+  public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
+    ImmutableSet<Entity> entities =
+        ImmutableSet.of(createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L,
+                            "img/walmart-receipt.jpg", 26.12, "walmart",
+                            ImmutableSet.of("candy", "drink", "personal"), ""),
+
+            createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L,
+                "img/contoso-receipt.jpg", 14.51, "contoso",
+                ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
+
+            createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L,
+                "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
+                ImmutableSet.of("food", "meal", "lunch"), ""));
+
+    entities.stream().forEach(entity -> datastore.put(entity));
+
+    return entities;
+  }
+
+  /** Creates and returns a single Receipt entity. */
+  public static Entity createEntity(String userId, long timestamp, String imageUrl, Double price,
+      String store, ImmutableSet<String> categories, String rawText) {
     Entity receiptEntity = new Entity("Receipt");
     receiptEntity.setProperty("userId", userId);
     receiptEntity.setProperty("timestamp", timestamp);
@@ -58,7 +71,6 @@ public final class TestUtils {
     receiptEntity.setProperty("categories", categories);
     receiptEntity.setProperty("rawText", rawText);
 
-    datastore.put(receiptEntity);
     return receiptEntity;
   }
 
