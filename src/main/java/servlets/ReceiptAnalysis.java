@@ -223,9 +223,7 @@ public class ReceiptAnalysis {
     // Assume that the first date on the receipt is the transaction date.
     Optional<String> firstDate = dates.findFirst();
 
-    if (firstDate.isPresent()) {
-      addDateIfValid(analysisBuilder, firstDate.get());
-    }
+    firstDate.ifPresent(date -> ReceiptAnalysis.addDateIfValid(analysisBuilder, date));
   }
 
   /**
