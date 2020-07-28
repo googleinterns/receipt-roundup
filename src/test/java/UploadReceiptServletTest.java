@@ -85,8 +85,6 @@ public final class UploadReceiptServletTest {
       "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.\n";
   private static final String INVALID_DATE_RANGE_WARNING =
       "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be in the past.\n";
-  private static final String INVALID_DATE_FORMAT_WARNING =
-      "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be a long.\n";
   private static final String PRICE_NOT_PARSABLE_WARNING =
       "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price could not be parsed.\n";
   private static final String PRICE_NEGATIVE_WARNING =
@@ -117,10 +115,10 @@ public final class UploadReceiptServletTest {
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
   private static final String STORE = "mcdonald's";
-  private static final String INVALID_DATE_TYPE = "2020-05-20";
   private static final AnalysisResults ANALYSIS_RESULTS =
       new AnalysisResults.Builder(RAW_TEXT.getValue())
           .setCategories(GENERATED_CATEGORIES)
+          .setTimestamp(PAST_TIMESTAMP)
           .setStore(STORE)
           .build();
 
@@ -199,7 +197,7 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreLiveServer()
       throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -233,7 +231,7 @@ public final class UploadReceiptServletTest {
   public void doPostUploadsReceiptToDatastoreDevServer()
       throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE);
     stubUrlComponents(
         request, DEV_SERVER_SCHEME, DEV_SERVER_NAME, DEV_SERVER_PORT, DEV_SERVER_CONTEXT_PATH);
 
@@ -265,7 +263,7 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostSanitizesStore() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -273,6 +271,7 @@ public final class UploadReceiptServletTest {
     String store = "    TraDeR   JOE's  ";
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
+                                          .setTimestamp(PAST_TIMESTAMP)
                                           .setStore(store)
                                           .build();
     mockStatic(ReceiptAnalysis.class);
@@ -294,13 +293,14 @@ public final class UploadReceiptServletTest {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
+                                          .setTimestamp(PAST_TIMESTAMP)
                                           .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
@@ -318,7 +318,7 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostSanitizesCategories() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubRequestBody(request, PRICE, PAST_TIMESTAMP);
+    stubRequestBody(request, PRICE);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -327,6 +327,7 @@ public final class UploadReceiptServletTest {
         ImmutableSet.of("   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH", "  dIninG ");
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(generatedCategories)
+                                          .setTimestamp(PAST_TIMESTAMP)
                                           .setStore(STORE)
                                           .build();
     mockStatic(ReceiptAnalysis.class);
@@ -398,40 +399,23 @@ public final class UploadReceiptServletTest {
   @Test
   public void doPostThrowsIfDateIsInTheFuture() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
-    when(request.getParameter("date")).thenReturn(Long.toString(futureTimestamp));
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
+    long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
+    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+                                          .setCategories(GENERATED_CATEGORIES)
+                                          .setTimestamp(futureTimestamp);
+    .setStore(STORE).build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
-        .thenReturn(ANALYSIS_RESULTS);
+        .thenReturn(analysisResults);
 
     servlet.doPost(request, response);
     writer.flush();
 
     Assert.assertEquals(INVALID_DATE_RANGE_WARNING, stringWriter.toString());
-    verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-  }
-
-  @Test
-  public void doPostThrowsIfInvalidDateFormat() throws IOException, ReceiptAnalysisException {
-    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubUrlComponents(
-        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
-
-    when(request.getParameter("date")).thenReturn(INVALID_DATE_TYPE);
-
-    // Mock receipt analysis.
-    mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
-        .thenReturn(ANALYSIS_RESULTS);
-
-    servlet.doPost(request, response);
-    writer.flush();
-
-    Assert.assertEquals(INVALID_DATE_FORMAT_WARNING, stringWriter.toString());
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
@@ -461,7 +445,7 @@ public final class UploadReceiptServletTest {
 
     double price = 17.236;
     double roundedPrice = 17.24;
-    stubRequestBody(request, price, PAST_TIMESTAMP);
+    stubRequestBody(request, price);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
@@ -484,7 +468,6 @@ public final class UploadReceiptServletTest {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
-    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     String invalidPrice = "text";
     when(request.getParameter("price")).thenReturn(invalidPrice);
@@ -506,7 +489,6 @@ public final class UploadReceiptServletTest {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
-    when(request.getParameter("date")).thenReturn(Long.toString(PAST_TIMESTAMP));
 
     String negativePrice = "-12.55";
     when(request.getParameter("price")).thenReturn(negativePrice);
@@ -556,11 +538,10 @@ public final class UploadReceiptServletTest {
   }
 
   /**
-   * Stubs the request with the given price and date parameters.
+   * Stubs the request with the given price parameter.
    */
-  private void stubRequestBody(HttpServletRequest request, double price, long timestamp) {
+  private void stubRequestBody(HttpServletRequest request, double price) {
     when(request.getParameter("price")).thenReturn(String.valueOf(price));
-    when(request.getParameter("date")).thenReturn(Long.toString(timestamp));
   }
 
   /**
