@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* global capitalizeFirstLetters */
+
 /** Sets callbacks for chart instance. */
 google.charts.load('current', {'packages': ['corechart']});
 google.charts.setOnLoadCallback(drawStoresChart);
@@ -23,16 +25,16 @@ function drawStoresChart() {
   data.addColumn('string', 'Store');
   data.addColumn('number', 'Total');
   data.addRows([
-    ['Walmart', 10],
-    ['Target', 5],
-    ['Main Street Restaurant', 15],
-    ['Burger King', 7],
-    ['Gap', 13],
-    ['Walgreens', 4],
-    ['Jewel-Osco', 11],
-    ['Shell', 2],
-    ['Starbucks', 12],
-    ['H&M', 20],
+    [capitalizeFirstLetters('walmart'), 10],
+    [capitalizeFirstLetters('target'), 5],
+    [capitalizeFirstLetters('main Street Restaurant'), 15],
+    [capitalizeFirstLetters('burger King'), 7],
+    [capitalizeFirstLetters('gap'), 13],
+    [capitalizeFirstLetters('walgreens'), 4],
+    [capitalizeFirstLetters('jewel-Osco'), 11],
+    [capitalizeFirstLetters('shell'), 2],
+    [capitalizeFirstLetters('starbucks'), 12],
+    [capitalizeFirstLetters('h&M'), 20],
   ]);
 
   const chartWidth =
