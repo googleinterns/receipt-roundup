@@ -53,7 +53,8 @@ async function uploadReceipt(event) {
   // Restore the cursor after the upload request has loaded.
   document.body.style.cursor = 'default';
 
-  // Create an alert and re-enable the submit button if there is an error.
+  // Create an alert and re-enable the submit button and file input if there is
+  // an error.
   if (response.status !== 200) {
     const submitButton = document.getElementById('submit-receipt');
     submitButton.innerText = 'Error!';
@@ -67,7 +68,8 @@ async function uploadReceipt(event) {
     setTimeout(() => {
       alert(error);
 
-      // Restore the submit button.
+      // Restore the file input and submit button.
+      fileInput.disabled = false;
       submitButton.disabled = false;
       submitButton.innerText = 'Add Receipt';
     }, 10);
@@ -97,7 +99,7 @@ async function fetchBlobstoreUrl() {
 }
 
 /**
- * Displays the loading animation and disables the submit button.
+ * Displays the loading animation and disables the submit button and file input.
  * @return {number} The ID value of the setInterval() timer.
  */
 function startLoading() {
@@ -106,6 +108,9 @@ function startLoading() {
   const submitButton = document.getElementById('submit-receipt');
   submitButton.disabled = true;
   submitButton.innerText = 'Analyzing...';
+
+  const fileInput = document.getElementById('receipt-image-input');
+  fileInput.disabled = true;
 
   // Display the loading image, which is hidden by default.
   const loadingBar = document.getElementsByClassName('loading-bar')[0].ldBar;
