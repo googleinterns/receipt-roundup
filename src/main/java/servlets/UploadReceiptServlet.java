@@ -232,9 +232,16 @@ public class UploadReceiptServlet extends HttpServlet {
     // Create an entity with a kind of Receipt.
     Entity receipt = new Entity("Receipt");
     receipt.setUnindexedProperty("imageUrl", imageUrl);
-    // TODO: Replace with parsed price and timestamp.
-    receipt.setProperty("timestamp", FormatUtils.getTimestamp(request, this.clock));
+
+    // Set the timestamp if a date was parsed.
+    results.getTimestamp().ifPresent(timestamp -> {
+      checkTimestampIsInPast(timestamp, clock);
+      receipt.setProperty("timestamp", timestamp);
+    });
+
+    // TODO: Replace with parsed price.
     receipt.setProperty("price", FormatUtils.roundPrice(request.getParameter("price")));
+
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
     receipt.setProperty(
