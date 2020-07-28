@@ -94,11 +94,18 @@ public final class FormatUtils {
       throw new InvalidPriceException("Price could not be parsed.");
     }
 
-    if (parsedPrice < 0) {
-      throw new InvalidPriceException("Price must be positive.");
+    return roundPrice(parsedPrice);
+  }
+
+  /**
+   * Rounds a price value to 2 decimal places and verifies it is non-negative.
+   */
+  public static double roundPrice(double price) throws InvalidPriceException {
+    if (price < 0) {
+      throw new InvalidPriceException("Price must be non-negative.");
     }
 
-    return Math.round(parsedPrice * 100.0) / 100.0;
+    return Math.round(price * 100.0) / 100.0;
   }
 
   public static class InvalidDateException extends Exception {
