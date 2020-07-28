@@ -75,7 +75,6 @@ public final class SpendingAnalyticsServletTest {
     writer.flush();
 
     // Make sure all stores returned in HashMap.
-    System.out.println(stringWriter.toString());
     HashMap<String, Double> storeAnalytics = TestUtils.parseStoreAnalytics(stringWriter.toString());
     Assert.assertEquals(3, storeAnalytics.size());
     Assert.assertTrue(storeAnalytics.containsKey("walmart"));
