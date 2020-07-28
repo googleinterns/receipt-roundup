@@ -46,18 +46,16 @@ public final class TestUtils {
 
   /** Adds multiple receipts to datastore. */
   public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
-    ImmutableSet<Entity> entities =
-        ImmutableSet.of(createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L,
-                            new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
-                            ImmutableSet.of("candy", "drink"), ""),
+    ImmutableSet<Entity> entities = ImmutableSet.of(
+        createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L, new BlobKey("test"),
+            "img/walmart-receipt.jpg", 26.12, "walmart", ImmutableSet.of("candy", "drink"), ""),
 
-            createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L,
-                new BlobKey("test"), "img/contoso-receipt.jpg", 14.51, "contoso",
-                ImmutableSet.of("cappuccino", "food"), ""),
+        createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L, new BlobKey("test"),
+            "img/contoso-receipt.jpg", 14.51, "contoso", ImmutableSet.of("cappuccino", "food"), ""),
 
-            createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L,
-                new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
-                ImmutableSet.of("food"), ""));
+        createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L, new BlobKey("test"),
+            "img/restaurant-receipt.jpeg", 29.01, "main street restaurant", ImmutableSet.of("food"),
+            ""));
 
     entities.stream().forEach(entity -> datastore.put(entity));
 
@@ -97,15 +95,17 @@ public final class TestUtils {
     when(request.getParameter("max")).thenReturn(maxPrice);
   }
 
-    /** Parses a string containing store analytics into a hashmap representation. */
+  /** Parses a string containing store analytics into a hashmap representation. */
   public static HashMap<String, Double> parseStoreAnalytics(String str) throws IOException {
     String stores = str.substring(str.indexOf("{"), str.indexOf("}") + 1);
+    stores = stores.substring(stores.lastIndexOf("{"), stores.indexOf("}") + 1);
     return new ObjectMapper().readValue(stores, HashMap.class);
   }
 
   /** Parses a string containing category analytics into a hashmap representation. */
   public static HashMap<String, Double> parseCategoryAnalytics(String str) throws IOException {
-    String analytics = str.substring(str.lastIndexOf("{"), str.lastIndexOf("}") + 1);
-    return new ObjectMapper().readValue(analytics, HashMap.class);
+    String categories = str.substring(str.lastIndexOf("{"), str.lastIndexOf("}") + 1);
+    categories = categories.substring(categories.indexOf("{"), categories.indexOf("}") + 1);
+    return new ObjectMapper().readValue(categories, HashMap.class);
   }
 }
