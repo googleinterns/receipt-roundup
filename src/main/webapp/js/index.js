@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* global capitalizeFirstLetters, loadPage */
+
 /**
  * Checks that the user is logged in then loads the logout button and receipts.
  */
 function load() {
-  /* global loadPage */
   loadPage(getAllReceipts, loadLogoutButton);  // From js/common.js
 }
 
@@ -130,13 +131,6 @@ function createReceiptCardElement(receipt) {
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
-}
-
-/** Capitalize the first letter of each word in a string. */
-function capitalizeFirstLetters(lowercasedString) {
-  return lowercasedString.split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
 }
 
 /**
