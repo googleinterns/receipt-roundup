@@ -101,6 +101,9 @@ public final class ReceiptAnalysisTest {
   private static final Optional<Long> TIMESTAMP_IN_1900S =
       Optional.of(Long.valueOf(INSTANT_IN_1900S.toEpochMilli()));
 
+  private static final String RAW_TEXT_WITH_PRICE = "the price is $12.77 in total";
+  private static final Optional<Double> PRICE = Optional.of(Double.valueOf(12.77));
+
   private URL url;
   private ImageAnnotatorClient imageClient;
   private LanguageServiceClient languageClient;
@@ -207,6 +210,16 @@ public final class ReceiptAnalysisTest {
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
     Assert.assertEquals(TIMESTAMP_IN_1900S, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsPrice() throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(PRICE, results.getPrice());
   }
 
   @Test
