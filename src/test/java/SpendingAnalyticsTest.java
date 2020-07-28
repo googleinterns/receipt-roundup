@@ -42,6 +42,9 @@ public final class SpendingAnalyticsTest {
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
   private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
+  private static final double WALMART_PRICE = 26.12;
+  private static final double CONTOSO_PRICE = 14.51;
+  private static final double TARGET_PRICE = 29.01;
 
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
@@ -60,43 +63,38 @@ public final class SpendingAnalyticsTest {
   public void storeAnalyticsWithUniqueStoreNames() {
     // Only one receipt for each store added:
     // Walmart: $26.12, Contoso: $14.51, Target: $29.01
-    double walmartPrice = 26.12;
-    double contosoPrice = 14.51;
-    double targetPrice = 29.01;
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
-                /* price = */ walmartPrice, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
-                /* price = */ contosoPrice, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
+                /* price = */ CONTOSO_PRICE, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
-                /* price = */ targetPrice, /* store = */ "target", CATEGORIES, RAW_TEXT))
+                /* price = */ TARGET_PRICE, /* store = */ "target", CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
     HashMap<String, Double> storeAnalytics = analytics.getStoreAnalytics();
 
-    Assert.assertEquals(walmartPrice, storeAnalytics.get("walmart"), ERROR_THRESHOLD);
-    Assert.assertEquals(contosoPrice, storeAnalytics.get("contoso"), ERROR_THRESHOLD);
-    Assert.assertEquals(targetPrice, storeAnalytics.get("target"), ERROR_THRESHOLD);
+    Assert.assertEquals(WALMART_PRICE, storeAnalytics.get("walmart"), ERROR_THRESHOLD);
+    Assert.assertEquals(CONTOSO_PRICE, storeAnalytics.get("contoso"), ERROR_THRESHOLD);
+    Assert.assertEquals(TARGET_PRICE, storeAnalytics.get("target"), ERROR_THRESHOLD);
   }
 
   @Test
   public void storeAnalyticsWithDuplicateStoreNames() {
     // Duplicate receipts store added:
     // Walmart: $26.12, Contoso: $14.51, Walmart: $26.12,
-    double walmartPrice = 26.12;
-    double contosoPrice = 14.51;
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
-                /* price = */ walmartPrice, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
-                /* price = */ contosoPrice, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
+                /* price = */ CONTOSO_PRICE, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
-                /* price = */ walmartPrice, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
@@ -106,8 +104,8 @@ public final class SpendingAnalyticsTest {
     Assert.assertEquals(2, storeAnalytics.size());
 
     // Walmart price should be doubled.
-    Assert.assertEquals(walmartPrice * 2, storeAnalytics.get("walmart"), ERROR_THRESHOLD);
-    Assert.assertEquals(contosoPrice, storeAnalytics.get("contoso"), ERROR_THRESHOLD);
+    Assert.assertEquals(WALMART_PRICE * 2, storeAnalytics.get("walmart"), ERROR_THRESHOLD);
+    Assert.assertEquals(CONTOSO_PRICE, storeAnalytics.get("contoso"), ERROR_THRESHOLD);
   }
 
   @Test
