@@ -60,15 +60,19 @@ async function uploadReceipt(event) {
     submitButton.innerText = 'Error!';
 
     // Stop the loading animation.
-    document.getElementById('loading').style.display = 'none';
+    document.getElementById('loading').classList.add('hidden');
     clearInterval(loadingIntervalId);
 
-    alert(await response.text());
+    // Delay the alert so the above changes can render first.
+    const error = await response.text();
+    setTimeout(() => {
+      alert(error);
 
-    // Restore the file input and submit button.
-    fileInput.disabled = false;
-    submitButton.disabled = false;
-    submitButton.innerText = 'Add Receipt';
+      // Restore the file input and submit button.
+      fileInput.disabled = false;
+      submitButton.disabled = false;
+      submitButton.innerText = 'Add Receipt';
+    }, 10);
     return;
   }
 
@@ -111,7 +115,7 @@ function startLoading() {
   // Display the loading image, which is hidden by default.
   const loadingBar = document.getElementsByClassName('ldBar')[0].ldBar;
   loadingBar.set(1);
-  document.getElementById('loading').style.display = 'block';
+  document.getElementById('loading').classList.remove('hidden');
 
   // Start the loading animation loop.
   let increment = 1;

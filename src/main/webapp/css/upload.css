@@ -64,11 +64,11 @@ small {
 }
 
 #loading {
-  display: none;
   height: 150px;
   margin: 20px 0;
 }
 
+.hidden,
 .ldBar-label {
   display: none;
 }
