@@ -98,12 +98,14 @@ public final class TestUtils {
   /** Parses a string containing store analytics into a hashmap representation. */
   public static HashMap<String, Double> parseStoreAnalytics(String str) throws IOException {
     String stores = str.substring(str.indexOf("{"), str.indexOf("}") + 1);
+    stores = stores.substring(stores.lastIndexOf("{"), stores.indexOf("}") + 1);
     return new ObjectMapper().readValue(stores, HashMap.class);
   }
 
   /** Parses a string containing category analytics into a hashmap representation. */
   public static HashMap<String, Double> parseCategoryAnalytics(String str) throws IOException {
-    String analytics = str.substring(str.lastIndexOf("{"), str.lastIndexOf("}") + 1);
-    return new ObjectMapper().readValue(analytics, HashMap.class);
+    String categories = str.substring(str.lastIndexOf("{"), str.lastIndexOf("}") + 1);
+    categories = categories.substring(categories.indexOf("{"), categories.indexOf("}") + 1);
+    return new ObjectMapper().readValue(categories, HashMap.class);
   }
 }
