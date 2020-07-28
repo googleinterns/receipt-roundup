@@ -91,6 +91,9 @@ public final class ReceiptAnalysisTest {
   private static final float LOGO_CONFIDENCE_BELOW_THRESHOLD = 0.2f;
 
   private static final String RAW_TEXT_WITH_DATE = "the date is 05-08-2020";
+  private static final String RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS = "the date is 5-8-2020";
+  private static final String RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR = "the date is 05-08-20";
+
   private static final Instant INSTANT = Instant.parse("2020-05-08T00:00:00Z");
   private static final Optional<Long> TIMESTAMP = Optional.of(Long.valueOf(INSTANT.toEpochMilli()));
 
@@ -163,6 +166,28 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsDate() throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateWithNoLeadingZeros()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateWithTwoDigitYear()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
