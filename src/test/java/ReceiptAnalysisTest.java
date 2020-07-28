@@ -113,7 +113,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE);
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT);
     stubTextClassification();
     ImmutableList<AnnotateImageRequest> imageRequests = createImageRequest();
     ClassifyTextRequest classifyRequest = createClassifyRequest();
@@ -130,7 +130,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsAnalysisResultsWithNoStore()
       throws IOException, ReceiptAnalysisException {
-    AnnotateImageResponse imageResponse = createImageResponseWithText().build();
+    AnnotateImageResponse imageResponse = createImageResponseWithText(RAW_TEXT).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
@@ -145,7 +145,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlIgnoresLogoIfLowConfidence()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD);
+    stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD, RAW_TEXT);
     stubTextClassification();
     ImmutableList<AnnotateImageRequest> imageRequests = createImageRequest();
     ClassifyTextRequest classifyRequest = createClassifyRequest();
@@ -231,18 +231,18 @@ public final class ReceiptAnalysisTest {
     Assert.assertEquals(clientException, exception.getCause());
   }
 
-  private void stubAnnotationResponse(float confidenceScore) {
+  private void stubAnnotationResponse(float confidenceScore, String rawText) {
     EntityAnnotation logoAnnotation =
         EntityAnnotation.newBuilder().setDescription(STORE.get()).setScore(confidenceScore).build();
     AnnotateImageResponse imageResponse =
-        createImageResponseWithText().addLogoAnnotations(logoAnnotation).build();
+        createImageResponseWithText(rawText).addLogoAnnotations(logoAnnotation).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
   }
 
-  private AnnotateImageResponse.Builder createImageResponseWithText() {
-    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
+  private AnnotateImageResponse.Builder createImageResponseWithText(String rawText) {
+    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(rawText).build();
     return AnnotateImageResponse.newBuilder().addTextAnnotations(annotation);
   }
 
