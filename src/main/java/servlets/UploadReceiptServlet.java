@@ -239,8 +239,9 @@ public class UploadReceiptServlet extends HttpServlet {
       receipt.setProperty("timestamp", timestamp);
     });
 
-    // TODO: Replace with parsed price.
-    receipt.setProperty("price", FormatUtils.roundPrice(request.getParameter("price")));
+    // Set the price if it was parsed.
+    results.getPrice().ifPresent(
+        price -> { receipt.setProperty("price", FormatUtils.roundPrice(price)); });
 
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
