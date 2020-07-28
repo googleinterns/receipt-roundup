@@ -26,6 +26,8 @@ async function computeChartAnalytics() {
   const response = await fetch('/compute-analytics');
   const analytics = await response.json();
 
+  console.log(analytics);
+
   handleStoreChart(analytics);
   handleCategoryChart(analytics);
 }
@@ -84,6 +86,7 @@ function drawStoreChart(data) {
     sliceVisibilityThreshold: .03,
   };
 
+  data.sort({column: 1, desc: true});
   const chart =
       new google.visualization.PieChart(document.getElementById('store-chart'));
   chart.draw(data, options);
@@ -97,19 +100,26 @@ function drawCategoryChart(data) {
   // Get parent div dimensions to make chart fit the appropriate space.
   const chartWidth =
       document.getElementById('category-chart').getBoundingClientRect().width;
-  const chartHeight =
-      document.getElementById('category-chart').getBoundingClientRect().height;
 
   const options = {
-    title: 'Spending habits by category',
-    pieHole: 0.3,
+    title: 'Spending habits by category (top 10)',
+    vAxis: {title: 'Total ($)'},
+    legend: {position: 'none'},
     width: chartWidth,
-    legend: {alignment: 'center'},
-    chartArea: {width: chartWidth, height: chartHeight * 0.6},
-    sliceVisibilityThreshold: .03,
+    hAxis: {
+      title: 'Category',
+      showTextEvery: 1,
+      slantedText: true,
+      slantedTextAngle: 60,
+      viewWindow: {max: 10},
+    },
+    chartArea: {width: chartWidth * 0.75},
   };
 
-  const chart = new google.visualization.PieChart(
+  // Sort by price so we can easily find the top 10 categories.
+  data.sort({column: 1, desc: true});
+
+  const chart = new google.visualization.ColumnChart(
       document.getElementById('category-chart'));
   chart.draw(data, options);
 }
