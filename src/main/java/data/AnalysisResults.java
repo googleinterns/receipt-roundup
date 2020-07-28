@@ -55,7 +55,7 @@ public class AnalysisResults {
     private final String rawText;
     private ImmutableSet<String> categories;
     private Optional<String> store;
-    private Optional<Long> timestamp;
+    private Optional<Long> timestamp = Optional.empty();
 
     public Builder(String rawText) {
       this.rawText = rawText;
@@ -84,11 +84,6 @@ public class AnalysisResults {
       // No logo was detected.
       if (store == null) {
         store = Optional.empty();
-      }
-
-      // No date was detected.
-      if (timestamp == null) {
-        timestamp = Optional.empty();
       }
 
       return new AnalysisResults(rawText, categories, store, timestamp);
