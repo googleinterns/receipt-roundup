@@ -83,8 +83,6 @@ public final class UploadReceiptServletTest {
       "com.google.sps.servlets.UploadReceiptServlet$InvalidFileException: Uploaded file must be a JPEG image.\n";
   private static final String USER_NOT_LOGGED_IN_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.\n";
-  private static final String INVALID_DATE_RANGE_WARNING =
-      "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be in the past.\n";
   private static final String PRICE_NOT_PARSABLE_WARNING =
       "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price could not be parsed.\n";
   private static final String PRICE_NEGATIVE_WARNING =
@@ -395,26 +393,31 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfDateIsInTheFuture() throws IOException, ReceiptAnalysisException {
+  public void doPostUploadsReceiptWithoutTimestampIfParsedDateIsInTheFuture()
+      throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
+    stubRequestBody(request, PRICE);
 
     // Mock receipt analysis.
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(futureTimestamp);
-    .setStore(STORE).build();
+                                          .setTimestamp(futureTimestamp)
+                                          .setStore(STORE)
+                                          .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
 
     servlet.doPost(request, response);
-    writer.flush();
 
-    Assert.assertEquals(INVALID_DATE_RANGE_WARNING, stringWriter.toString());
-    verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    Assert.assertFalse(receipt.hasProperty("timestamp"));
   }
 
   @Test

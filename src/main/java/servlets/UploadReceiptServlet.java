@@ -234,7 +234,13 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Set the timestamp if a date was parsed.
     results.getTimestamp().ifPresent(timestamp -> {
-      checkTimestampIsInPast(timestamp, clock);
+      try {
+        FormatUtils.checkTimestampIsInPast(timestamp, clock);
+      } catch (InvalidDateException exception) {
+        // Don't add timestamp property if parsing is invalid.
+        return;
+      }
+
       receipt.setProperty("timestamp", timestamp);
     });
 
