@@ -84,7 +84,7 @@ async function uploadReceipt(event) {
   const params = new URLSearchParams();
   params.append('id', json.key.id);
   params.append('categories', receipt.categories);
-  params.append('image-url', receipt.imageUrl);
+  params.append('image-url', receipt.imageUrl.value);
   params.append('price', receipt.price);
   params.append('store', receipt.store);
   params.append('timestamp', receipt.timestamp);
