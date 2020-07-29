@@ -102,15 +102,15 @@ public final class ReceiptAnalysisTest {
   private static final Optional<Long> TIMESTAMP_IN_1900S =
       Optional.of(Long.valueOf(INSTANT_IN_1900S.toEpochMilli()));
 
-  private static final String RAW_TEXT_WITH_PRICE = "the price is $12.77 in total";
-  private static final String RAW_TEXT_WITH_PRICE_NO_DOLLAR_SIGN = "the price is 12.77 in total";
+  private static final String RAW_TEXT_WITH_PRICE = "the price is $12.77";
+  private static final String RAW_TEXT_WITH_PRICE_NO_DOLLAR_SIGN = "the price is 12.77";
   private static final String RAW_TEXT_WITH_MULTIPLE_PRICES =
-      "the items cost $8.99, $2.79, and $1.99, so the total is $12.77 after the $1.00 discount";
+      "these cost $8.99, $2.79, and $1.99, so the final price is $12.77 after the $1.00 discount";
 
   private static final Optional<Double> PRICE = Optional.of(Double.valueOf(12.77));
 
   private static final String RAW_TEXT_WITH_DATE_AND_PRICE =
-      "the date is 05-08-2020 and the total is $12.77";
+      "the date is 05-08-2020 and the price is $12.77";
 
   private URL url;
   private ImageAnnotatorClient imageClient;
