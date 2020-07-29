@@ -103,9 +103,9 @@ public final class TestUtils {
     String key = "storeAnalytics";
 
     // Set indexes to extract the first {...} from str.
-    int startIndex = str.indexOf(key) + key.length() + 2; 
+    int startIndex = str.indexOf(key) + key.length() + 2;
     int endIndex = str.indexOf("}") + 1;
-    
+
     String json = str.substring(startIndex, endIndex);
     return new ObjectMapper().readValue(json, HashMap.class);
   }
@@ -118,9 +118,9 @@ public final class TestUtils {
     String key = "categoryAnalytics";
 
     // Set indexes to extract the second {...} from str.
-    int startIndex = str.indexOf(key) + key.length() + 2; 
+    int startIndex = str.indexOf(key) + key.length() + 2;
     int endIndex = str.lastIndexOf("}");
-    
+
     String json = str.substring(startIndex, endIndex);
     return new ObjectMapper().readValue(json, HashMap.class);
   }
