@@ -95,17 +95,33 @@ public final class TestUtils {
     when(request.getParameter("max")).thenReturn(maxPrice);
   }
 
-  /** Parses a string containing store analytics into a hashmap representation. */
+  /**
+   * Parses a string containing store analytics into a hashmap representation.
+   * str is in the form: {"storeAnalytics":{...}, "categoryAnalytics": {...}}
+   */
   public static HashMap<String, Double> parseStoreAnalytics(String str) throws IOException {
-    String stores = str.substring(str.indexOf("{"), str.indexOf("}") + 1);
-    stores = stores.substring(stores.lastIndexOf("{"), stores.indexOf("}") + 1);
-    return new ObjectMapper().readValue(stores, HashMap.class);
+    String key = "storeAnalytics";
+
+    // Set indexes to extract the first {...} from str.
+    int startIndex = str.indexOf(key) + key.length() + 2; 
+    int endIndex = str.indexOf("}") + 1;
+    
+    String json = str.substring(startIndex, endIndex);
+    return new ObjectMapper().readValue(json, HashMap.class);
   }
 
-  /** Parses a string containing category analytics into a hashmap representation. */
+  /**
+   * Parses a string containing category analytics into a hashmap representation.
+   * str is in the form: {"storeAnalytics":{...}, "categoryAnalytics": {...}}
+   */
   public static HashMap<String, Double> parseCategoryAnalytics(String str) throws IOException {
-    String categories = str.substring(str.lastIndexOf("{"), str.lastIndexOf("}") + 1);
-    categories = categories.substring(categories.indexOf("{"), categories.indexOf("}") + 1);
-    return new ObjectMapper().readValue(categories, HashMap.class);
+    String key = "categoryAnalytics";
+
+    // Set indexes to extract the second {...} from str.
+    int startIndex = str.indexOf(key) + key.length() + 2; 
+    int endIndex = str.lastIndexOf("}");
+    
+    String json = str.substring(startIndex, endIndex);
+    return new ObjectMapper().readValue(json, HashMap.class);
   }
 }
