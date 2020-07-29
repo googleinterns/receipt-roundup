@@ -18,7 +18,6 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -58,19 +57,11 @@ public class SpendingAnalytics {
 
   /** Updates categoryAnalytics hashmap with category info from the passed in receipt. */
   private void updateCategoryAnalytics(Entity receipt) {
+    ArrayList<String> categories = (ArrayList) receipt.getProperty("categories");
     Double price = (Double) receipt.getProperty("price");
 
-    // Don't add any categories to hashmap if price is invalid.
-    if (price == null) {
-      return;
-    }
-
-    ImmutableSet<String> categories;
-
-    // If categories is null for a particular receipt, just skip it and continue.
-    try {
-      categories = ImmutableSet.copyOf((ArrayList) receipt.getProperty("categories"));
-    } catch (NullPointerException exception) {
+    // If categories or price are null, skip the receipt and continue.
+    if (categories == null || price == null) {
       return;
     }
 
