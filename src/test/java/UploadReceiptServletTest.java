@@ -83,13 +83,6 @@ public final class UploadReceiptServletTest {
       "com.google.sps.servlets.UploadReceiptServlet$InvalidFileException: Uploaded file must be a JPEG image.\n";
   private static final String USER_NOT_LOGGED_IN_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.\n";
-<<<<<<< HEAD
-  private static final String INVALID_DATE_RANGE_WARNING =
-      "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be in the past.\n";
-=======
-  private static final String PRICE_NOT_PARSABLE_WARNING =
-      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price could not be parsed.\n";
->>>>>>> upload-date
   private static final String PRICE_NEGATIVE_WARNING =
       "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price must be positive.\n";
   private static final String RECEIPT_ANALYSIS_FAILED_WARNING =
@@ -409,8 +402,7 @@ public final class UploadReceiptServletTest {
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTimestamp(futureTimestamp)
                                           .setPrice(PRICE);
-                                          .setStore(STORE)
-                                          .build();
+    .setStore(STORE).build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
@@ -455,9 +447,9 @@ public final class UploadReceiptServletTest {
     double roundedPrice = 17.24;
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(futureTimestamp)
-                                          .setPrice(price);
-    .setStore(STORE);
+                                          .setTimestamp(PAST_TIMESTAMP)
+                                          .setPrice(price)
+                                          .setStore(STORE);
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
