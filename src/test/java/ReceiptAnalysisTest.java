@@ -103,6 +103,10 @@ public final class ReceiptAnalysisTest {
       Optional.of(Long.valueOf(INSTANT_IN_1900S.toEpochMilli()));
 
   private static final String RAW_TEXT_WITH_PRICE = "the price is $12.77 in total";
+  private static final String RAW_TEXT_WITH_PRICE_NO_DOLLAR_SIGN = "the price is 12.77 in total";
+  private static final String RAW_TEXT_WITH_MULTIPLE_PRICES =
+      "the items cost $8.99, $2.79, and $1.99, so the total is $12.77 after the $1.00 discount";
+
   private static final Optional<Double> PRICE = Optional.of(Double.valueOf(12.77));
 
   private URL url;
@@ -227,6 +231,27 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsPrice() throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsPriceWithNoDollarSign()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_NO_DOLLAR_SIGN);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsLargestPrice() throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_MULTIPLE_PRICES);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
