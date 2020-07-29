@@ -68,6 +68,8 @@ public class ReceiptAnalysis {
       Pattern.compile("\\d?\\d([/-])\\d?\\d\\1\\d{2}(\\d{2})?");
   // Matches strings formatted as prices in dollars.
   private static final Pattern priceRegex = Pattern.compile("\\$?\\d+\\.\\d\\d");
+  // Matches strings containing the word "total" with any capitalization.
+  private static final Pattern totalRegex = Pattern.compile(".*total.*", Pattern.CASE_INSENSITIVE);
 
   /** Returns the text and categorization of the image at the requested URL. */
   public static AnalysisResults analyzeImageAt(URL url)
@@ -281,11 +283,47 @@ public class ReceiptAnalysis {
   }
 
   /**
-   * Searches the raw text in the builder for the total price using a simple heuristic. If it finds
+   * Searches the raw text in the builder for the total price using multiple heuristics. If any find
    * a price, it is added to the builder.
    */
   private static void checkForParsablePrices(AnalysisResults.Builder analysisBuilder) {
-    findLargestPrice(analysisBuilder);
+    if (!findPriceAfterTotal(analysisBuilder)) {
+      findLargestPrice(analysisBuilder);
+    }
+  }
+
+  /**
+   * Checks the raw text in the builder for a price appearing after the word "total" and adds it to
+   * the builder if found. The return value indicates whether a price was added.
+   */
+  private static boolean findPriceAfterTotal(AnalysisResults.Builder analysisBuilder) {
+    ImmutableList<String> relevantTokens =
+        getTokensFromRawText(analysisBuilder.getRawText())
+            .filter(token -> isPrice(token) || containsTotal(token))
+            .collect(ImmutableList.toImmutableList());
+
+    double price = 0;
+    boolean priceFound = false;
+    boolean priceFoundAfterMostRecentTotal = true;
+
+    // Try to find the first price after each token containing "total", and keep the last one found.
+    for (String token : relevantTokens) {
+      if (containsTotal(token)) {
+        priceFoundAfterMostRecentTotal = false;
+      } else if (isPrice(token) && !priceFoundAfterMostRecentTotal
+          && parsePrice(token) != Double.NEGATIVE_INFINITY) {
+        price = parsePrice(token);
+        priceFound = true;
+        priceFoundAfterMostRecentTotal = true;
+      }
+    }
+
+    if (priceFound) {
+      analysisBuilder.setPrice(price);
+      return (true);
+    }
+
+    return false;
   }
 
   /**
@@ -327,6 +365,13 @@ public class ReceiptAnalysis {
    */
   private static boolean isPrice(String token) {
     return priceRegex.matcher(token).matches();
+  }
+
+  /**
+   * Checks if the token contains the word "total".
+   */
+  private static boolean containsTotal(String token) {
+    return totalRegex.matcher(token).matches();
   }
 
   public static class ReceiptAnalysisException extends Exception {
