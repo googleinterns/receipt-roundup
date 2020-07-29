@@ -11,6 +11,9 @@
   crossorigin="anonymous"
 />
 
+<!-- LoadingBar.js -->
+<script src="loading-bar/loading-bar.js"></script>
+
 <link rel="stylesheet" href="css/common.css" />
 <link rel="stylesheet" href="css/upload.css" />
 
@@ -35,8 +38,18 @@
       />
       <label id="receipt-filename-label" class="custom-file-label" for="receipt-image-input">Choose file</label>
     </div>
-    <small class="form-text text-muted">Only JPEG images under 10 MB are accepted.</small>
-    <br />
+    <small class="form-text text-muted">Only JPEG images under 5 MB are accepted.</small>
+
+    <div id="loading" class="hidden">
+      <div
+        class="loading-bar"
+        data-value="1"
+        data-type="fill"
+        data-img="img/favicon.png"
+        data-fill-background="tan"
+        data-img-size="150,150"
+      ></div>
+    </div>
 
     <button id="submit-receipt" class="btn btn-lg btn-primary" type="submit">Add Receipt</button>
   </form>
