@@ -17,7 +17,6 @@ package com.google.sps;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -53,7 +52,6 @@ public final class DeleteReceiptServletTest {
   // Test fields.
   private static final String USER_ID = "1";
   private static final long TIMESTAMP = 6292020;
-  private static final BlobKey BLOB_KEY = new BlobKey("Test");
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";
   private static final double PRICE = 26.12;
   private static final String STORE = "Walmart";
@@ -89,8 +87,8 @@ public final class DeleteReceiptServletTest {
   public void doPostDeletesReceiptFromDatastore() throws IOException {
     // Add mock receipt to datastore.
     long id = TestUtils
-                  .addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE,
-                      CATEGORIES, RAW_TEXT)
+                  .addTestReceipt(
+                      datastore, USER_ID, TIMESTAMP, IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT)
                   .getKey()
                   .getId();
 
@@ -116,8 +114,8 @@ public final class DeleteReceiptServletTest {
 
     // Add mock receipt to datastore.
     long id = TestUtils
-                  .addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL, PRICE, STORE,
-                      CATEGORIES, RAW_TEXT)
+                  .addTestReceipt(
+                      datastore, USER_ID, TIMESTAMP, IMAGE_URL, PRICE, STORE, CATEGORIES, RAW_TEXT)
                   .getKey()
                   .getId();
 

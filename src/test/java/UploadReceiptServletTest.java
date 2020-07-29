@@ -83,8 +83,13 @@ public final class UploadReceiptServletTest {
       "com.google.sps.servlets.UploadReceiptServlet$InvalidFileException: Uploaded file must be a JPEG image.\n";
   private static final String USER_NOT_LOGGED_IN_WARNING =
       "com.google.sps.servlets.UploadReceiptServlet$UserNotLoggedInException: User must be logged in to upload a receipt.\n";
+<<<<<<< HEAD
   private static final String INVALID_DATE_RANGE_WARNING =
       "com.google.sps.servlets.FormatUtils$InvalidDateException: Transaction date must be in the past.\n";
+=======
+  private static final String PRICE_NOT_PARSABLE_WARNING =
+      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price could not be parsed.\n";
+>>>>>>> upload-date
   private static final String PRICE_NEGATIVE_WARNING =
       "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price must be positive.\n";
   private static final String RECEIPT_ANALYSIS_FAILED_WARNING =
@@ -94,7 +99,7 @@ public final class UploadReceiptServletTest {
   private static final long PAST_TIMESTAMP =
       Instant.parse(INSTANT).minusMillis(1234).toEpochMilli();
 
-  private static final long MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+  private static final long MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
   private static final String UPLOAD_URL = "/blobstore/upload-receipt";
 
   private static final BlobKey BLOB_KEY = new BlobKey("blobKey");
@@ -214,14 +219,13 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(PRICE, receipt.getProperty("price"));
     Assert.assertEquals(STORE, receipt.getProperty("store"));
     Assert.assertEquals(RAW_TEXT, receipt.getProperty("rawText"));
-    Assert.assertEquals(BLOB_KEY, receipt.getProperty("blobKey"));
     Assert.assertEquals(PAST_TIMESTAMP, receipt.getProperty("timestamp"));
     Assert.assertEquals(CATEGORIES_COLLECTION, receipt.getProperty("categories"));
     Assert.assertEquals(USER_ID, receipt.getProperty("userId"));
 
     String response = TestUtils.extractProperties(stringWriter.toString());
-    String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
-        PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
+    String expectedResponse = createReceiptEntity(
+        IMAGE_URL, PRICE, STORE, RAW_TEXT, PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
     Assert.assertEquals(expectedResponse, response);
   }
 
@@ -246,14 +250,13 @@ public final class UploadReceiptServletTest {
     Assert.assertEquals(PRICE, receipt.getProperty("price"));
     Assert.assertEquals(STORE, receipt.getProperty("store"));
     Assert.assertEquals(RAW_TEXT, receipt.getProperty("rawText"));
-    Assert.assertEquals(BLOB_KEY, receipt.getProperty("blobKey"));
     Assert.assertEquals(CATEGORIES_COLLECTION, receipt.getProperty("categories"));
     Assert.assertEquals(PAST_TIMESTAMP, receipt.getProperty("timestamp"));
     Assert.assertEquals(USER_ID, receipt.getProperty("userId"));
 
     String response = TestUtils.extractProperties(stringWriter.toString());
-    String expectedResponse = createReceiptEntity(IMAGE_URL, PRICE, STORE, RAW_TEXT, BLOB_KEY,
-        PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
+    String expectedResponse = createReceiptEntity(
+        IMAGE_URL, PRICE, STORE, RAW_TEXT, PAST_TIMESTAMP, CATEGORIES_COLLECTION, USER_ID);
     Assert.assertEquals(expectedResponse, response);
   }
 
@@ -394,7 +397,8 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfDateIsInTheFuture() throws IOException, ReceiptAnalysisException {
+  public void doPostUploadsReceiptWithoutTimestampIfParsedDateIsInTheFuture()
+      throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
@@ -405,16 +409,19 @@ public final class UploadReceiptServletTest {
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTimestamp(futureTimestamp)
                                           .setPrice(PRICE);
-    .setStore(STORE).build();
+                                          .setStore(STORE)
+                                          .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
 
     servlet.doPost(request, response);
-    writer.flush();
 
-    Assert.assertEquals(INVALID_DATE_RANGE_WARNING, stringWriter.toString());
-    verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    Query query = new Query("Receipt");
+    PreparedQuery results = datastore.prepare(query);
+    Entity receipt = results.asSingleEntity();
+
+    Assert.assertFalse(receipt.hasProperty("timestamp"));
   }
 
   @Test
@@ -504,12 +511,11 @@ public final class UploadReceiptServletTest {
    * Creates an entity with the given properties and converts it to JSON format.
    */
   private String createReceiptEntity(String imageUrl, double price, String store, Text rawText,
-      BlobKey blobKey, long timestamp, Collection<String> categories, String userId) {
+      long timestamp, Collection<String> categories, String userId) {
     Entity receipt = new Entity("Receipt");
     receipt.setUnindexedProperty("imageUrl", imageUrl);
     receipt.setUnindexedProperty("rawText", rawText);
     receipt.setProperty("categories", categories);
-    receipt.setUnindexedProperty("blobKey", blobKey);
     receipt.setProperty("timestamp", timestamp);
     receipt.setProperty("store", store);
     receipt.setProperty("price", price);

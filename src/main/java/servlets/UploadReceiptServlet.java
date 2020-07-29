@@ -55,8 +55,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet("/upload-receipt")
 public class UploadReceiptServlet extends HttpServlet {
-  // Max upload size of 5 MB.
-  private static final long MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+  // Max upload size of 10 MB.
+  private static final long MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
   // Base URL for the web app running on the Cloud Shell dev server.
   private static final String DEV_SERVER_BASE_URL = "http://0.0.0.0:80";
   // Matches JPEG image filenames.
@@ -159,7 +159,6 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
-    receipt.setUnindexedProperty("blobKey", blobKey);
     receipt.setProperty("userId", userId);
 
     return receipt;
@@ -235,7 +234,13 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Set the timestamp if a date was parsed.
     results.getTimestamp().ifPresent(timestamp -> {
-      checkTimestampIsInPast(timestamp, clock);
+      try {
+        FormatUtils.checkTimestampIsInPast(timestamp, clock);
+      } catch (InvalidDateException exception) {
+        // Don't add timestamp property if parsing is invalid.
+        return;
+      }
+
       receipt.setProperty("timestamp", timestamp);
     });
 

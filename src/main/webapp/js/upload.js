@@ -41,26 +41,41 @@ async function uploadReceipt(event) {
     return;
   }
 
-  // Change to the loading cursor and disable the submit button.
-  document.body.style.cursor = 'wait';
-  const submitButton = document.getElementById('submit-receipt');
-  submitButton.disabled = true;
+  const loadingIntervalId = startLoading();
 
   const uploadUrl = await fetchBlobstoreUrl();
   const image = fileInput.files[0];
-
   const formData = new FormData();
   formData.append('receipt-image', image);
+  // TODO: Remove price and date from form data
+  formData.append('price', 9.99);
+  formData.append('date', new Date().getTime());
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
 
   // Restore the cursor after the upload request has loaded.
   document.body.style.cursor = 'default';
 
-  // Create an alert and re-enable the submit button if there is an error.
+  // Create an alert and re-enable the submit button and file input if there is
+  // an error.
   if (response.status !== 200) {
-    alert(await response.text());
-    submitButton.disabled = false;
+    const submitButton = document.getElementById('submit-receipt');
+    submitButton.innerText = 'Error!';
+
+    // Stop the loading animation.
+    document.getElementById('loading').classList.add('hidden');
+    clearInterval(loadingIntervalId);
+
+    // Delay the alert so the above changes can render first.
+    const error = await response.text();
+    setTimeout(() => {
+      alert(error);
+
+      // Restore the file input and submit button.
+      fileInput.disabled = false;
+      submitButton.disabled = false;
+      submitButton.innerText = 'Add Receipt';
+    }, 10);
     return;
   }
 
@@ -89,6 +104,39 @@ async function fetchBlobstoreUrl() {
 }
 
 /**
+ * Displays the loading animation and disables the submit button and file input.
+ * @return {number} The ID value of the setInterval() timer.
+ */
+function startLoading() {
+  document.body.style.cursor = 'wait';
+
+  const submitButton = document.getElementById('submit-receipt');
+  submitButton.disabled = true;
+  submitButton.innerText = 'Analyzing...';
+
+  const fileInput = document.getElementById('receipt-image-input');
+  fileInput.disabled = true;
+
+  // Display the loading image, which is hidden by default.
+  const loadingBar = document.getElementsByClassName('loading-bar')[0].ldBar;
+  loadingBar.set(1);
+  document.getElementById('loading').classList.remove('hidden');
+
+  // Start the loading animation loop.
+  let increment = 1;
+  return setInterval(() => {
+    const value = loadingBar.value;
+
+    // Flip directions when the bar is filled and empty.
+    if (value >= 100 || value <= 0) {
+      increment *= -1;
+    }
+
+    loadingBar.set(value + increment);
+  }, 20);
+}
+
+/**
  * Adds the selected file name to the input label and checks that the size of
  * the uploaded file is within the limit.
  */
@@ -106,12 +154,12 @@ function displayFileName() {
 }
 
 /**
- * Displays an error message if the user selects a file larger than 5 MB.
- * @return {boolean} Whether a file is selected and has size less than 5 MB.
+ * Displays an error message if the user selects a file larger than 10 MB.
+ * @return {boolean} Whether a file is selected and has size less than 10 MB.
  */
 function checkFileSize() {
   const fileInput = document.getElementById('receipt-image-input');
-  const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+  const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
   // Return if the user did not select a file.
   if (fileInput.files.length === 0) {
@@ -119,7 +167,7 @@ function checkFileSize() {
   }
 
   if (fileInput.files[0].size > MAX_FILE_SIZE_BYTES) {
-    alert('The selected file exceeds the maximum file size of 5 MB.');
+    alert('The selected file exceeds the maximum file size of 10 MB.');
     fileInput.value = '';
     return false;
   }

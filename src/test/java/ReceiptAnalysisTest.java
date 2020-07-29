@@ -49,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
@@ -90,6 +91,18 @@ public final class ReceiptAnalysisTest {
   private static final float LOGO_CONFIDENCE = 0.6f;
   private static final float LOGO_CONFIDENCE_BELOW_THRESHOLD = 0.2f;
 
+  private static final String RAW_TEXT_WITH_DATE = "the date is 05-08-2020";
+  private static final String RAW_TEXT_WITH_DATE_USING_SLASHES = "the date is 05/08/2020";
+  private static final String RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS = "the date is 5-8-2020";
+  private static final String RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR = "the date is 05-08-20";
+  private static final String RAW_TEXT_WITH_DATE_IN_1900S = "the date is 05-08-99";
+
+  private static final Instant INSTANT = Instant.parse("2020-05-08T00:00:00Z");
+  private static final Optional<Long> TIMESTAMP = Optional.of(Long.valueOf(INSTANT.toEpochMilli()));
+  private static final Instant INSTANT_IN_1900S = Instant.parse("1999-05-08T00:00:00Z");
+  private static final Optional<Long> TIMESTAMP_IN_1900S =
+      Optional.of(Long.valueOf(INSTANT_IN_1900S.toEpochMilli()));
+
   private URL url;
   private ImageAnnotatorClient imageClient;
   private LanguageServiceClient languageClient;
@@ -114,7 +127,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE);
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT);
     stubTextClassification();
     ImmutableList<AnnotateImageRequest> imageRequests = createImageRequest();
     ClassifyTextRequest classifyRequest = createClassifyRequest();
@@ -131,7 +144,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsAnalysisResultsWithNoStore()
       throws IOException, ReceiptAnalysisException {
-    AnnotateImageResponse imageResponse = createImageResponseWithText().build();
+    AnnotateImageResponse imageResponse = createImageResponseWithText(RAW_TEXT).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
@@ -146,7 +159,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlIgnoresLogoIfLowConfidence()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD);
+    stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD, RAW_TEXT);
     stubTextClassification();
     ImmutableList<AnnotateImageRequest> imageRequests = createImageRequest();
     ClassifyTextRequest classifyRequest = createClassifyRequest();
@@ -154,6 +167,59 @@ public final class ReceiptAnalysisTest {
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
     Assert.assertEquals(Optional.empty(), results.getStore());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDate() throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateUsingSlashes()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_USING_SLASHES);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateWithNoLeadingZeros()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateWithTwoDigitYear()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateIn1900s() throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_IN_1900S);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP_IN_1900S, results.getTimestamp());
   }
 
   @Test
@@ -232,18 +298,18 @@ public final class ReceiptAnalysisTest {
     Assert.assertEquals(clientException, exception.getCause());
   }
 
-  private void stubAnnotationResponse(float confidenceScore) {
+  private void stubAnnotationResponse(float confidenceScore, String rawText) {
     EntityAnnotation logoAnnotation =
         EntityAnnotation.newBuilder().setDescription(STORE.get()).setScore(confidenceScore).build();
     AnnotateImageResponse imageResponse =
-        createImageResponseWithText().addLogoAnnotations(logoAnnotation).build();
+        createImageResponseWithText(rawText).addLogoAnnotations(logoAnnotation).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
   }
 
-  private AnnotateImageResponse.Builder createImageResponseWithText() {
-    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
+  private AnnotateImageResponse.Builder createImageResponseWithText(String rawText) {
+    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(rawText).build();
     return AnnotateImageResponse.newBuilder().addTextAnnotations(annotation);
   }
 

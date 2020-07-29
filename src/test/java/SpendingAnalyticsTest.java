@@ -34,7 +34,6 @@ public final class SpendingAnalyticsTest {
   // Test Receipt fields.
   private static final String USER_ID = "1";
   private static final long TIMESTAMP = 6292020;
-  private static final BlobKey BLOB_KEY = new BlobKey("Test");
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
@@ -60,11 +59,11 @@ public final class SpendingAnalyticsTest {
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 29.01, /* store = */ "target", CATEGORIES, RAW_TEXT))
             .build();
 
@@ -82,11 +81,11 @@ public final class SpendingAnalyticsTest {
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .build();
 
@@ -106,9 +105,9 @@ public final class SpendingAnalyticsTest {
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 5.13, /* store = */ null, CATEGORIES, RAW_TEXT))
             .build();
 
@@ -126,9 +125,9 @@ public final class SpendingAnalyticsTest {
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 5.13, /* store = */ "", CATEGORIES, RAW_TEXT))
             .build();
 
@@ -146,9 +145,9 @@ public final class SpendingAnalyticsTest {
 
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ null, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
-            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .build();
 
