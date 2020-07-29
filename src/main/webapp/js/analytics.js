@@ -51,7 +51,7 @@ function handleStoreChart(analytics) {
 
 /**
  * Populates DataTable with category data and passes that to draw method.
- * @param {Array} analytics First entry is store data, second is category.
+ * @param {JSON} analytics
  */
 function handleCategoryChart(analytics) {
   categoryData = new google.visualization.DataTable();
