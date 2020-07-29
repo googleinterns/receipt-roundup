@@ -25,6 +25,21 @@ function load() {
 
 /** Fetches receipt properties from the server and adds them to the page. */
 function loadReceiptAnalysis() {
+  const receipt = getReceiptFromQueryString();
+
+  document.getElementById('date-input').value = receipt.date;
+  document.getElementById('store-input').value = receipt.storeName;
+  document.getElementById('price-input').value = `$${receipt.price}`;
+  document.getElementById('categories-input').value = receipt.categories;
+
+  document.getElementById('receipt-image').src = receipt.imageUrl;
+}
+
+/**
+ * Extracts the receipt properties from the query string.
+ * @return {object} The extracted receipt.
+ */
+function getReceiptFromQueryString() {
   const parameters = new URLSearchParams(location.search);
 
   const date = getDateFromTimestamp(parameters.get('timestamp'));
@@ -34,12 +49,7 @@ function loadReceiptAnalysis() {
       capitalizeFirstLetters(parameters.get('categories').replace(/,/gi, ', '));
   const imageUrl = parameters.get('image-url');
 
-  document.getElementById('date-input').value = date;
-  document.getElementById('store-input').value = storeName;
-  document.getElementById('price-input').value = `$${price}`;
-  document.getElementById('categories-input').value = categories;
-
-  document.getElementById('receipt-image').src = imageUrl;
+  return {date, storeName, price, categories, imageUrl};
 }
 
 /** Converts a timestamp string into the equivalent date string. */
@@ -66,6 +76,25 @@ async function updateReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
+  const receipt = getReceiptFromForm();
+  const formData = new FormData();
+
+  formData.append('date', receipt.date);
+  formData.append('store', receipt.store);
+  formData.append('price', receipt.price);
+
+  createCategoryList(receipt.categories).forEach((category) => {
+    formData.append('categories', category);
+  });
+
+  // TODO: Send request to servlet.
+}
+
+/**
+ * Gets the receipt properties from the form data.
+ * @return {object} The extracted receipt.
+ */
+function getReceiptFromForm() {
   // TODO: Get receipt ID from URL.
   const date = document.getElementById('date-input').valueAsNumber;
   const store = document.getElementById('store-input').value;
@@ -73,17 +102,7 @@ async function updateReceipt(event) {
       convertStringToNumber(document.getElementById('price-input').value);
   const categories = document.getElementById('categories-input').value;
 
-  const formData = new FormData();
-
-  formData.append('date', date);
-  formData.append('store', store);
-  formData.append('price', price);
-
-  createCategoryList(categories).forEach((category) => {
-    formData.append('categories', category);
-  });
-
-  // TODO: Send request to servlet.
+  return {date, store, price, categories};
 }
 
 /** Converts the comma-separated categories string into a list of categories. */
@@ -125,4 +144,34 @@ function formatCurrency(event) {
   } else {
     event.target.value = '';
   }
+}
+
+/**
+ * Redirects the user to the home page when the "Return to Home" button is
+ * clicked.
+ */
+function redirectHome() {
+  if (isFormSaved()) {
+    // Remove warning for unsaved changes.
+    window.onbeforeunload = null;
+  } else {
+    // Warn user of losing unsaved changes.
+    window.onbeforeunload = () => true;
+  }
+
+  window.location.href = '/';
+}
+
+/**
+ * Checks there are any unsaved changes.
+ * @return {boolean} Whether the form data matches the stored receipt.
+ */
+function isFormSaved() {
+  const savedReceipt = getReceiptFromQueryString();
+  const formReceipt = getReceiptFromForm();
+
+  return savedReceipt.date === getDateFromTimestamp(formReceipt.date) &&
+      savedReceipt.storeName === formReceipt.store &&
+      convertStringToNumber(savedReceipt.price) === formReceipt.price &&
+      savedReceipt.categories === formReceipt.categories;
 }
