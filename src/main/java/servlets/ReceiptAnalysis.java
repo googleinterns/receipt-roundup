@@ -281,19 +281,29 @@ public class ReceiptAnalysis {
   }
 
   /**
-   * Checks the raw text in the builder for prices that can be parsed. The largest price found, if
-   * it exists, is added to the builder.
+   * Searches the raw text in the builder for the total price using a simple heuristic. If it finds
+   * a price, it is added to the builder.
    */
   private static void checkForParsablePrices(AnalysisResults.Builder analysisBuilder) {
-    Stream<String> prices =
-        getTokensFromRawText(analysisBuilder.getRawText()).filter(ReceiptAnalysis::isPrice);
-    // Assume that the largest price on the receipt is the total price.
-    double largestPrice = prices.mapToDouble(ReceiptAnalysis::parsePrice)
+    findLargestPrice(analysisBuilder);
+  }
+
+  /**
+   * Checks the raw text in the builder for prices that can be parsed. The largest price found, if
+   * it exists, is added to the builder. The return value indicates whether a price was added.
+   */
+  private static boolean findLargestPrice(AnalysisResults.Builder analysisBuilder) {
+    double largestPrice = getTokensFromRawText(analysisBuilder.getRawText())
+                              .filter(ReceiptAnalysis::isPrice)
+                              .mapToDouble(ReceiptAnalysis::parsePrice)
                               .reduce(Double.NEGATIVE_INFINITY, Double::max);
 
     if (largestPrice != Double.NEGATIVE_INFINITY) {
       analysisBuilder.setPrice(largestPrice);
+      return true;
     }
+
+    return false;
   }
 
   /**
