@@ -159,7 +159,6 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Populate a receipt entity with the information extracted from the image with Cloud Vision.
     Entity receipt = analyzeReceiptImage(blobKey, request);
-    receipt.setUnindexedProperty("blobKey", blobKey);
     receipt.setProperty("userId", userId);
 
     return receipt;

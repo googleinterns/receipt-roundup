@@ -41,7 +41,6 @@ public final class SpendingAnalyticsServletTest {
   // Test Receipt fields.
   private static final String USER_ID = "1";
   private static final long TIMESTAMP = 6292020;
-  private static final BlobKey BLOB_KEY = new BlobKey("Test");
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
@@ -82,11 +81,11 @@ public final class SpendingAnalyticsServletTest {
     // Receipts in datastore:
     // Walmart: $26.12, Contoso: $14.51, Target: $29.01
 
-    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
         /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT);
-    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
         /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT);
-    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, BLOB_KEY, IMAGE_URL,
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
         /* price = */ 29.01, /* store = */ "target", CATEGORIES, RAW_TEXT);
 
     servlet.doGet(request, response);
