@@ -27,10 +27,21 @@ function load() {
 function loadReceiptAnalysis() {
   const receipt = getReceiptFromQueryString();
 
-  document.getElementById('date-input').value = receipt.date;
-  document.getElementById('store-input').value = receipt.storeName;
-  document.getElementById('price-input').value = `$${receipt.price}`;
-  document.getElementById('categories-input').value = receipt.categories;
+  // Set the value and max value of the date input field.
+  const dateInput = document.getElementById('date-input');
+  const today = formatDate(new Date());
+  dateInput.value = receipt.date || today;
+  dateInput.max = today;
+
+  if (receipt.storeName) {
+    document.getElementById('store-input').value = receipt.storeName;
+  }
+  if (receipt.price) {
+    document.getElementById('price-input').value = `$${receipt.price}`;
+  }
+  if (receipt.categories) {
+    document.getElementById('categories-input').value = receipt.categories;
+  }
 
   document.getElementById('receipt-image').src = receipt.imageUrl;
 }
@@ -42,14 +53,27 @@ function loadReceiptAnalysis() {
 function getReceiptFromQueryString() {
   const parameters = new URLSearchParams(location.search);
 
-  const date = getDateFromTimestamp(parameters.get('timestamp'));
-  const storeName = capitalizeFirstLetters(parameters.get('store'));
+  const date = formatReceiptProperty('timestamp', getDateFromTimestamp);
+  const storeName = formatReceiptProperty('store', capitalizeFirstLetters);
   const price = parameters.get('price');
-  const categories =
-      capitalizeFirstLetters(parameters.get('categories').replace(/,/gi, ', '));
+  const categories = formatReceiptProperty('categories', formatCategories);
   const imageUrl = parameters.get('image-url');
 
   return {date, storeName, price, categories, imageUrl};
+}
+
+/**
+ * Extracts the given property from the query string and formats it.
+ * @param {string} propertyName The name of the query string property.
+ * @param {function(string): *} format A function to format the specified
+ *     property.
+ * @return {*} The formatted property, or null if the property is not in the
+ *     query string.
+ */
+function formatReceiptProperty(propertyName, format) {
+  const parameters = new URLSearchParams(location.search);
+  return parameters.has(propertyName) ? format(parameters.get(propertyName)) :
+                                        null;
 }
 
 /** Converts a timestamp string into the equivalent date string. */
@@ -58,6 +82,28 @@ function getDateFromTimestamp(timestamp) {
 
   // Only return the year, month, and day
   return new Date(time).toISOString().substring(0, 10);
+}
+
+/**
+ * Capitalizes and adds spaces between the categories.
+ * @param {string} categories A comma-separated list of categories
+ * @return {string} The formatted list of categories.
+ */
+function formatCategories(categories) {
+  return capitalizeFirstLetters(categories.replace(/,/gi, ', '));
+}
+
+/**
+ * Converts a date to 'YYYY-MM-DD' format, corresponding to the value attribute
+ * of the date input.
+ * @param {Date} date The date to convert.
+ * @return {string} The formatted date.
+ */
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
 }
 
 /** Builds the div element for a category along with its children. */
@@ -159,11 +205,16 @@ function redirectHome() {
     window.onbeforeunload = () => true;
   }
 
+  if (!isReceiptComplete()) {
+    alert('Please ensure that all fields are set and have been saved.');
+    return;
+  }
+
   window.location.href = '/';
 }
 
 /**
- * Checks there are any unsaved changes.
+ * Checks if there are any unsaved changes.
  * @return {boolean} Whether the form data matches the stored receipt.
  */
 function isFormSaved() {
@@ -174,4 +225,15 @@ function isFormSaved() {
       savedReceipt.storeName === formReceipt.store &&
       convertStringToNumber(savedReceipt.price) === formReceipt.price &&
       savedReceipt.categories === formReceipt.categories;
+}
+
+/**
+ * Checks all receipt fields are saved.
+ * @return {boolean} Whether all fields have been set.
+ */
+function isReceiptComplete() {
+  const savedReceipt = getReceiptFromQueryString();
+
+  return savedReceipt.date && savedReceipt.storeName && savedReceipt.price &&
+      savedReceipt.categories;
 }
