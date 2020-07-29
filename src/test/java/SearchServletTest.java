@@ -92,7 +92,7 @@ public final class SearchServletTest {
 
   @Test
   public void queryWithAllFieldsFilled() throws IOException {
-    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    // Columns ommitted from database visual: id, userId, imageUrl, rawText.
     //
     // id   Timestamp      Price          Store                    Categories
     // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
@@ -117,7 +117,7 @@ public final class SearchServletTest {
 
   @Test
   public void queryWithoutStore() throws IOException {
-    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    // Columns ommitted from database visual: id, userId, imageUrl, rawText.
     //
     // id   Timestamp      Price          Store                    Categories
     // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
@@ -142,7 +142,7 @@ public final class SearchServletTest {
 
   @Test
   public void queryWithoutCategory() throws IOException {
-    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    // Columns ommitted from database visual: id, userId, imageUrl, rawText.
     //
     // id   Timestamp      Price          Store                    Categories
     // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
@@ -167,7 +167,7 @@ public final class SearchServletTest {
 
   @Test
   public void queryWithoutStoreAndCategory() throws IOException {
-    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    // Columns ommitted from database visual: id, userId, imageUrl, rawText.
     //
     // id   Timestamp      Price          Store                    Categories
     // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
@@ -193,7 +193,7 @@ public final class SearchServletTest {
 
   @Test
   public void queryAllReceipts() throws IOException {
-    // Columns ommitted from database visual: id, userId, blobKey, imageUrl, rawText.
+    // Columns ommitted from database visual: id, userId, imageUrl, rawText.
     //
     // id   Timestamp      Price          Store                    Categories
     // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
