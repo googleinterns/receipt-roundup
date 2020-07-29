@@ -285,10 +285,10 @@ public class ReceiptAnalysis {
    * it exists, is added to the builder.
    */
   private static void checkForParsablePrices(AnalysisResults.Builder analysisBuilder) {
-    Stream<String> prices =
-        getTokensFromRawText(analysisBuilder.getRawText()).filter(ReceiptAnalysis::isPrice);
     // Assume that the largest price on the receipt is the total price.
-    double largestPrice = prices.mapToDouble(ReceiptAnalysis::parsePrice)
+    double largestPrice = getTokensFromRawText(analysisBuilder.getRawText())
+                              .filter(ReceiptAnalysis::isPrice)
+                              .mapToDouble(ReceiptAnalysis::parsePrice)
                               .reduce(Double.NEGATIVE_INFINITY, Double::max);
 
     if (largestPrice != Double.NEGATIVE_INFINITY) {
