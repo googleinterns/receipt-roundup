@@ -59,8 +59,8 @@ function handleCategoryChart(analytics) {
   categoryData.addColumn('string', 'Category');
   categoryData.addColumn('number', 'Total');
 
-  for (const [store, total] of Object.entries(analytics.categoryAnalytics)) {
-    categoryData.addRow([capitalizeFirstLetters(store), total]);
+  for (const [category, total] of Object.entries(analytics.categoryAnalytics)) {
+    categoryData.addRow([capitalizeFirstLetters(category), total]);
   }
 
   drawCategoryChart(categoryData);
