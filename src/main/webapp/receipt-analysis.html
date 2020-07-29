@@ -14,40 +14,78 @@
 />
 
 <!-- Custom -->
-<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/common.css" />
 <link rel="stylesheet" href="css/receipt-analysis.css" />
 
+<script src="js/common.js"></script>
 <script src="js/receipt-analysis.js"></script>
 
 <title>Receipt Analysis</title>
 
-<body onload="loadReceiptAnalysis()">
+<body onload="load()">
   <h1 class="p-3 text-center">Receipt Analysis</h1>
 
   <div class="container-fluid">
     <p class="text-center">Success! The following receipt has been added to your account:</p>
 
-    <div class="card m-auto p-3 box-shadow">
-      <p id="date" class="card-text align-self-center"></p>
-      <p id="store-name" class="card-text align-self-center"></p>
-      <p id="total" class="card-text align-self-center"></p>
-      <p class="card-text align-self-center mb-1">Categories:</p>
-      <div class="row">
-        <div class="col-4 d-flex justify-content-center">
-          <h4><span id="category-0" class="badge badge-pill badge-secondary">-</span></h4>
+    <div class="card m-auto p-3">
+      <form id="update-receipt-form" action="#" onsubmit="updateReceipt(event)">
+        <div class="card border-0">
+          <div class="d-flex justify-content-center">
+            <label for="date-input">Transaction Date:</label>
+          </div>
+          <input id="date-input" class="form-control mb-3" type="date" name="date" />
+
+          <div class="d-flex justify-content-center">
+            <label for="store-input">Store Name:</label>
+          </div>
+          <input id="store-input" class="form-control mb-3" type="text" name="store" placeholder="Store" required />
+
+          <div class="d-flex justify-content-center">
+            <label for="price-input">Total Price:</label>
+          </div>
+          <input
+            id="price-input"
+            class="form-control mb-3"
+            type="text"
+            name="price"
+            value="0.00"
+            min="0"
+            step="0.01"
+            onfocus="convertPricetoValue(event)"
+            onblur="formatCurrency(event)"
+            required
+          />
+
+          <div class="d-flex justify-content-center">
+            <label for="categories-input">Categories:</label>
+          </div>
+          <input
+            id="categories-input"
+            class="form-control mb-2"
+            type="text"
+            name="label"
+            placeholder="Category 1, Category 2, Category 3"
+            required
+          />
         </div>
-        <div class="col-4 d-flex justify-content-center">
-          <h4><span id="category-1" class="badge badge-pill badge-secondary">-</span></h4>
+
+        <div class="my-3 d-flex justify-content-center">
+          <button id="submit-receipt" class="btn btn-outline-info" type="submit">Save Changes</button>
         </div>
-        <div class="col-4 d-flex justify-content-center">
-          <h4><span id="category-2" class="badge badge-pill badge-secondary">-</span></h4>
-        </div>
-      </div>
+      </form>
       <img id="receipt-image" src="-" alt="Receipt image" class="d-block p-2 img-fluid" />
     </div>
 
+    <!-- TODO: Add warning if user has unsaved changes or an incomplete receipt. -->
     <div class="my-4 d-flex justify-content-center">
-      <a href="/" class="btn btn-info">Return to Home</a>
+      <a href="/" class="btn btn-lg btn-info">Return to Home</a>
     </div>
   </div>
+
+  <template id="category-template">
+    <div class="col d-flex justify-content-center">
+      <h4><span id="category-name" class="badge badge-pill badge-secondary text-wrap">-</span></h4>
+    </div>
+  </template>
 </body>

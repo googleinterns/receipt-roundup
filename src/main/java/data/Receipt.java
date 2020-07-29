@@ -22,19 +22,17 @@ public class Receipt {
   private final long id;
   private final String userId;
   private final long timestamp;
-  private final BlobKey blobKey;
   private final String imageUrl;
   private final double price;
   private final String store;
   private final ImmutableSet<String> categories;
   private final String rawText;
 
-  public Receipt(long id, String userId, long timestamp, BlobKey blobKey, String imageUrl,
-      double price, String store, ImmutableSet<String> categories, String rawText) {
+  public Receipt(long id, String userId, long timestamp, String imageUrl, double price,
+      String store, ImmutableSet<String> categories, String rawText) {
     this.id = id;
     this.userId = userId;
     this.timestamp = timestamp;
-    this.blobKey = blobKey;
     this.imageUrl = imageUrl;
     this.price = price;
     this.store = store;
