@@ -12,20 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* global capitalizeFirstLetters, loadPage */
+
 /**
  * Checks that the user is logged in then loads the logout button and receipts.
  */
 function load() {
-  /* global loadPage */
   loadPage(getAllReceipts, loadLogoutButton);  // From js/common.js
 }
 
 /**
- * Adds a URL to the logout button.
+ * Adds a URL to the logout button and displays user's email.
  * @param {object} account
  */
 async function loadLogoutButton(account) {
   document.getElementById('logout-button').href = account.logoutUrl;
+
+  document.getElementById('user-display').innerHTML =
+      `You are signed in as ${account.email}`;
 }
 
 /** Fetches all receipts from the server and adds them to the DOM. */
@@ -127,13 +131,6 @@ function createReceiptCardElement(receipt) {
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
-}
-
-/** Capitalize the first letter of each word in a string. */
-function capitalizeFirstLetters(lowercasedString) {
-  return lowercasedString.split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
 }
 
 /**

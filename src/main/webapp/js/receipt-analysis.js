@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* global capitalizeFirstLetters */
+
 /**
  * Loads the page if the user is logged in. Otherwise, redirects to the
  * login page.
@@ -27,22 +29,15 @@ function loadReceiptAnalysis() {
 
   const date = getDateFromTimestamp(parameters.get('timestamp'));
   const storeName = capitalizeFirstLetters(parameters.get('store'));
-  const total = parameters.get('price');
-  const categories = parameters.get('categories').split(',');
+  const price = parameters.get('price');
+  const categories =
+      capitalizeFirstLetters(parameters.get('categories').replace(/,/gi, ', '));
   const imageUrl = parameters.get('image-url');
 
-  document.getElementById('date').innerText = `Transaction Date: ${date}`;
-  document.getElementById('store-name').innerText = `Store Name: ${storeName}`;
-  document.getElementById('total').innerText = `Total Price: $${total}`;
-
-  const categoriesContainer = document.getElementById('categories-container');
-  categoriesContainer.innerHTML = '';
-
-  for (let i = 0; i < categories.length && i < 3; i++) {
-    const categoryName = capitalizeFirstLetters(categories[i]);
-    const categoryElement = buildCategoryElement(categoryName);
-    categoriesContainer.appendChild(categoryElement);
-  }
+  document.getElementById('date-input').value = date;
+  document.getElementById('store-input').value = storeName;
+  document.getElementById('price-input').value = `$${price}`;
+  document.getElementById('categories-input').value = categories;
 
   document.getElementById('receipt-image').src = imageUrl;
 }
@@ -65,11 +60,69 @@ function buildCategoryElement(category) {
 }
 
 /**
- * Capitalizes the first letter of each word in a string.
- * TODO: Move this function to a shared JS file.
+ * Sends a request to update the receipt.
  */
-function capitalizeFirstLetters(lowercasedString) {
-  return lowercasedString.split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+async function updateReceipt(event) {
+  // Prevent the default action of reloading the page on form submission.
+  event.preventDefault();
+
+  // TODO: Get receipt ID from URL.
+  const date = document.getElementById('date-input').valueAsNumber;
+  const store = document.getElementById('store-input').value;
+  const price =
+      convertStringToNumber(document.getElementById('price-input').value);
+  const categories = document.getElementById('categories-input').value;
+
+  const formData = new FormData();
+
+  formData.append('date', date);
+  formData.append('store', store);
+  formData.append('price', price);
+
+  createCategoryList(categories).forEach((category) => {
+    formData.append('categories', category);
+  });
+
+  // TODO: Send request to servlet.
+}
+
+/** Converts the comma-separated categories string into a list of categories. */
+function createCategoryList(categories) {
+  return categories.split(',').map((category) => category.trim());
+}
+
+/**
+ * Converts the formatted price back to a number when the user
+ * selects the price input.
+ */
+function convertPricetoValue(event) {
+  const value = event.target.value;
+  event.target.value = value ? convertStringToNumber(value) : '';
+}
+
+/**
+ * Converts a string value into a number, removing all non-numeric characters.
+ */
+function convertStringToNumber(string) {
+  return Number(String(string).replace(/[^0-9.]+/g, ''));
+}
+
+/**
+ * Converts the number inputted by the user to a formatted string when
+ * the user unfocuses from the price input.
+ */
+function formatCurrency(event) {
+  const value = event.target.value;
+
+  if (value) {
+    event.target.value =
+        convertStringToNumber(value).toLocaleString(undefined, {
+          maximumFractionDigits: 2,
+          currency: 'USD',
+          style: 'currency',
+          currencyDisplay: 'symbol',
+        });
+  } else {
+    event.target.value = '';
+  }
 }

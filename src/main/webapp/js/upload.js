@@ -74,13 +74,15 @@ async function uploadReceipt(event) {
     return;
   }
 
-  const json = (await response.json()).propertyMap;
+  const json = (await response.json());
+  const receipt = json.propertyMap;
   const params = new URLSearchParams();
-  params.append('categories', json.categories);
-  params.append('image-url', json.imageUrl);
-  params.append('price', json.price);
-  params.append('store', json.store);
-  params.append('timestamp', json.timestamp);
+  params.append('id', json.key.id);
+  params.append('categories', receipt.categories);
+  params.append('image-url', receipt.imageUrl);
+  params.append('price', receipt.price);
+  params.append('store', receipt.store);
+  params.append('timestamp', receipt.timestamp);
 
   // Redirect to the receipt analysis page.
   window.location.href = `/receipt-analysis.html?${params.toString()}`;
@@ -144,12 +146,12 @@ function displayFileName() {
 }
 
 /**
- * Displays an error message if the user selects a file larger than 5 MB.
- * @return {boolean} Whether a file is selected and has size less than 5 MB.
+ * Displays an error message if the user selects a file larger than 10 MB.
+ * @return {boolean} Whether a file is selected and has size less than 10 MB.
  */
 function checkFileSize() {
   const fileInput = document.getElementById('receipt-image-input');
-  const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+  const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
   // Return if the user did not select a file.
   if (fileInput.files.length === 0) {
@@ -157,7 +159,7 @@ function checkFileSize() {
   }
 
   if (fileInput.files[0].size > MAX_FILE_SIZE_BYTES) {
-    alert('The selected file exceeds the maximum file size of 5 MB.');
+    alert('The selected file exceeds the maximum file size of 10 MB.');
     fileInput.value = '';
     return false;
   }
