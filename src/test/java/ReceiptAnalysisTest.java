@@ -109,6 +109,9 @@ public final class ReceiptAnalysisTest {
 
   private static final Optional<Double> PRICE = Optional.of(Double.valueOf(12.77));
 
+  private static final String RAW_TEXT_WITH_DATE_AND_PRICE =
+      "the date is 05-08-2020 and the total is $12.77";
+
   private URL url;
   private ImageAnnotatorClient imageClient;
   private LanguageServiceClient languageClient;
@@ -256,6 +259,17 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateAndPrice() throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_AND_PRICE);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
     Assert.assertEquals(PRICE, results.getPrice());
   }
 
