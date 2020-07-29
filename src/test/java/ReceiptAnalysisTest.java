@@ -91,6 +91,7 @@ public final class ReceiptAnalysisTest {
   private static final float LOGO_CONFIDENCE_BELOW_THRESHOLD = 0.2f;
 
   private static final String RAW_TEXT_WITH_DATE = "the date is 05-08-2020";
+  private static final String RAW_TEXT_WITH_DATE_USING_SLASHES = "the date is 05/08/2020";
   private static final String RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS = "the date is 5-8-2020";
   private static final String RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR = "the date is 05-08-20";
   private static final String RAW_TEXT_WITH_DATE_IN_1900S = "the date is 05-08-99";
@@ -170,6 +171,17 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsDate() throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsDateUsingSlashes()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_USING_SLASHES);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
