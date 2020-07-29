@@ -246,7 +246,7 @@ public class UploadReceiptServlet extends HttpServlet {
 
     // Set the price if it was parsed.
     results.getPrice().ifPresent(
-        price -> { receipt.setProperty("price", FormatUtils.roundPrice(price)); });
+        price -> receipt.setProperty("price", FormatUtils.roundPrice(price)));
 
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
@@ -254,7 +254,7 @@ public class UploadReceiptServlet extends HttpServlet {
         "categories", FormatUtils.sanitizeCategories(results.getCategories().stream()));
     // If a logo was detected, set the store name.
     results.getStore().ifPresent(
-        store -> { receipt.setProperty("store", FormatUtils.sanitize(store)); });
+        store -> receipt.setProperty("store", FormatUtils.sanitize(store)));
 
     return receipt;
   }
