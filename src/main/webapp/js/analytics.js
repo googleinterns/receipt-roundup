@@ -26,8 +26,6 @@ async function computeChartAnalytics() {
   const response = await fetch('/compute-analytics');
   const analytics = await response.json();
 
-  console.log(analytics);
-
   handleStoreChart(analytics);
   handleCategoryChart(analytics);
 }
