@@ -88,7 +88,7 @@ public final class ReceiptAnalysisTest {
       ImmutableSet.of(GENERAL_CATEGORY_NAME, BROADER_CATEGORY_NAME, SPECIFIC_CATEGORY_NAME);
 
   private static final Optional<String> STORE = Optional.of("Google");
-  private static final float LOGO_CONFIDENCE = 0.6f;
+  private static final float LOGO_CONFIDENCE = 0.8f;
   private static final float LOGO_CONFIDENCE_BELOW_THRESHOLD = 0.2f;
 
   private static final String RAW_TEXT_WITH_DATE = "the date is 05-08-2020";

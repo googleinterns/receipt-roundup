@@ -60,7 +60,7 @@ public class ReceiptAnalysis {
   // is in identifying the detected logo, with higher scores meaning higher certainty. This is the
   // minimum confidence score that a detected logo must have to be considered significant for
   // receipt analysis.
-  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4f;
+  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.6f;
   // Matches strings containing at least one digit.
   private static final Pattern digitRegex = Pattern.compile(".*\\d.*");
   // Matches strings in U.S. date format.
