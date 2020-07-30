@@ -113,12 +113,12 @@ public final class UploadReceiptServletTest {
   private static final Text RAW_TEXT = new Text("raw text");
   private static final double PRICE = 5.89;
   private static final String STORE = "mcdonald's";
-  private static final AnalysisResults ANALYSIS_RESULTS =
-      new AnalysisResults.Builder(RAW_TEXT.getValue())
-          .setCategories(GENERATED_CATEGORIES)
-          .setTimestamp(PAST_TIMESTAMP)
-          .setStore(STORE)
-          .build();
+  private static final AnalysisResults ANALYSIS_RESULTS = new AnalysisResults.Builder()
+                                                              .setRawText(RAW_TEXT.getValue())
+                                                              .setCategories(GENERATED_CATEGORIES)
+                                                              .setTimestamp(PAST_TIMESTAMP)
+                                                              .setStore(STORE)
+                                                              .build();
 
   private static final String IMAGE_URL = "/serve-image?blob-key=" + BLOB_KEY.getKeyString();
   private static final String LIVE_SERVER_BASE_URL =
@@ -265,7 +265,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     String store = "    TraDeR   JOE's  ";
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
+                                          .setRawText(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTimestamp(PAST_TIMESTAMP)
                                           .setStore(store)
@@ -294,7 +295,8 @@ public final class UploadReceiptServletTest {
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
+                                          .setRawText(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTimestamp(PAST_TIMESTAMP)
                                           .build();
@@ -321,7 +323,8 @@ public final class UploadReceiptServletTest {
     // Mock receipt analysis.
     Set<String> generatedCategories =
         ImmutableSet.of("   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH", "  dIninG ");
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
+                                          .setRawText(RAW_TEXT.getValue())
                                           .setCategories(generatedCategories)
                                           .setTimestamp(PAST_TIMESTAMP)
                                           .setStore(STORE)
@@ -402,7 +405,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
+                                          .setRawText(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTimestamp(futureTimestamp)
                                           .setStore(STORE)

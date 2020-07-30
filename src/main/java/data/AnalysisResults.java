@@ -27,8 +27,8 @@ public class AnalysisResults {
   private final Optional<String> store;
   private final Optional<Long> timestamp;
 
-  private AnalysisResults(
-      Optional<String> rawText, Set<String> categories, Optional<String> store, Optional<Long> timestamp) {
+  private AnalysisResults(Optional<String> rawText, Set<String> categories, Optional<String> store,
+      Optional<Long> timestamp) {
     this.rawText = rawText;
     this.categories = ImmutableSet.copyOf(categories);
     this.store = store;
