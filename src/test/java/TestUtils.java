@@ -111,7 +111,6 @@ public final class TestUtils {
     }
 
     return analytics;
-  }
 }
   /* * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
    * properties.
