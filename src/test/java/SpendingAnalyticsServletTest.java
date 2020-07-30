@@ -90,8 +90,8 @@ public final class SpendingAnalyticsServletTest {
     HashMap<String, Double> categoryAnalytics =
         TestUtils.parseCategoryAnalytics(stringWriter.toString());
 
-    Assert.assertTrue(EXPECTED_STORE_ANALYTICS.equals(storeAnalytics));
-    Assert.assertTrue(EXPECTED_CATEGORY_ANALYTICS.equals(categoryAnalytics));
+    Assert.assertEquals(EXPECTED_STORE_ANALYTICS, storeAnalytics);
+    Assert.assertEquals(EXPECTED_CATEGORY_ANALYTICS, categoryAnalytics);
   }
 
   @Test
