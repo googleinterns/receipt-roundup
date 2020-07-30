@@ -20,6 +20,7 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.common.collect.ImmutableMap;
 import com.google.sps.servlets.SpendingAnalyticsServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,8 +36,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public final class SpendingAnalyticsServletTest {
-  private static final HashMap<String, Double> EXPECTED_STORE_ANALYTICS = new HashMap<>();
-  private static final HashMap<String, Double> EXPECTED_CATEGORY_ANALYTICS = new HashMap<>();
+  private static final HashMap<String, Double> EXPECTED_STORE_ANALYTICS = new HashMap(
+      ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "main street restaurant", 29.01));
+  private static final HashMap<String, Double> EXPECTED_CATEGORY_ANALYTICS = new HashMap(
+      ImmutableMap.of("candy", 26.12, "drink", 26.12, "cappuccino", 14.51, "food", 43.52));
 
   // Local Datastore
   private final LocalServiceTestHelper helper =
@@ -61,15 +64,6 @@ public final class SpendingAnalyticsServletTest {
     stringWriter = new StringWriter();
     writer = new PrintWriter(stringWriter);
     when(response.getWriter()).thenReturn(writer);
-
-    EXPECTED_STORE_ANALYTICS.put("walmart", 26.12);
-    EXPECTED_STORE_ANALYTICS.put("contoso", 14.51);
-    EXPECTED_STORE_ANALYTICS.put("main street restaurant", 29.01);
-
-    EXPECTED_CATEGORY_ANALYTICS.put("candy", 26.12);
-    EXPECTED_CATEGORY_ANALYTICS.put("drink", 26.12);
-    EXPECTED_CATEGORY_ANALYTICS.put("cappuccino", 14.51);
-    EXPECTED_CATEGORY_ANALYTICS.put("food", 43.52);
   }
 
   @After
