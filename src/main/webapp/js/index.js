@@ -126,8 +126,9 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
   receiptCardClone.querySelector('.col-md-6').id = receipt.id;
 
-  // Attach listener to trigger the deletion of this receipt.
+  // Attach listeners to trigger the deletion and editing of this receipt.
   attachDeleteButtonEventListener(receipt, receiptCardClone);
+  attachEditButtonEventListener(receipt, receiptCardClone);
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
@@ -155,6 +156,26 @@ async function deleteReceipt(receipt) {
   const params = new URLSearchParams();
   params.append('id', receipt.id);
   await fetch('/delete-receipt', {method: 'POST', body: params});
+}
+
+/**
+ * Attaches event listener to edit button.
+ * @param {Receipt} receipt A Receipt datastore object.
+ * @param {receiptCardClone} DocumentFragment Receipt card wrapper.
+ */
+function attachEditButtonEventListener(receipt, receiptCardClone) {
+  receiptCardClone.querySelector('#edit').addEventListener('click', () => {
+    const params = new URLSearchParams();
+    params.append('id', receipt.id);
+    params.append('categories', receipt.categories);
+    params.append('image-url', receipt.imageUrl);
+    params.append('price', receipt.price);
+    params.append('store', receipt.store);
+    params.append('timestamp', receipt.timestamp);
+
+    // Redirect to the receipt analysis page.
+    window.location.href = `/receipt-analysis.html?${params.toString()}`;
+  });
 }
 
 /**
