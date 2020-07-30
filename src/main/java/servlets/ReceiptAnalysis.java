@@ -68,16 +68,14 @@ public class ReceiptAnalysis {
       Pattern.compile("\\d?\\d([/-])\\d?\\d\\1\\d{2}(\\d{2})?");
 
   /** Returns the text and categorization of the image at the requested URL. */
-  public static AnalysisResults analyzeImageAt(URL url)
-      throws IOException, ReceiptAnalysisException {
+  public static AnalysisResults analyzeImageAt(URL url) throws IOException {
     ByteString imageBytes = readImageBytes(url);
 
     return analyzeImage(imageBytes);
   }
 
   /** Returns the text and categorization of the image at the requested blob key. */
-  public static AnalysisResults analyzeImageAt(BlobKey blobKey)
-      throws IOException, ReceiptAnalysisException {
+  public static AnalysisResults analyzeImageAt(BlobKey blobKey) throws IOException {
     ByteString imageBytes = readImageBytes(blobKey);
 
     return analyzeImage(imageBytes);
@@ -120,21 +118,24 @@ public class ReceiptAnalysis {
   }
 
   /** Analyzes the image represented by the given ByteString. */
-  private static AnalysisResults analyzeImage(ByteString imageBytes)
-      throws IOException, ReceiptAnalysisException {
+  private static AnalysisResults analyzeImage(ByteString imageBytes) throws IOException {
     AnalysisResults.Builder analysisBuilder = retrieveText(imageBytes);
-    ImmutableSet<String> categories = categorizeText(analysisBuilder.getRawText());
 
-    Stream<String> tokens = getTokensFromRawText(analysisBuilder.getRawText());
-    checkForParsableDate(analysisBuilder, tokens);
+    // Generate categories and parse date if text was extracted.
+    if (analysisBuilder.getRawText().isPresent()) {
+      ImmutableSet<String> categories = categorizeText(analysisBuilder.getRawText().get());
+      analysisBuilder.setCategories(categories);
 
-    return analysisBuilder.setCategories(categories).build();
+      Stream<String> tokens = getTokensFromRawText(analysisBuilder.getRawText().get());
+      checkForParsableDate(analysisBuilder, tokens);
+    }
+
+    return analysisBuilder.build();
   }
 
   /** Detects and retrieves text and store logo in the provided image. */
-  private static AnalysisResults.Builder retrieveText(ByteString imageBytes)
-      throws IOException, ReceiptAnalysisException {
-    AnalysisResults.Builder analysisBuilder;
+  private static AnalysisResults.Builder retrieveText(ByteString imageBytes) throws IOException {
+    AnalysisResults.Builder analysisBuilder = new AnalysisResults.Builder();
 
     Image image = Image.newBuilder().setContent(imageBytes).build();
     ImmutableList<Feature> features =
@@ -148,24 +149,23 @@ public class ReceiptAnalysis {
       BatchAnnotateImagesResponse batchResponse = client.batchAnnotateImages(requests);
 
       if (batchResponse.getResponsesList().isEmpty()) {
-        throw new ReceiptAnalysisException("Received empty batch image annotation response.");
+        return analysisBuilder;
       }
 
       AnnotateImageResponse response = Iterables.getOnlyElement(batchResponse.getResponsesList());
 
       if (response.hasError()) {
-        throw new ReceiptAnalysisException("Received image annotation response with error.");
-      } else if (response.getTextAnnotationsList().isEmpty()) {
-        // TODO: Handle case with no raw text by depending on user-assigned categories.
-        throw new ReceiptAnalysisException(
-            "Received image annotation response without text annotations.");
+        return analysisBuilder;
       }
 
-      // First element has the entire raw text from the image.
-      EntityAnnotation textAnnotation = response.getTextAnnotationsList().get(0);
+      // Add extracted raw text to builder.
+      if (!response.getTextAnnotationsList().isEmpty()) {
+        // First element has the entire raw text from the image.
+        EntityAnnotation textAnnotation = response.getTextAnnotationsList().get(0);
 
-      String rawText = textAnnotation.getDescription();
-      analysisBuilder = new AnalysisResults.Builder(rawText);
+        String rawText = textAnnotation.getDescription();
+        analysisBuilder.setRawText(rawText);
+      }
 
       // If a logo was detected with a confidence above the threshold, use it to set the store.
       if (!response.getLogoAnnotationsList().isEmpty()
@@ -175,15 +175,15 @@ public class ReceiptAnalysis {
         analysisBuilder.setStore(store);
       }
     } catch (ApiException e) {
-      throw new ReceiptAnalysisException("Image annotation request failed.", e);
+      // Return default builder if image annotation request failed.
+      return analysisBuilder;
     }
 
     return analysisBuilder;
   }
 
   /** Generates categories for the provided text. */
-  private static ImmutableSet<String> categorizeText(String text)
-      throws IOException, ReceiptAnalysisException {
+  private static ImmutableSet<String> categorizeText(String text) throws IOException {
     ImmutableSet<String> categories = ImmutableSet.of();
 
     try (LanguageServiceClient client = LanguageServiceClient.create()) {
@@ -197,7 +197,8 @@ public class ReceiptAnalysis {
                        .flatMap(ReceiptAnalysis::parseCategory)
                        .collect(ImmutableSet.toImmutableSet());
     } catch (ApiException e) {
-      throw new ReceiptAnalysisException("Classify text request failed.", e);
+      // Return empty set if classification request failed.
+      return categories;
     }
 
     return categories;
@@ -289,10 +290,6 @@ public class ReceiptAnalysis {
   public static class ReceiptAnalysisException extends Exception {
     public ReceiptAnalysisException(String errorMessage, Throwable err) {
       super(errorMessage, err);
-    }
-
-    public ReceiptAnalysisException(String errorMessage) {
-      super(errorMessage);
     }
   }
 }
