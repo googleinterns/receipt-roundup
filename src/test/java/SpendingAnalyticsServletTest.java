@@ -16,11 +16,11 @@ package com.google.sps;
 
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.common.collect.ImmutableMap;
 import com.google.sps.servlets.SpendingAnalyticsServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -36,6 +36,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public final class SpendingAnalyticsServletTest {
+  private static final HashMap<String, Double> EXPECTED_STORE_ANALYTICS = new HashMap(
+      ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "main street restaurant", 29.01));
+  private static final HashMap<String, Double> EXPECTED_CATEGORY_ANALYTICS = new HashMap(
+      ImmutableMap.of("candy", 26.12, "drink", 26.12, "cappuccino", 14.51, "food", 43.52));
+
   // Local Datastore
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()).setEnvIsLoggedIn(true);
@@ -75,13 +80,13 @@ public final class SpendingAnalyticsServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure all stores returned in HashMap.
     HashMap<String, Double> storeAnalytics =
-        new ObjectMapper().readValue(stringWriter.toString(), HashMap.class);
-    Assert.assertEquals(3, storeAnalytics.size());
-    Assert.assertTrue(storeAnalytics.containsKey("walmart"));
-    Assert.assertTrue(storeAnalytics.containsKey("contoso"));
-    Assert.assertTrue(storeAnalytics.containsKey("main street restaurant"));
+        TestUtils.parseAnalytics(stringWriter.toString(), "storeAnalytics");
+    HashMap<String, Double> categoryAnalytics =
+        TestUtils.parseAnalytics(stringWriter.toString(), "categoryAnalytics");
+
+    Assert.assertEquals(EXPECTED_STORE_ANALYTICS, storeAnalytics);
+    Assert.assertEquals(EXPECTED_CATEGORY_ANALYTICS, categoryAnalytics);
   }
 
   @Test
@@ -89,9 +94,13 @@ public final class SpendingAnalyticsServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure empty HashMap is returned.
+    // Make sure empty HashMaps are returned.
     HashMap<String, Double> storeAnalytics =
-        new ObjectMapper().readValue(stringWriter.toString(), HashMap.class);
+        TestUtils.parseAnalytics(stringWriter.toString(), "storeAnalytics");
+    HashMap<String, Double> categoryAnalytics =
+        TestUtils.parseAnalytics(stringWriter.toString(), "categoryAnalytics");
+
     Assert.assertTrue(storeAnalytics.isEmpty());
+    Assert.assertTrue(categoryAnalytics.isEmpty());
   }
 }

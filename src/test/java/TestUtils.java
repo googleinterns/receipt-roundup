@@ -20,8 +20,11 @@ import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
+import org.json.JSONObject;
 
 /** Class that contains helpful methods used for testing. */
 public final class TestUtils {
@@ -43,18 +46,16 @@ public final class TestUtils {
 
   /** Adds multiple receipts to datastore. */
   public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
-    ImmutableSet<Entity> entities =
-        ImmutableSet.of(createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L,
-                            new BlobKey("test"), "img/walmart-receipt.jpg", 26.12, "walmart",
-                            ImmutableSet.of("candy", "drink", "personal"), ""),
+    ImmutableSet<Entity> entities = ImmutableSet.of(
+        createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L, new BlobKey("test"),
+            "img/walmart-receipt.jpg", 26.12, "walmart", ImmutableSet.of("candy", "drink"), ""),
 
-            createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L,
-                new BlobKey("test"), "img/contoso-receipt.jpg", 14.51, "contoso",
-                ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
+        createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L, new BlobKey("test"),
+            "img/contoso-receipt.jpg", 14.51, "contoso", ImmutableSet.of("cappuccino", "food"), ""),
 
-            createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L,
-                new BlobKey("test"), "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
-                ImmutableSet.of("food", "meal", "lunch"), ""));
+        createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L, new BlobKey("test"),
+            "img/restaurant-receipt.jpeg", 29.01, "main street restaurant", ImmutableSet.of("food"),
+            ""));
 
     entities.stream().forEach(entity -> datastore.put(entity));
 
@@ -92,5 +93,23 @@ public final class TestUtils {
     when(request.getParameter("store")).thenReturn(store);
     when(request.getParameter("min")).thenReturn(minPrice);
     when(request.getParameter("max")).thenReturn(maxPrice);
+  }
+
+  /**
+   * Parses a json string containing analytics into a hashmap.
+   * @param analyticsType The analytics type we want to parse, either store or categories.
+   */
+  public static HashMap<String, Double> parseAnalytics(String json, String analyticsType)
+      throws IOException {
+    JSONObject analyticsObject = new JSONObject(json).getJSONObject(analyticsType);
+
+    HashMap<String, Double> analytics = new HashMap<>();
+
+    // Key will either be a store or category, depending on analyticsType.
+    for (String key : analyticsObject.keySet()) {
+      analytics.put(key, analyticsObject.getDouble(key));
+    }
+
+    return analytics;
   }
 }
