@@ -80,9 +80,10 @@ public final class SpendingAnalyticsServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    HashMap<String, Double> storeAnalytics = TestUtils.parseStoreAnalytics(stringWriter.toString());
+    HashMap<String, Double> storeAnalytics =
+        TestUtils.parseAnalytics(stringWriter.toString(), "storeAnalytics");
     HashMap<String, Double> categoryAnalytics =
-        TestUtils.parseCategoryAnalytics(stringWriter.toString());
+        TestUtils.parseAnalytics(stringWriter.toString(), "categoryAnalytics");
 
     Assert.assertEquals(EXPECTED_STORE_ANALYTICS, storeAnalytics);
     Assert.assertEquals(EXPECTED_CATEGORY_ANALYTICS, categoryAnalytics);
@@ -94,9 +95,10 @@ public final class SpendingAnalyticsServletTest {
     writer.flush();
 
     // Make sure empty HashMaps are returned.
-    HashMap<String, Double> storeAnalytics = TestUtils.parseStoreAnalytics(stringWriter.toString());
+    HashMap<String, Double> storeAnalytics =
+        TestUtils.parseAnalytics(stringWriter.toString(), "storeAnalytics");
     HashMap<String, Double> categoryAnalytics =
-        TestUtils.parseCategoryAnalytics(stringWriter.toString());
+        TestUtils.parseAnalytics(stringWriter.toString(), "categoryAnalytics");
 
     Assert.assertTrue(storeAnalytics.isEmpty());
     Assert.assertTrue(categoryAnalytics.isEmpty());

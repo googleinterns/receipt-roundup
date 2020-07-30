@@ -16,7 +16,6 @@ package com.google.sps;
 
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
@@ -25,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
+import org.json.JSONObject;
 
 /** Class that contains helpful methods used for testing. */
 public final class TestUtils {
@@ -96,32 +96,20 @@ public final class TestUtils {
   }
 
   /**
-   * Parses a string containing store analytics into a hashmap representation.
-   * str is in the form: {"storeAnalytics":{...}, "categoryAnalytics": {...}}
+   * Parses a json string containing analytics into a hashmap.
+   * @param analyticsType The analytics type we want to parse, either store or categories.
    */
-  public static HashMap<String, Double> parseStoreAnalytics(String str) throws IOException {
-    String key = "storeAnalytics";
+  public static HashMap<String, Double> parseAnalytics(String json, String analyticsType)
+      throws IOException {
+    JSONObject analyticsObject = new JSONObject(json).getJSONObject(analyticsType);
 
-    // Set indexes to extract the first {...} from str.
-    int startIndex = str.indexOf(key) + key.length() + 2;
-    int endIndex = str.indexOf("}") + 1;
+    HashMap<String, Double> analytics = new HashMap<>();
 
-    String json = str.substring(startIndex, endIndex);
-    return new ObjectMapper().readValue(json, HashMap.class);
-  }
+    // Key will either be a store or category, depending on analyticsType.
+    for (String key : analyticsObject.keySet()) {
+      analytics.put(key, analyticsObject.getDouble(key));
+    }
 
-  /**
-   * Parses a string containing category analytics into a hashmap representation.
-   * str is in the form: {"storeAnalytics":{...}, "categoryAnalytics": {...}}
-   */
-  public static HashMap<String, Double> parseCategoryAnalytics(String str) throws IOException {
-    String key = "categoryAnalytics";
-
-    // Set indexes to extract the second {...} from str.
-    int startIndex = str.indexOf(key) + key.length() + 2;
-    int endIndex = str.lastIndexOf("}");
-
-    String json = str.substring(startIndex, endIndex);
-    return new ObjectMapper().readValue(json, HashMap.class);
+    return analytics;
   }
 }
