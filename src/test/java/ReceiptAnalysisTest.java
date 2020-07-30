@@ -96,16 +96,6 @@ public final class ReceiptAnalysisTest {
   private static final Optional<Long> TIMESTAMP_IN_1900S =
       Optional.of(Long.valueOf(INSTANT_IN_1900S.toEpochMilli()));
 
-  private static final String RAW_TEXT_WITH_PRICE_TOTAL = "the total is $12.77";
-  private static final String RAW_TEXT_WITH_PRICE_MULTIPLE_TOTALS =
-      "the sub total is $12.23 and the total is $12.77";
-  private static final String RAW_TEXT_WITH_PRICE_EXTRA_TOTAL =
-      "the total is $12.77 which is the total that must be paid";
-  private static final String RAW_TEXT_WITH_PRICE_TOTAL_CAPS =
-      "the sub total is $12.23 and the tOtAL is $12.77";
-  private static final String RAW_TEXT_WITH_MULTIPLE_PRICES_TOTAL =
-      "the total is $12.77 and the amount paid is $20.00";
-
   private static final double PRICE_VALUE = 12.77;
   private static final Optional<Double> PRICE = Optional.of(Double.valueOf(PRICE_VALUE));
 
@@ -273,7 +263,7 @@ public final class ReceiptAnalysisTest {
 
   @Test
   public void analyzeImageAtUrlReturnsDateAndPrice() throws IOException, ReceiptAnalysisException {
-    String rawTextWithDateAndPrice = "the date is 05-08-2020 and the price is " + PRICE_VALUE;
+    String rawTextWithDateAndPrice = "the date is 05-08-2020 and the price is $" + PRICE_VALUE;
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateAndPrice);
     stubTextClassification();
 
@@ -286,7 +276,8 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsPriceAfterTotal()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_TOTAL);
+    String rawTextWithPriceTotal = "the total is $" + PRICE_VALUE;
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceTotal);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
@@ -297,7 +288,9 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsPriceAfterLastTotal()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_MULTIPLE_TOTALS);
+    String rawTextWithPriceMultipleTotals =
+        "the sub total is $12.23 and the total is $" + PRICE_VALUE;
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceMultipleTotals);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
@@ -308,7 +301,9 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlIgnoresTotalWithNoPrice()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_EXTRA_TOTAL);
+    String rawTextWithPriceExtraTotal =
+        "the total is $" + PRICE_VALUE + " which is the total that must be paid";
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceExtraTotal);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
@@ -319,7 +314,8 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsPriceAfterMixedCaseTotal()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_TOTAL_CAPS);
+    String rawTextWithPriceTotalCaps = "the sub total is $12.23 and the tOtAL is $" + PRICE_VALUE;
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceTotalCaps);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
@@ -330,7 +326,9 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsPriceAfterTotalInsteadOfLargest()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_MULTIPLE_PRICES_TOTAL);
+    String rawTextWithMultiplePricesTotal =
+        "the total is $" + PRICE_VALUE + " and the amount paid is $20.00";
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithMultiplePricesTotal);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
