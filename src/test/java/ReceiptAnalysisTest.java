@@ -125,7 +125,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsAnalysisResults()
+  public void analyzeImageAt_url_returnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT);
     stubTextClassification();
@@ -142,7 +142,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsAnalysisResultsWithNoStore()
+  public void analyzeImageAt_url_returnsAnalysisResultsWithNoStore()
       throws IOException, ReceiptAnalysisException {
     AnnotateImageResponse imageResponse = createImageResponseWithText(RAW_TEXT).build();
     BatchAnnotateImagesResponse batchResponse =
@@ -157,7 +157,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlIgnoresLogoIfLowConfidence()
+  public void analyzeImageAt_lowConfidenceScore_ignoresLogo()
       throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD, RAW_TEXT);
     stubTextClassification();
@@ -170,7 +170,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDate() throws IOException, ReceiptAnalysisException {
+  public void analyzeImageAt_returnsTimestamp() throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE);
     stubTextClassification();
 
@@ -180,7 +180,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateUsingSlashes()
+  public void analyzeImageAt_dateWithSlashes_returnsTimestamp()
       throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_USING_SLASHES);
     stubTextClassification();
@@ -191,7 +191,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateWithNoLeadingZeros()
+  public void analyzeImageAt_dateWithNoLeadingZeros_returnsTimestamp()
       throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS);
     stubTextClassification();
@@ -202,7 +202,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateWithTwoDigitYear()
+  public void analyzeImageAt_dateWithTwoDigitYear_returnsTimestamp()
       throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR);
     stubTextClassification();
@@ -213,7 +213,8 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateIn1900s() throws IOException, ReceiptAnalysisException {
+  public void analyzeImageAt_dateIn1900s_returnsTimestamp()
+      throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_IN_1900S);
     stubTextClassification();
 

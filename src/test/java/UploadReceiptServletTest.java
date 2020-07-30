@@ -180,7 +180,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doGetReturnsBlobstoreUploadUrl() throws IOException {
+  public void doGet_returnsBlobstoreUploadUrl() throws IOException {
     UploadOptions uploadOptions =
         UploadOptions.Builder.withMaxUploadSizeBytesPerBlob(MAX_UPLOAD_SIZE_BYTES);
     when(blobstoreService.createUploadUrl("/upload-receipt", uploadOptions)).thenReturn(UPLOAD_URL);
@@ -192,7 +192,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostUploadsReceiptToDatastoreLiveServer()
+  public void doPost_liveServer_uploadsReceiptToDatastore()
       throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, PRICE);
@@ -225,7 +225,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostUploadsReceiptToDatastoreDevServer()
+  public void doPost_devServer_uploadsReceiptToDatastore()
       throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, PRICE);
@@ -257,7 +257,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostSanitizesStore() throws IOException, ReceiptAnalysisException {
+  public void doPost_sanitizesStore() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, PRICE);
     stubUrlComponents(
@@ -285,7 +285,8 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostUploadsReceiptWithoutLogo() throws IOException, ReceiptAnalysisException {
+  public void doPost_receiptWithoutLogo_uploadsSuccessfully()
+      throws IOException, ReceiptAnalysisException {
     helper.setEnvIsLoggedIn(true);
 
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
@@ -312,7 +313,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostSanitizesCategories() throws IOException, ReceiptAnalysisException {
+  public void doPost_sanitizesCategories() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubRequestBody(request, PRICE);
     stubUrlComponents(
@@ -342,7 +343,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfFileNotSelectedLiveServer() throws IOException {
+  public void doPost_fileNotSelectedLiveServer_throwsException() throws IOException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_0MB);
 
     servlet.doPost(request, response);
@@ -355,7 +356,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfFileNotSelectedDevServer() throws IOException {
+  public void doPost_fileNotSelectedDevServer_throwsException() throws IOException {
     Map<String, List<BlobKey>> blobs = new HashMap<>();
     when(blobstoreService.getUploads(request)).thenReturn(blobs);
 
@@ -367,7 +368,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfInvalidFile() throws IOException {
+  public void doPost_invalidFile_throwsException() throws IOException {
     createMockBlob(request, INVALID_CONTENT_TYPE, INVALID_FILENAME, IMAGE_SIZE_1MB);
 
     servlet.doPost(request, response);
@@ -379,7 +380,7 @@ public final class UploadReceiptServletTest {
     verify(blobstoreService).delete(BLOB_KEY);
   }
 
-  public void doPostThrowsIfUserIsLoggedOut() throws IOException {
+  public void doPost_userLoggedOut_throwsException() throws IOException {
     helper.setEnvIsLoggedIn(false);
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
@@ -393,7 +394,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostUploadsReceiptWithoutTimestampIfParsedDateIsInTheFuture()
+  public void doPost_futureParsedDate_uploadsReceiptWithoutTimestamp()
       throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
@@ -421,7 +422,8 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfReceiptAnalysisFails() throws IOException, ReceiptAnalysisException {
+  public void doPost_receiptAnalysisFailure_throwsException()
+      throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
@@ -441,7 +443,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostRoundPrice() throws IOException, ReceiptAnalysisException {
+  public void doPost_roundsPrice() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
 
     double price = 17.236;
@@ -465,7 +467,8 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfPriceNotParsable() throws IOException, ReceiptAnalysisException {
+  public void doPost_priceNotParsable_throwsException()
+      throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
@@ -486,7 +489,7 @@ public final class UploadReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfPriceNegative() throws IOException, ReceiptAnalysisException {
+  public void doPost_negativePrice_throwsException() throws IOException, ReceiptAnalysisException {
     createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
     stubUrlComponents(
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
