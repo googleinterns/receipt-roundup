@@ -86,7 +86,7 @@ async function uploadReceipt(event) {
   params.append('image-url', receipt.imageUrl.value);
 
   // Add fields that were successfully generated.
-  if (receipt.categories) {
+  if (receipt.categories.length > 0) {
     params.append('categories', receipt.categories);
   }
   if (receipt.price) {
