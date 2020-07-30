@@ -154,6 +154,9 @@ async function updateReceipt(event) {
   params.append('store', editedReceipt.store);
   params.append('timestamp', editedReceipt.timestamp);
 
+  // Remove warning for unsaved changes.
+  window.onbeforeunload = null;
+
   // Update query string with edited fields.
   window.location.replace(`/receipt-analysis.html?${params.toString()}`);
 }
