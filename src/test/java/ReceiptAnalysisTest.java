@@ -90,22 +90,12 @@ public final class ReceiptAnalysisTest {
   private static final float LOGO_CONFIDENCE = 0.6f;
   private static final float LOGO_CONFIDENCE_BELOW_THRESHOLD = 0.2f;
 
-  private static final String RAW_TEXT_WITH_DATE = "the date is 05-08-2020";
-  private static final String RAW_TEXT_WITH_DATE_USING_SLASHES = "the date is 05/08/2020";
-  private static final String RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS = "the date is 5-8-2020";
-  private static final String RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR = "the date is 05-08-20";
-  private static final String RAW_TEXT_WITH_DATE_IN_1900S = "the date is 05-08-99";
-
   private static final Instant INSTANT = Instant.parse("2020-05-08T00:00:00Z");
   private static final Optional<Long> TIMESTAMP = Optional.of(Long.valueOf(INSTANT.toEpochMilli()));
   private static final Instant INSTANT_IN_1900S = Instant.parse("1999-05-08T00:00:00Z");
   private static final Optional<Long> TIMESTAMP_IN_1900S =
       Optional.of(Long.valueOf(INSTANT_IN_1900S.toEpochMilli()));
 
-  private static final String RAW_TEXT_WITH_PRICE = "the price is $12.77";
-  private static final String RAW_TEXT_WITH_PRICE_NO_DOLLAR_SIGN = "the price is 12.77";
-  private static final String RAW_TEXT_WITH_MULTIPLE_PRICES =
-      "these cost $8.99, $2.79, and $1.99, so the final price is $12.77 after the $1.00 discount";
   private static final String RAW_TEXT_WITH_PRICE_TOTAL = "the total is $12.77";
   private static final String RAW_TEXT_WITH_PRICE_MULTIPLE_TOTALS =
       "the sub total is $12.23 and the total is $12.77";
@@ -116,10 +106,8 @@ public final class ReceiptAnalysisTest {
   private static final String RAW_TEXT_WITH_MULTIPLE_PRICES_TOTAL =
       "the total is $12.77 and the amount paid is $20.00";
 
-  private static final Optional<Double> PRICE = Optional.of(Double.valueOf(12.77));
-
-  private static final String RAW_TEXT_WITH_DATE_AND_PRICE =
-      "the date is 05-08-2020 and the price is $12.77";
+  private static final double PRICE_VALUE = 12.77;
+  private static final Optional<Double> PRICE = Optional.of(Double.valueOf(PRICE_VALUE));
 
   private URL url;
   private ImageAnnotatorClient imageClient;
@@ -155,7 +143,7 @@ public final class ReceiptAnalysisTest {
     Assert.assertEquals(RAW_TEXT, results.getRawText());
     Assert.assertEquals(CATEGORIES, results.getCategories());
     Assert.assertEquals(STORE, results.getStore());
-    Assert.assertEquals(Optional.empty(), results.getTimestamp());
+    Assert.assertEquals(Optional.empty(), results.getTransactionTimestamp());
     Assert.assertEquals(Optional.empty(), results.getPrice());
     verify(imageClient).batchAnnotateImages(imageRequests);
     verify(languageClient).classifyText(classifyRequest);
@@ -191,60 +179,66 @@ public final class ReceiptAnalysisTest {
 
   @Test
   public void analyzeImageAtUrlReturnsDate() throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE);
+    String rawTextWithDate = "the date is 05-08-2020";
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDate);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
   }
 
   @Test
   public void analyzeImageAtUrlReturnsDateUsingSlashes()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_USING_SLASHES);
+    String rawTextWithDateUsingSlashes = "the date is 05/08/2020";
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateUsingSlashes);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
   }
 
   @Test
   public void analyzeImageAtUrlReturnsDateWithNoLeadingZeros()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_NO_LEADING_ZEROS);
+    String rawTextWithDateNoLeadingZeros = "the date is 5-8-2020";
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateNoLeadingZeros);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
   }
 
   @Test
   public void analyzeImageAtUrlReturnsDateWithTwoDigitYear()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_TWO_DIGIT_YEAR);
+    String rawTextWithDateTwoDigitYear = "the date is 05-08-20";
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateTwoDigitYear);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
   }
 
   @Test
   public void analyzeImageAtUrlReturnsDateIn1900s() throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_IN_1900S);
+    String rawTextWithDateIn1900s = "the date is 05-08-99";
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateIn1900s);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP_IN_1900S, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP_IN_1900S, results.getTransactionTimestamp());
   }
 
   @Test
   public void analyzeImageAtUrlReturnsPrice() throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE);
+    String rawTextWithPrice = "the price is $" + PRICE_VALUE;
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPrice);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
@@ -255,7 +249,8 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAtUrlReturnsPriceWithNoDollarSign()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_NO_DOLLAR_SIGN);
+    String rawTextWithPriceNoDollarSign = "the price is " + PRICE_VALUE;
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceNoDollarSign);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
@@ -265,7 +260,10 @@ public final class ReceiptAnalysisTest {
 
   @Test
   public void analyzeImageAtUrlReturnsLargestPrice() throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_MULTIPLE_PRICES);
+    String rawTextWithMultiplePrices =
+        "the items cost $8.99, $2.79, and $1.99, so the final price is $" + PRICE_VALUE
+        + " after the $1.00 discount";
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithMultiplePrices);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
@@ -275,12 +273,13 @@ public final class ReceiptAnalysisTest {
 
   @Test
   public void analyzeImageAtUrlReturnsDateAndPrice() throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_DATE_AND_PRICE);
+    String rawTextWithDateAndPrice = "the date is 05-08-2020 and the price is " + PRICE_VALUE;
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateAndPrice);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
     Assert.assertEquals(PRICE, results.getPrice());
   }
 

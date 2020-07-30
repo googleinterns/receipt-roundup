@@ -250,7 +250,7 @@ public class ReceiptAnalysis {
       dateAndTime = fixYearIfInFuture(dateAndTime);
 
       long timestamp = dateAndTime.toInstant().toEpochMilli();
-      analysisBuilder.setTimestamp(timestamp);
+      analysisBuilder.setTransactionTimestamp(timestamp);
     } catch (DateTimeParseException e) {
       // Invalid month or day
       return;
