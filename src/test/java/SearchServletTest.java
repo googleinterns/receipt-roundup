@@ -23,6 +23,8 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,6 +34,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
@@ -60,9 +63,19 @@ public final class SearchServletTest {
   private static final String MIN_PRICE = "5.00";
   private static final String MAX_PRICE = "30.00";
 
+  private static final String DOMAIN_NAME = "gmail.com";
+  private static final String USER_EMAIL = "test@gmail.com";
+  private static final String USER_ID = "testID";
+
   // Local Datastore
   private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()).setEnvIsLoggedIn(true);
+      new LocalServiceTestHelper(
+          new LocalDatastoreServiceTestConfig(), new LocalUserServiceTestConfig())
+          .setEnvIsLoggedIn(true)
+          .setEnvEmail(USER_EMAIL)
+          .setEnvAuthDomain(DOMAIN_NAME)
+          .setEnvAttributes(new HashMap(
+              ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", USER_ID)));
 
   @Mock private SearchServlet servlet;
   @Mock private HttpServletRequest request;

@@ -45,19 +45,17 @@ public final class TestUtils {
 
   /** Adds multiple receipts to datastore. */
   public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
-    ImmutableSet<Entity> entities =
-        ImmutableSet.of(createEntity(/* userId = */ "testID", /* timestamp = */ 1045237591000L,
-                            "img/walmart-receipt.jpg", 26.12, "walmart",
-                            ImmutableSet.of("candy", "drink"), ""),
+    ImmutableSet<Entity> entities = ImmutableSet.of(
+        createEntity(/* userId = */ "testID", /* timestamp = */ 1045237591000L,
+            "img/walmart-receipt.jpg", 26.12, "walmart", ImmutableSet.of("candy", "drink"), ""),
 
-            createEntity(/* userId = */ "testID", /* timestamp = */ 1560193140000L,
-                "img/contoso-receipt.jpg", 14.51, "contoso",
-                ImmutableSet.of("cappuccino", "food"), ""),
+        createEntity(/* userId = */ "testID", /* timestamp = */ 1560193140000L,
+            "img/contoso-receipt.jpg", 14.51, "contoso", ImmutableSet.of("cappuccino", "food"), ""),
 
-            createEntity(/* userId = */ "testID", /* timestamp = */ 1491582960000L,
-                "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
-                ImmutableSet.of("food"), ""));
-    
+        createEntity(/* userId = */ "testID", /* timestamp = */ 1491582960000L,
+            "img/restaurant-receipt.jpeg", 29.01, "main street restaurant", ImmutableSet.of("food"),
+            ""));
+
     entities.stream().forEach(entity -> datastore.put(entity));
 
     return entities;
@@ -111,7 +109,7 @@ public final class TestUtils {
     }
 
     return analytics;
-}
+  }
   /* * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
    * properties.
    */
