@@ -46,15 +46,15 @@ public final class TestUtils {
   /** Adds multiple receipts to datastore. */
   public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
     ImmutableSet<Entity> entities =
-        ImmutableSet.of(createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L,
+        ImmutableSet.of(createEntity(/* userId = */ "testID", /* timestamp = */ 1045237591000L,
                             "img/walmart-receipt.jpg", 26.12, "walmart",
                             ImmutableSet.of("candy", "drink"), ""),
 
-            createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L,
+            createEntity(/* userId = */ "testID", /* timestamp = */ 1560193140000L,
                 "img/contoso-receipt.jpg", 14.51, "contoso",
                 ImmutableSet.of("cappuccino", "food"), ""),
 
-            createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L,
+            createEntity(/* userId = */ "testID", /* timestamp = */ 1491582960000L,
                 "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
                 ImmutableSet.of("food"), ""));
     
