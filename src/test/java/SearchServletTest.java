@@ -24,6 +24,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
@@ -287,6 +288,32 @@ public final class SearchServletTest {
 
     Assert.assertTrue(stringWriter.toString().contains(PARSE_EXCEPTION_MESSAGE));
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void queryReceiptsWithDifferentUserId() throws IOException {
+    // All receipts under the userId: "testId".
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+
+    // Add mock receipts to datastore.
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addTestReceipts(datastore);
+
+    // Set userId to one that doesn't have any receipts under it.
+    helper.setEnvAttributes(new HashMap(
+        ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", "wrongUserId")));
+    helper.setUp();
+
+    TestUtils.setSearchServletRequestParameters(
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // No receipts should be returned (empty string).
+    Assert.assertEquals(ImmutableList.of().toString() + "\n", stringWriter.toString());
   }
 
   @Test
