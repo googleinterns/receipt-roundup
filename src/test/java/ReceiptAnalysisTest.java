@@ -106,6 +106,15 @@ public final class ReceiptAnalysisTest {
   private static final String RAW_TEXT_WITH_PRICE_NO_DOLLAR_SIGN = "the price is 12.77";
   private static final String RAW_TEXT_WITH_MULTIPLE_PRICES =
       "these cost $8.99, $2.79, and $1.99, so the final price is $12.77 after the $1.00 discount";
+  private static final String RAW_TEXT_WITH_PRICE_TOTAL = "the total is $12.77";
+  private static final String RAW_TEXT_WITH_PRICE_MULTIPLE_TOTALS =
+      "the sub total is $12.23 and the total is $12.77";
+  private static final String RAW_TEXT_WITH_PRICE_EXTRA_TOTAL =
+      "the total is $12.77 which is the total that must be paid";
+  private static final String RAW_TEXT_WITH_PRICE_TOTAL_CAPS =
+      "the sub total is $12.23 and the tOtAL is $12.77";
+  private static final String RAW_TEXT_WITH_MULTIPLE_PRICES_TOTAL =
+      "the total is $12.77 and the amount paid is $20.00";
 
   private static final Optional<Double> PRICE = Optional.of(Double.valueOf(12.77));
 
@@ -272,6 +281,61 @@ public final class ReceiptAnalysisTest {
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
     Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsPriceAfterTotal()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_TOTAL);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsPriceAfterLastTotal()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_MULTIPLE_TOTALS);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
+  public void analyzeImageAtUrlIgnoresTotalWithNoPrice()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_EXTRA_TOTAL);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsPriceAfterMixedCaseTotal()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_PRICE_TOTAL_CAPS);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
+  public void analyzeImageAtUrlReturnsPriceAfterTotalInsteadOfLargest()
+      throws IOException, ReceiptAnalysisException {
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT_WITH_MULTIPLE_PRICES_TOTAL);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
     Assert.assertEquals(PRICE, results.getPrice());
   }
 
