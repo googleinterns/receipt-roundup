@@ -25,15 +25,15 @@ public class AnalysisResults {
   private final String rawText;
   private final ImmutableSet<String> categories;
   private final Optional<String> store;
-  private final Optional<Long> timestamp;
+  private final Optional<Long> transactionTimestamp;
   private final Optional<Double> price;
 
   public AnalysisResults(String rawText, Set<String> categories, Optional<String> store,
-      Optional<Long> timestamp, Optional<Double> price) {
+      Optional<Long> transactionTimestamp, Optional<Double> price) {
     this.rawText = rawText;
     this.categories = ImmutableSet.copyOf(categories);
     this.store = store;
-    this.timestamp = timestamp;
+    this.transactionTimestamp = transactionTimestamp;
     this.price = price;
   }
 
@@ -49,8 +49,8 @@ public class AnalysisResults {
     return store;
   }
 
-  public Optional<Long> getTimestamp() {
-    return timestamp;
+  public Optional<Long> getTransactionTimestamp() {
+    return transactionTimestamp;
   }
 
   public Optional<Double> getPrice() {
@@ -61,7 +61,7 @@ public class AnalysisResults {
     private final String rawText;
     private ImmutableSet<String> categories;
     private Optional<String> store;
-    private Optional<Long> timestamp = Optional.empty();
+    private Optional<Long> transactionTimestamp = Optional.empty();
     private Optional<Double> price = Optional.empty();
 
     public Builder(String rawText) {
@@ -82,8 +82,8 @@ public class AnalysisResults {
       return this;
     }
 
-    public Builder setTimestamp(long timestamp) {
-      this.timestamp = Optional.of(Long.valueOf(timestamp));
+    public Builder setTransactionTimestamp(long transactionTimestamp) {
+      this.transactionTimestamp = Optional.of(Long.valueOf(transactionTimestamp));
       return this;
     }
 
@@ -98,7 +98,7 @@ public class AnalysisResults {
         store = Optional.empty();
       }
 
-      return new AnalysisResults(rawText, categories, store, timestamp, price);
+      return new AnalysisResults(rawText, categories, store, transactionTimestamp, price);
     }
   }
 }

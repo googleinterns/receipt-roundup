@@ -146,7 +146,7 @@ public final class ReceiptAnalysisTest {
     Assert.assertEquals(RAW_TEXT, results.getRawText());
     Assert.assertEquals(CATEGORIES, results.getCategories());
     Assert.assertEquals(STORE, results.getStore());
-    Assert.assertEquals(Optional.empty(), results.getTimestamp());
+    Assert.assertEquals(Optional.empty(), results.getTransactionTimestamp());
     Assert.assertEquals(Optional.empty(), results.getPrice());
     verify(imageClient).batchAnnotateImages(imageRequests);
     verify(languageClient).classifyText(classifyRequest);
@@ -187,7 +187,7 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
   }
 
   @Test
@@ -198,7 +198,7 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
   }
 
   @Test
@@ -209,7 +209,7 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
   }
 
   @Test
@@ -220,7 +220,7 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
   }
 
   @Test
@@ -230,7 +230,7 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP_IN_1900S, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP_IN_1900S, results.getTransactionTimestamp());
   }
 
   @Test
@@ -271,7 +271,7 @@ public final class ReceiptAnalysisTest {
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TIMESTAMP, results.getTimestamp());
+    Assert.assertEquals(TIMESTAMP, results.getTransactionTimestamp());
     Assert.assertEquals(PRICE, results.getPrice());
   }
 
