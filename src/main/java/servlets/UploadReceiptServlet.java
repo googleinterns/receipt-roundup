@@ -248,7 +248,8 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setProperty("price", FormatUtils.roundPrice(request.getParameter("price")));
 
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
-    receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
+    results.getRawText().ifPresent(
+        rawText -> receipt.setUnindexedProperty("rawText", new Text(rawText)));
     receipt.setProperty(
         "categories", FormatUtils.sanitizeCategories(results.getCategories().stream()));
     // If a logo was detected, set the store name.
