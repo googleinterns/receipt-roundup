@@ -13,12 +13,11 @@
 // limitations under the License.
 
 /**
- * Verifies that the user is logged in and sets the date input to the current
- * date.
+ * Verifies that the user is logged in.
  */
 async function load() {
   /* global loadPage */
-  loadPage(loadDateInput);  // From js/common.js
+  loadPage();  // From js/common.js
 }
 
 /**
@@ -42,24 +41,11 @@ async function uploadReceipt(event) {
     return;
   }
 
-  // Change to the loading cursor and disable the submit button.
-  document.body.style.cursor = 'wait';
-  const submitButton = document.getElementById('submit-receipt');
-  submitButton.disabled = true;
+  const loadingIntervalId = startLoading();
 
   const uploadUrl = await fetchBlobstoreUrl();
-  const categories = document.getElementById('categories-input').value;
-  const price =
-      convertStringToNumber(document.getElementById('price-input').value);
-  const date = document.getElementById('date-input').valueAsNumber;
   const image = fileInput.files[0];
-
   const formData = new FormData();
-  createCategoryList(categories).forEach((category) => {
-    formData.append('categories', category);
-  });
-  formData.append('price', price);
-  formData.append('date', date);
   formData.append('receipt-image', image);
 
   const response = await fetch(uploadUrl, {method: 'POST', body: formData});
@@ -67,20 +53,38 @@ async function uploadReceipt(event) {
   // Restore the cursor after the upload request has loaded.
   document.body.style.cursor = 'default';
 
-  // Create an alert and re-enable the submit button if there is an error.
+  // Create an alert and re-enable the submit button and file input if there is
+  // an error.
   if (response.status !== 200) {
-    alert(await response.text());
-    submitButton.disabled = false;
+    const submitButton = document.getElementById('submit-receipt');
+    submitButton.innerText = 'Error!';
+
+    // Stop the loading animation.
+    document.getElementById('loading').classList.add('hidden');
+    clearInterval(loadingIntervalId);
+
+    // Delay the alert so the above changes can render first.
+    const error = await response.text();
+    setTimeout(() => {
+      alert(error);
+
+      // Restore the file input and submit button.
+      fileInput.disabled = false;
+      submitButton.disabled = false;
+      submitButton.innerText = 'Add Receipt';
+    }, 10);
     return;
   }
 
-  const json = (await response.json()).propertyMap;
+  const json = (await response.json());
+  const receipt = json.propertyMap;
   const params = new URLSearchParams();
-  params.append('categories', json.categories);
-  params.append('image-url', json.imageUrl);
-  params.append('price', json.price);
-  params.append('store', json.store);
-  params.append('timestamp', json.timestamp);
+  params.append('id', json.key.id);
+  params.append('categories', receipt.categories);
+  params.append('image-url', receipt.imageUrl);
+  params.append('price', receipt.price);
+  params.append('store', receipt.store);
+  params.append('timestamp', receipt.timestamp);
 
   // Redirect to the receipt analysis page.
   window.location.href = `/receipt-analysis.html?${params.toString()}`;
@@ -97,47 +101,36 @@ async function fetchBlobstoreUrl() {
 }
 
 /**
- * Converts the comma-separated categories string into a list of categories.
- * @return {(string|Array)} List of categories.
+ * Displays the loading animation and disables the submit button and file input.
+ * @return {number} The ID value of the setInterval() timer.
  */
-function createCategoryList(categories) {
-  return categories.split(',').map((category) => category.trim());
-}
+function startLoading() {
+  document.body.style.cursor = 'wait';
 
-/**
- * Converts the formatted price back to a number when the user
- * selects the price input.
- */
-function convertPricetoValue(event) {
-  const value = event.target.value;
-  event.target.value = value ? convertStringToNumber(value) : '';
-}
+  const submitButton = document.getElementById('submit-receipt');
+  submitButton.disabled = true;
+  submitButton.innerText = 'Analyzing...';
 
-/**
- * Converts a string value into a number, removing all non-numeric characters.
- */
-function convertStringToNumber(string) {
-  return Number(String(string).replace(/[^0-9.]+/g, ''));
-}
+  const fileInput = document.getElementById('receipt-image-input');
+  fileInput.disabled = true;
 
-/**
- * Converts the number inputted by the user to a formatted string when
- * the user unfocuses from the price input.
- */
-function formatCurrency(event) {
-  const value = event.target.value;
+  // Display the loading image, which is hidden by default.
+  const loadingBar = document.getElementsByClassName('loading-bar')[0].ldBar;
+  loadingBar.set(1);
+  document.getElementById('loading').classList.remove('hidden');
 
-  if (value) {
-    event.target.value =
-        convertStringToNumber(value).toLocaleString(undefined, {
-          maximumFractionDigits: 2,
-          currency: 'USD',
-          style: 'currency',
-          currencyDisplay: 'symbol',
-        });
-  } else {
-    event.target.value = '';
-  }
+  // Start the loading animation loop.
+  let increment = 1;
+  return setInterval(() => {
+    const value = loadingBar.value;
+
+    // Flip directions when the bar is filled and empty.
+    if (value >= 100 || value <= 0) {
+      increment *= -1;
+    }
+
+    loadingBar.set(value + increment);
+  }, 20);
 }
 
 /**
@@ -158,12 +151,12 @@ function displayFileName() {
 }
 
 /**
- * Displays an error message if the user selects a file larger than 5 MB.
- * @return {boolean} Whether a file is selected and has size less than 5 MB.
+ * Displays an error message if the user selects a file larger than 10 MB.
+ * @return {boolean} Whether a file is selected and has size less than 10 MB.
  */
 function checkFileSize() {
   const fileInput = document.getElementById('receipt-image-input');
-  const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+  const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
   // Return if the user did not select a file.
   if (fileInput.files.length === 0) {
@@ -171,32 +164,10 @@ function checkFileSize() {
   }
 
   if (fileInput.files[0].size > MAX_FILE_SIZE_BYTES) {
-    alert('The selected file exceeds the maximum file size of 5 MB.');
+    alert('The selected file exceeds the maximum file size of 10 MB.');
     fileInput.value = '';
     return false;
   }
 
   return true;
-}
-
-/**
- * Sets the value and max value of the transaction date input field to the
- * current date.
- */
-function loadDateInput() {
-  const dateInput = document.getElementById('date-input');
-  dateInput.value = dateInput.max = formatDate(new Date());
-}
-
-/**
- * Converts a date to 'YYYY-MM-DD' format, corresponding to the value attribute
- * of the date input.
- * @param {Date} date The date to convert.
- * @return {string} The formatted date.
- */
-function formatDate(date) {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${year}-${month}-${day}`;
 }

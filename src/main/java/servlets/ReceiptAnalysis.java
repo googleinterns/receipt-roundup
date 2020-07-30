@@ -42,16 +42,31 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Class with static methods that return the text of a specified image using the Cloud Vision API,
  * as well as some categories the text falls into using the Cloud Natural Language API.
  */
 public class ReceiptAnalysis {
+  // Confidence scores are values in the range [0,1] that indicate how accurate the Cloud Vision API
+  // is in identifying the detected logo, with higher scores meaning higher certainty. This is the
+  // minimum confidence score that a detected logo must have to be considered significant for
+  // receipt analysis.
+  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4f;
+  // Matches strings containing at least one digit.
+  private static final Pattern digitRegex = Pattern.compile(".*\\d.*");
+  // Matches strings in U.S. date format.
+  private static final Pattern dateRegex =
+      Pattern.compile("\\d?\\d([/-])\\d?\\d\\1\\d{2}(\\d{2})?");
+
   /** Returns the text and categorization of the image at the requested URL. */
   public static AnalysisResults analyzeImageAt(URL url)
       throws IOException, ReceiptAnalysisException {
@@ -107,22 +122,26 @@ public class ReceiptAnalysis {
   /** Analyzes the image represented by the given ByteString. */
   private static AnalysisResults analyzeImage(ByteString imageBytes)
       throws IOException, ReceiptAnalysisException {
-    String rawText = retrieveText(imageBytes);
-    ImmutableSet<String> categories = categorizeText(rawText);
-    AnalysisResults results = new AnalysisResults(rawText, categories);
+    AnalysisResults.Builder analysisBuilder = retrieveText(imageBytes);
+    ImmutableSet<String> categories = categorizeText(analysisBuilder.getRawText());
 
-    return results;
+    Stream<String> tokens = getTokensFromRawText(analysisBuilder.getRawText());
+    checkForParsableDate(analysisBuilder, tokens);
+
+    return analysisBuilder.setCategories(categories).build();
   }
 
-  /** Detects and retrieves text in the provided image. */
-  private static String retrieveText(ByteString imageBytes)
+  /** Detects and retrieves text and store logo in the provided image. */
+  private static AnalysisResults.Builder retrieveText(ByteString imageBytes)
       throws IOException, ReceiptAnalysisException {
-    String rawText = "";
+    AnalysisResults.Builder analysisBuilder;
 
     Image image = Image.newBuilder().setContent(imageBytes).build();
-    Feature feature = Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build();
+    ImmutableList<Feature> features =
+        ImmutableList.of(Feature.newBuilder().setType(Feature.Type.TEXT_DETECTION).build(),
+            Feature.newBuilder().setType(Feature.Type.LOGO_DETECTION).build());
     AnnotateImageRequest request =
-        AnnotateImageRequest.newBuilder().addFeatures(feature).setImage(image).build();
+        AnnotateImageRequest.newBuilder().addAllFeatures(features).setImage(image).build();
     ImmutableList<AnnotateImageRequest> requests = ImmutableList.of(request);
 
     try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
@@ -137,19 +156,29 @@ public class ReceiptAnalysis {
       if (response.hasError()) {
         throw new ReceiptAnalysisException("Received image annotation response with error.");
       } else if (response.getTextAnnotationsList().isEmpty()) {
+        // TODO: Handle case with no raw text by depending on user-assigned categories.
         throw new ReceiptAnalysisException(
             "Received image annotation response without text annotations.");
       }
 
-      // First element has the entire raw text from the image
-      EntityAnnotation annotation = response.getTextAnnotationsList().get(0);
+      // First element has the entire raw text from the image.
+      EntityAnnotation textAnnotation = response.getTextAnnotationsList().get(0);
 
-      rawText = annotation.getDescription();
+      String rawText = textAnnotation.getDescription();
+      analysisBuilder = new AnalysisResults.Builder(rawText);
+
+      // If a logo was detected with a confidence above the threshold, use it to set the store.
+      if (!response.getLogoAnnotationsList().isEmpty()
+          && response.getLogoAnnotationsList().get(0).getScore()
+              > LOGO_DETECTION_CONFIDENCE_THRESHOLD) {
+        String store = response.getLogoAnnotationsList().get(0).getDescription();
+        analysisBuilder.setStore(store);
+      }
     } catch (ApiException e) {
       throw new ReceiptAnalysisException("Image annotation request failed.", e);
     }
 
-    return rawText;
+    return analysisBuilder;
   }
 
   /** Generates categories for the provided text. */
@@ -174,12 +203,87 @@ public class ReceiptAnalysis {
     return categories;
   }
 
-  /*
+  /**
    * Parse category strings into more natural categories
    * e.g. "/Food & Drink/Restaurants" becomes "Food", "Drink", and "Restaurants"
    */
   private static Stream<String> parseCategory(ClassificationCategory category) {
     return Stream.of(category.getName().substring(1).split("/| & "));
+  }
+
+  /**
+   * Checks the provided tokens for a date that can be parsed. If one is found, it is added to the
+   * builder as a timestamp.
+   */
+  private static void checkForParsableDate(
+      AnalysisResults.Builder analysisBuilder, Stream<String> tokens) {
+    Stream<String> dates = tokens.filter(ReceiptAnalysis::isDate);
+    // Assume that the first date on the receipt is the transaction date.
+    Optional<String> firstDate = dates.findFirst();
+
+    firstDate.ifPresent(date -> ReceiptAnalysis.addDateIfValid(analysisBuilder, date));
+  }
+
+  /**
+   * Adds a valid date to the builder as a timestamp. If the date has an invalid month or day, then
+   * nothing is added.
+   */
+  private static void addDateIfValid(AnalysisResults.Builder analysisBuilder, String date) {
+    String separator = date.contains("-") ? "-" : "/";
+    String formatterPattern = "M" + separator + "d" + separator;
+
+    // Determine if the date has 2 or 4 digits for the year
+    if (date.lastIndexOf(separator) + 3 == date.length()) {
+      formatterPattern += "yy";
+    } else {
+      formatterPattern += "yyyy";
+    }
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatterPattern);
+
+    try {
+      ZonedDateTime dateAndTime = LocalDate.parse(date, formatter).atStartOfDay(ZoneOffset.UTC);
+      dateAndTime = fixYearIfInFuture(dateAndTime);
+
+      long timestamp = dateAndTime.toInstant().toEpochMilli();
+      analysisBuilder.setTimestamp(timestamp);
+    } catch (DateTimeParseException e) {
+      // Invalid month or day
+      return;
+    }
+  }
+
+  /**
+   * DateTimeFormatter assumes that two-digit years are in the 2000s. This method checks if the
+   * given date is after the current date and if so, subtracts 100 years to move it to the 1900s.
+   */
+  private static ZonedDateTime fixYearIfInFuture(ZonedDateTime dateAndTime) {
+    if (dateAndTime.isAfter(ZonedDateTime.now())) {
+      return dateAndTime.minusYears(100);
+    }
+    return dateAndTime;
+  }
+
+  /**
+   * Splits a string into a stream of strings, and filters out any that don't have at least one
+   * digit.
+   */
+  private static Stream<String> getTokensFromRawText(String rawText) {
+    return Stream.of(rawText.split("\\s")).filter(ReceiptAnalysis::hasDigit);
+  }
+
+  /**
+   * Checks if the token contains at least one digit.
+   */
+  private static boolean hasDigit(String token) {
+    return digitRegex.matcher(token).matches();
+  }
+
+  /**
+   * Checks if the token is formatted as a date.
+   */
+  private static boolean isDate(String token) {
+    return dateRegex.matcher(token).matches();
   }
 
   public static class ReceiptAnalysisException extends Exception {

@@ -27,15 +27,7 @@ input {
 
 #submit-receipt {
   display: block;
-  margin: auto;
-}
-
-#price-input {
-  width: 7em;
-}
-
-#date-input {
-  width: 12em;
+  margin: 45px auto 5px;
 }
 
 .custom-file {
@@ -58,6 +50,29 @@ small {
   font-size: 12px;
 }
 
+.loading-bar {
+  margin: 0 calc(50% - 70px);
+}
+
+.loading-bar rect {
+  height: 150px;
+  width: 150px;
+}
+
+.loading-bar svg {
+  overflow: inherit;
+}
+
+#loading {
+  height: 150px;
+  margin: 20px 0;
+}
+
+.hidden,
+.loading-bar-label {
+  display: none;
+}
+
 @media screen and (min-width: 480px) {
   h1 {
     font-size: 50px;
@@ -78,16 +93,6 @@ small {
   #upload-form {
     margin: 0 5%;
     padding: 1.5%;
-  }
-
-  #categories-input {
-    font-size: 20px;
-    width: 20em;
-  }
-
-  #date-input,
-  #price-input {
-    font-size: 20px;
   }
 
   .custom-file {

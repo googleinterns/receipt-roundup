@@ -21,6 +21,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.sps.servlets.SpendingAnalyticsServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -37,9 +38,15 @@ import org.mockito.MockitoAnnotations;
 
 public final class SpendingAnalyticsServletTest {
   private static final HashMap<String, Double> EXPECTED_STORE_ANALYTICS = new HashMap(
-      ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "main street restaurant", 29.01));
+      ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "target", 29.01));
   private static final HashMap<String, Double> EXPECTED_CATEGORY_ANALYTICS = new HashMap(
       ImmutableMap.of("candy", 26.12, "drink", 26.12, "cappuccino", 14.51, "food", 43.52));
+
+  // Test Receipt fields.
+  private static final String USER_ID = "1";
+  private static final long TIMESTAMP = 6292020;
+  private static final String IMAGE_URL = "img/walmart-receipt.jpg";
+  private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
 
   // Local Datastore
   private final LocalServiceTestHelper helper =
@@ -74,8 +81,14 @@ public final class SpendingAnalyticsServletTest {
   @Test
   public void doGetWithReceiptsInDatastore() throws IOException {
     // Receipts in datastore:
-    // Walmart: $26.12, Contoso: $14.51, Main Street Restaurant: $29.01
-    TestUtils.addTestReceipts(datastore);
+    // Walmart: $26.12, Contoso: $14.51, Target: $29.01
+
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
+        /* price = */ 26.12, /* store = */ "walmart", /* categories = */ ImmutableSet.of("candy", "drink"), RAW_TEXT);
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
+        /* price = */ 14.51, /* store = */ "contoso", /* categories = */ ImmutableSet.of("cappuccino", "food"), RAW_TEXT);
+    TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
+        /* price = */ 29.01, /* store = */ "target", /* categories = */ ImmutableSet.of("food"), RAW_TEXT);
 
     servlet.doGet(request, response);
     writer.flush();
