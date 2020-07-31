@@ -125,7 +125,8 @@ async function updateReceipt(event) {
   document.body.style.cursor = 'wait';
   const saveButton = document.getElementById('submit-receipt');
   const homeButton = document.getElementById('return-home');
-  saveButton.disabled = homeButton.disabled = true;
+  saveButton.disabled = true;
+  homeButton.disabled = true;
 
   const receipt = getReceiptFromForm();
   const editRequest = new URLSearchParams();
@@ -146,7 +147,8 @@ async function updateReceipt(event) {
     const error = await response.text();
     document.body.style.cursor = 'default';
     alert(error);
-    saveButton.disabled = homeButton.disabled = false;
+    saveButton.disabled = false;
+    homeButton.disabled = false;
     return;
   }
 
