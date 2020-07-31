@@ -144,9 +144,10 @@ public final class SpendingAnalyticsServletTest {
         /* categories = */ ImmutableSet.of("candy", "drink"), RAW_TEXT);
 
     // Set userId to one that doesn't have any receipts under it.
-    helper.setEnvAttributes(new HashMap(
-        ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", "wrongUserId")));
-    helper.setUp();
+    helper
+        .setEnvAttributes(new HashMap(ImmutableMap.of(
+            "com.google.appengine.api.users.UserService.user_id_key", "wrongUserId")))
+        .setUp();
 
     servlet.doGet(request, response);
     writer.flush();
