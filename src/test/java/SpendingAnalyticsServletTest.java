@@ -37,8 +37,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public final class SpendingAnalyticsServletTest {
-  private static final HashMap<String, Double> EXPECTED_STORE_ANALYTICS = new HashMap(
-      ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "target", 29.01));
+  private static final HashMap<String, Double> EXPECTED_STORE_ANALYTICS =
+      new HashMap(ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "target", 29.01));
   private static final HashMap<String, Double> EXPECTED_CATEGORY_ANALYTICS = new HashMap(
       ImmutableMap.of("candy", 26.12, "drink", 26.12, "cappuccino", 14.51, "food", 43.52));
 
@@ -84,11 +84,14 @@ public final class SpendingAnalyticsServletTest {
     // Walmart: $26.12, Contoso: $14.51, Target: $29.01
 
     TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
-        /* price = */ 26.12, /* store = */ "walmart", /* categories = */ ImmutableSet.of("candy", "drink"), RAW_TEXT);
+        /* price = */ 26.12, /* store = */ "walmart",
+        /* categories = */ ImmutableSet.of("candy", "drink"), RAW_TEXT);
     TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
-        /* price = */ 14.51, /* store = */ "contoso", /* categories = */ ImmutableSet.of("cappuccino", "food"), RAW_TEXT);
+        /* price = */ 14.51, /* store = */ "contoso",
+        /* categories = */ ImmutableSet.of("cappuccino", "food"), RAW_TEXT);
     TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
-        /* price = */ 29.01, /* store = */ "target", /* categories = */ ImmutableSet.of("food"), RAW_TEXT);
+        /* price = */ 29.01, /* store = */ "target", /* categories = */ ImmutableSet.of("food"),
+        RAW_TEXT);
 
     servlet.doGet(request, response);
     writer.flush();

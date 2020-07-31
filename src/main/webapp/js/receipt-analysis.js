@@ -123,17 +123,34 @@ async function updateReceipt(event) {
   event.preventDefault();
 
   const receipt = getReceiptFromForm();
-  const formData = new FormData();
+  const editRequest = new URLSearchParams();
 
-  formData.append('date', receipt.date);
-  formData.append('store', receipt.store);
-  formData.append('price', receipt.price);
+  editRequest.append('id', receipt.id);
+  editRequest.append('date', receipt.date);
+  editRequest.append('store', receipt.store);
+  editRequest.append('price', receipt.price);
 
   createCategoryList(receipt.categories).forEach((category) => {
-    formData.append('categories', category);
+    editRequest.append('categories', category);
   });
 
-  // TODO: Send request to servlet.
+  const response =
+      await fetch(`/edit-receipt?${editRequest.toString()}`, {method: 'POST'});
+
+  if (response.status !== 200) {
+    const error = await response.text();
+    alert(error);
+    return;
+  }
+
+  const json = await response.json();
+  const params = setUrlParameters(json);
+
+  // Remove warning for unsaved changes.
+  window.onbeforeunload = null;
+
+  // Update query string with edited fields.
+  window.location.replace(`/receipt-analysis.html?${params.toString()}`);
 }
 
 /**
@@ -141,19 +158,39 @@ async function updateReceipt(event) {
  * @return {object} The extracted receipt.
  */
 function getReceiptFromForm() {
-  // TODO: Get receipt ID from URL.
+  const id = new URLSearchParams(location.search).get('id');
   const date = document.getElementById('date-input').valueAsNumber;
   const store = document.getElementById('store-input').value;
   const price =
       convertStringToNumber(document.getElementById('price-input').value);
   const categories = document.getElementById('categories-input').value;
 
-  return {date, store, price, categories};
+  return {id, date, store, price, categories};
 }
 
 /** Converts the comma-separated categories string into a list of categories. */
 function createCategoryList(categories) {
   return categories.split(',').map((category) => category.trim());
+}
+
+/**
+ * Creates URL parameters using the properties of the receipt in the given JSON
+ * response.
+ * @param {object} json The JSON response from the edit servlet.
+ * @return {URLSearchParams} The updated URL parameters containing the edited
+ *     fields.
+ */
+function setUrlParameters(json) {
+  const receipt = json.propertyMap;
+  const params = new URLSearchParams();
+
+  params.append('id', json.key.id);
+  params.append('image-url', receipt.imageUrl.value);
+  params.append('categories', receipt.categories);
+  params.append('price', receipt.price);
+  params.append('store', receipt.store);
+  params.append('timestamp', receipt.timestamp);
+  return params;
 }
 
 /**
