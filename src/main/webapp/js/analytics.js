@@ -16,36 +16,64 @@
 
 /** Sets callbacks for Google Charts instance. */
 google.charts.load('current', {'packages': ['corechart']});
-google.charts.setOnLoadCallback(computeStoreChartsAnalytics);
+google.charts.setOnLoadCallback(computeChartAnalytics);
 
 let storeData;
+let categoryData;
 
-/** Computes and populates DataTable with analytics for stores chart. */
-async function computeStoreChartsAnalytics() {
+/** Computes and populates DataTable with analytics for both charts. */
+async function computeChartAnalytics() {
   const response = await fetch('/compute-analytics');
   const analytics = await response.json();
 
+  handleStoreChart(analytics);
+  handleCategoryChart(analytics);
+}
+
+/**
+ * Populates DataTable with store data and passes that to draw method.
+ * @param {Array} analytics First entry is store data, second is category.
+ */
+function handleStoreChart(analytics) {
   storeData = new google.visualization.DataTable();
 
   storeData.addColumn('string', 'Store');
   storeData.addColumn('number', 'Total');
 
-  for (const [store, total] of Object.entries(analytics)) {
+  for (const [store, total] of Object.entries(analytics.storeAnalytics)) {
     storeData.addRow([capitalizeFirstLetters(store), total]);
   }
 
-  drawStoresChart(storeData);
+  drawStoreChart(storeData);
 }
 
 /**
- * Intializes and draws stores chart onto DOM.
+ * Populates DataTable with category data and passes that to draw method.
+ * @param {JSON} analytics
+ */
+function handleCategoryChart(analytics) {
+  categoryData = new google.visualization.DataTable();
+
+  categoryData.addColumn('string', 'Category');
+  categoryData.addColumn('number', 'Total');
+
+  for (const [category, total] of Object.entries(analytics.categoryAnalytics)) {
+    categoryData.addRow([capitalizeFirstLetters(category), total]);
+  }
+
+  drawCategoryChart(categoryData);
+}
+
+/**
+ * Intializes and draws store chart onto DOM.
  * @param {DataTable} data Table with stores and their totals.
  */
-function drawStoresChart(data) {
+function drawStoreChart(data) {
+  // Get parent div dimensions to make chart fit the appropriate space.
   const chartWidth =
-      document.getElementById('stores-chart').getBoundingClientRect().width;
+      document.getElementById('store-chart').getBoundingClientRect().width;
   const chartHeight =
-      document.getElementById('stores-chart').getBoundingClientRect().height;
+      document.getElementById('store-chart').getBoundingClientRect().height;
 
   const options = {
     title: 'Spending habits by store',
@@ -53,14 +81,49 @@ function drawStoresChart(data) {
     width: chartWidth,
     legend: {alignment: 'center'},
     chartArea: {width: chartWidth, height: chartHeight * 0.6},
+    sliceVisibilityThreshold: .03,
   };
 
-  const chart = new google.visualization.PieChart(
-      document.getElementById('stores-chart'));
+  data.sort({column: 1, desc: true});
+  const chart =
+      new google.visualization.PieChart(document.getElementById('store-chart'));
+  chart.draw(data, options);
+}
+
+/**
+ * Intializes and draws category chart onto DOM.
+ * @param {DataTable} data Table with categories and their totals.
+ */
+function drawCategoryChart(data) {
+  // Get parent div dimensions to make chart fit the appropriate space.
+  const chartWidth =
+      document.getElementById('category-chart').getBoundingClientRect().width;
+
+  const options = {
+    title: 'Spending habits by category (top 10)',
+    vAxis: {title: 'Total ($)'},
+    legend: {position: 'none'},
+    width: chartWidth,
+    hAxis: {
+      title: 'Category',
+      showTextEvery: 1,
+      slantedText: true,
+      slantedTextAngle: 60,
+      viewWindow: {max: 10},
+    },
+    chartArea: {width: chartWidth * 0.75},
+  };
+
+  // Sort by price so we can easily find the top 10 categories.
+  data.sort({column: 1, desc: true});
+
+  const chart = new google.visualization.ColumnChart(
+      document.getElementById('category-chart'));
   chart.draw(data, options);
 }
 
 /** Handles sizing of chart to be responsive on different screen sizes. */
 $(window).resize(function() {
-  drawStoresChart(storeData);
+  drawStoreChart(storeData);
+  drawCategoryChart(categoryData);
 });

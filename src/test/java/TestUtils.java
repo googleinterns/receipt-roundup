@@ -19,7 +19,11 @@ import static org.mockito.Mockito.when;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.common.collect.ImmutableSet;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
+import org.json.JSONObject;
 
 /** Class that contains helpful methods used for testing. */
 public final class TestUtils {
@@ -44,16 +48,16 @@ public final class TestUtils {
     ImmutableSet<Entity> entities =
         ImmutableSet.of(createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L,
                             "img/walmart-receipt.jpg", 26.12, "walmart",
-                            ImmutableSet.of("candy", "drink", "personal"), ""),
+                            ImmutableSet.of("candy", "drink"), ""),
 
             createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L,
                 "img/contoso-receipt.jpg", 14.51, "contoso",
-                ImmutableSet.of("cappuccino", "sandwich", "lunch"), ""),
+                ImmutableSet.of("cappuccino", "food"), ""),
 
             createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L,
                 "img/restaurant-receipt.jpeg", 29.01, "main street restaurant",
-                ImmutableSet.of("food", "meal", "lunch"), ""));
-
+                ImmutableSet.of("food"), ""));
+    
     entities.stream().forEach(entity -> datastore.put(entity));
 
     return entities;
@@ -68,7 +72,11 @@ public final class TestUtils {
     receiptEntity.setProperty("imageUrl", imageUrl);
     receiptEntity.setProperty("price", price);
     receiptEntity.setProperty("store", store);
-    receiptEntity.setProperty("categories", categories);
+    if (categories == null) {
+      receiptEntity.setProperty("categories", null);
+    } else {
+      receiptEntity.setProperty("categories", new ArrayList(categories));
+    }
     receiptEntity.setProperty("rawText", rawText);
 
     return receiptEntity;
@@ -88,7 +96,23 @@ public final class TestUtils {
   }
 
   /**
-   * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
+   * Parses a json string containing analytics into a hashmap.
+   * @param analyticsType The analytics type we want to parse, either store or categories.
+   */
+  public static HashMap<String, Double> parseAnalytics(String json, String analyticsType)
+      throws IOException {
+    JSONObject analyticsObject = new JSONObject(json).getJSONObject(analyticsType);
+
+    HashMap<String, Double> analytics = new HashMap<>();
+
+    // Key will either be a store or category, depending on analyticsType.
+    for (String key : analyticsObject.keySet()) {
+      analytics.put(key, analyticsObject.getDouble(key));
+    }
+
+    return analytics;
+}
+  /* * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
    * properties.
    */
   public static String extractProperties(String json) {

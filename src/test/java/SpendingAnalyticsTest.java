@@ -14,12 +14,13 @@
 
 package com.google.sps;
 
-import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.common.collect.ImmutableSet;
 import com.google.sps.data.SpendingAnalytics;
+import java.lang.Character;
+import java.util.HashMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,9 +36,13 @@ public final class SpendingAnalyticsTest {
   private static final String USER_ID = "1";
   private static final long TIMESTAMP = 6292020;
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";
+  private static final String STORE = "walmart";
   private static final ImmutableSet<String> CATEGORIES =
       ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
   private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
+  private static final double WALMART_PRICE = 26.12;
+  private static final double CONTOSO_PRICE = 14.51;
+  private static final double TARGET_PRICE = 29.01;
 
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
@@ -60,18 +65,19 @@ public final class SpendingAnalyticsTest {
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
+                /* price = */ CONTOSO_PRICE, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 29.01, /* store = */ "target", CATEGORIES, RAW_TEXT))
+                /* price = */ TARGET_PRICE, /* store = */ "target", CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+    HashMap<String, Double> storeAnalytics = analytics.getStoreAnalytics();
 
-    Assert.assertEquals(26.12, analytics.getStoreAnalytics().get("walmart"), ERROR_THRESHOLD);
-    Assert.assertEquals(14.51, analytics.getStoreAnalytics().get("contoso"), ERROR_THRESHOLD);
-    Assert.assertEquals(29.01, analytics.getStoreAnalytics().get("target"), ERROR_THRESHOLD);
+    Assert.assertEquals(WALMART_PRICE, storeAnalytics.get("walmart"), ERROR_THRESHOLD);
+    Assert.assertEquals(CONTOSO_PRICE, storeAnalytics.get("contoso"), ERROR_THRESHOLD);
+    Assert.assertEquals(TARGET_PRICE, storeAnalytics.get("target"), ERROR_THRESHOLD);
   }
 
   @Test
@@ -82,20 +88,22 @@ public final class SpendingAnalyticsTest {
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
+                /* price = */ CONTOSO_PRICE, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+    HashMap<String, Double> storeAnalytics = analytics.getStoreAnalytics();
 
     // Check for no duplicates (2 stores rather than 3).
-    Assert.assertEquals(2, analytics.getStoreAnalytics().size());
+    Assert.assertEquals(2, storeAnalytics.size());
 
-    Assert.assertEquals(52.24, analytics.getStoreAnalytics().get("walmart"), ERROR_THRESHOLD);
-    Assert.assertEquals(14.51, analytics.getStoreAnalytics().get("contoso"), ERROR_THRESHOLD);
+    // Walmart price should be doubled.
+    Assert.assertEquals(WALMART_PRICE * 2, storeAnalytics.get("walmart"), ERROR_THRESHOLD);
+    Assert.assertEquals(CONTOSO_PRICE, storeAnalytics.get("contoso"), ERROR_THRESHOLD);
   }
 
   @Test
@@ -106,16 +114,17 @@ public final class SpendingAnalyticsTest {
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 5.13, /* store = */ null, CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+    HashMap<String, Double> storeAnalytics = analytics.getStoreAnalytics();
 
     // Check that only one store is returned and it's the expected one.
-    Assert.assertEquals(1, analytics.getStoreAnalytics().size());
-    Assert.assertTrue(analytics.getStoreAnalytics().containsKey("walmart"));
+    Assert.assertEquals(1, storeAnalytics.size());
+    Assert.assertTrue(storeAnalytics.containsKey("walmart"));
   }
 
   @Test
@@ -126,16 +135,17 @@ public final class SpendingAnalyticsTest {
     ImmutableSet<Entity> receipts =
         new ImmutableSet.Builder<Entity>()
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ 5.13, /* store = */ "", CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+    HashMap<String, Double> storeAnalytics = analytics.getStoreAnalytics();
 
     // Check that only one store is returned and it's the expected one.
-    Assert.assertEquals(1, analytics.getStoreAnalytics().size());
-    Assert.assertTrue(analytics.getStoreAnalytics().containsKey("walmart"));
+    Assert.assertEquals(1, storeAnalytics.size());
+    Assert.assertTrue(storeAnalytics.containsKey("walmart"));
   }
 
   @Test
@@ -148,7 +158,7 @@ public final class SpendingAnalyticsTest {
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ null, /* store = */ "contoso", CATEGORIES, RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
+                /* price = */ WALMART_PRICE, /* store = */ "walmart", CATEGORIES, RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
@@ -156,5 +166,99 @@ public final class SpendingAnalyticsTest {
     // Check that only one store is returned and it's the expected one.
     Assert.assertEquals(1, analytics.getStoreAnalytics().size());
     Assert.assertTrue(analytics.getStoreAnalytics().containsKey("walmart"));
+  }
+
+  @Test
+  public void categoryAnalyticsWithUniqueCategoryNames() {
+    // Receipts categories:
+    // candy: $26.12, drink: $26.12, cappuccino: $14.51, food: $14.51
+    double storeOneTotal = 26.12;
+    double storeTwoTotal = 14.51;
+
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
+                /* price = */ storeOneTotal, STORE, ImmutableSet.of("candy", "drink"), RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
+                /* price = */ storeTwoTotal, STORE, ImmutableSet.of("cappuccino", "food"), RAW_TEXT))
+            .build();
+
+    SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+    HashMap<String, Double> categoryAnalytics = analytics.getCategoryAnalytics();
+
+    Assert.assertEquals(storeOneTotal, categoryAnalytics.get("candy"), ERROR_THRESHOLD);
+    Assert.assertEquals(storeOneTotal, categoryAnalytics.get("drink"), ERROR_THRESHOLD);
+    Assert.assertEquals(storeTwoTotal, categoryAnalytics.get("cappuccino"), ERROR_THRESHOLD);
+    Assert.assertEquals(storeTwoTotal, categoryAnalytics.get("food"), ERROR_THRESHOLD);
+  }
+
+  @Test
+  public void categoryAnalyticsWithDuplicateCategoryNames() {
+    // Receipts categories:
+    // candy: $26.12, drink: $26.12, candy: $14.51, food: $14.51
+    double storeOneTotal = 26.12;
+    double storeTwoTotal = 14.51;
+
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
+                /* price = */ storeOneTotal, STORE, ImmutableSet.of("candy", "drink"), RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
+                /* price = */ storeTwoTotal, STORE, ImmutableSet.of("candy", "food"), RAW_TEXT))
+            .build();
+
+    SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+    HashMap<String, Double> categoryAnalytics = analytics.getCategoryAnalytics();
+
+    // Check for no duplicates (3 categories rather than 4).
+    Assert.assertEquals(3, categoryAnalytics.size());
+
+    // Both "Candy" totals should be combined.
+    Assert.assertEquals(
+        storeOneTotal + storeTwoTotal, categoryAnalytics.get("candy"), ERROR_THRESHOLD);
+    Assert.assertEquals(storeOneTotal, categoryAnalytics.get("drink"), ERROR_THRESHOLD);
+    Assert.assertEquals(storeTwoTotal, categoryAnalytics.get("food"), ERROR_THRESHOLD);
+  }
+
+  @Test
+  public void nullCategoryNotIncludedInAnalytics() {
+    // null category should be ignored:
+    // candy: $26.12, null: $26.12
+
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
+                /* price = */ 26.12, STORE, ImmutableSet.of("candy"), RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
+                /* price = */ 26.12, STORE, /* categories = */ null, RAW_TEXT))
+            .build();
+
+    SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+    HashMap<String, Double> categoryAnalytics = analytics.getCategoryAnalytics();
+
+    // Check that only one category is returned and it's the expected one.
+    Assert.assertEquals(1, categoryAnalytics.size());
+    Assert.assertTrue(categoryAnalytics.containsKey("candy"));
+  }
+
+  @Test
+  public void categoryWithNullPriceNotIncludedInAnalytics() {
+    // Category with null price should be ignored:
+    // drink: null, candy: $26.12
+
+    ImmutableSet<Entity> receipts =
+        new ImmutableSet.Builder<Entity>()
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
+                /* price = */ null, STORE, ImmutableSet.of("drink"), RAW_TEXT))
+            .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
+                /* price = */ 26.12, STORE, ImmutableSet.of("candy"), RAW_TEXT))
+            .build();
+
+    SpendingAnalytics analytics = new SpendingAnalytics(receipts);
+    HashMap<String, Double> categoryAnalytics = analytics.getCategoryAnalytics();
+
+    // Check that only one category is returned and it's the expected one.
+    Assert.assertEquals(1, categoryAnalytics.size());
+    Assert.assertTrue(categoryAnalytics.containsKey("candy"));
   }
 }
