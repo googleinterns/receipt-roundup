@@ -18,9 +18,12 @@ import static org.mockito.Mockito.when;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.sps.data.Receipt;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
@@ -43,22 +46,38 @@ public final class TestUtils {
     return receiptEntity;
   }
 
-  /** Adds multiple receipts to datastore. */
+  /** Add 3 receipts to datastore. */
   public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
     ImmutableSet<Entity> entities = ImmutableSet.of(
-        createEntity(/* userId = */ "123", /* timestamp = */ 1045237591000L,
+        createEntity(/* userId = */ "testID", /* timestamp = */ 1045237591000L,
             "img/walmart-receipt.jpg", 26.12, "walmart", ImmutableSet.of("candy", "drink"), ""),
 
-        createEntity(/* userId = */ "123", /* timestamp = */ 1560193140000L,
+        createEntity(/* userId = */ "testID", /* timestamp = */ 1560193140000L,
             "img/contoso-receipt.jpg", 14.51, "contoso", ImmutableSet.of("cappuccino", "food"), ""),
 
-        createEntity(/* userId = */ "123", /* timestamp = */ 1491582960000L,
+        createEntity(/* userId = */ "testID", /* timestamp = */ 1491582960000L,
             "img/restaurant-receipt.jpeg", 29.01, "main street restaurant", ImmutableSet.of("food"),
             ""));
 
     entities.stream().forEach(entity -> datastore.put(entity));
 
     return entities;
+  }
+
+  /** Adds 12 receipts to datastore. */
+  public static ImmutableSet<Entity> addManyTestReceipts(DatastoreService datastore) {
+    ImmutableSet.Builder<Entity> entities = new ImmutableSet.Builder<Entity>();
+
+    for (int i = 0; i < 12; i++) {
+      entities.add(createEntity(/* userId = */ "testID",
+          /* timestamp = */ 1045237591000L, "img/walmart-receipt.jpg", 26.12, "walmart",
+          ImmutableSet.of("candy", "drink"), ""));
+    }
+
+    ImmutableSet<Entity> receipts = entities.build();
+    receipts.stream().forEach(entity -> datastore.put(entity));
+
+    return receipts;
   }
 
   /** Creates and returns a single Receipt entity. */
@@ -84,7 +103,8 @@ public final class TestUtils {
   public static void setSearchServletRequestParameters(HttpServletRequest request,
       String timeZoneId, String categories, String dateRange, String store, String minPrice,
       String maxPrice) {
-    when(request.getParameter("isNewLoad")).thenReturn("false");
+    when(request.getParameter("isPageLoad")).thenReturn("false");
+    when(request.getParameter("isNewSearch")).thenReturn("true");
     when(request.getParameter("timeZoneId")).thenReturn(timeZoneId);
     when(request.getParameter("category")).thenReturn(categories);
     when(request.getParameter("dateRange")).thenReturn(dateRange);
@@ -110,10 +130,26 @@ public final class TestUtils {
 
     return analytics;
   }
-  /* * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
+
+  /**
+   * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
    * properties.
    */
   public static String extractProperties(String json) {
     return json.substring(json.indexOf("propertyMap"));
+  }
+
+  /**
+   * Checks receipt ids in the returned page all match the ids in the expected page.
+   * @return true if all expectedPage receipt ids found in returnedPage, else false.
+   */
+  public static boolean checkIdsMatch(ImmutableList<Entity> expectedPage, Receipt[] returnedPage) {
+    for (Entity expectedEntity : expectedPage) {
+      if (!Arrays.stream(returnedPage)
+               .anyMatch(receipt -> receipt.getId() == expectedEntity.getKey().getId())) {
+        return false;
+      }
+    }
+    return true;
   }
 }

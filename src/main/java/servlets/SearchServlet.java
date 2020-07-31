@@ -14,13 +14,16 @@
 
 package com.google.sps.servlets;
 
-import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.datastore.QueryResultList;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -33,6 +36,7 @@ import com.google.sps.data.Receipt;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +45,8 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet that searches and returns matching receipts from datastore. */
 @WebServlet("/search-receipts")
 public class SearchServlet extends HttpServlet {
+  private static final int RECEIPTS_PER_PAGE = 10;
+
   /** Messages that show up on client-side banner on thrown exception. */
   private static final String NULL_EXCEPTION_MESSAGE =
       "Null Field: Receipt unable to be queried at this time, please try again.";
@@ -52,16 +58,18 @@ public class SearchServlet extends HttpServlet {
       "No Authentication: User must be logged in to search receipts.";
 
   private final DatastoreService datastore;
-  private final UserService userService;
+  private final UserService userService = UserServiceFactory.getUserService();
+
+  private static Cursor cursor;
+  private static PreparedQuery preparedQuery;
+  private static QueryInformation queryInformation;
 
   public SearchServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
-    userService = UserServiceFactory.getUserService();
   }
 
   public SearchServlet(DatastoreService datastore) {
     this.datastore = datastore;
-    userService = UserServiceFactory.getUserService();
   }
 
   @Override
@@ -72,14 +80,18 @@ public class SearchServlet extends HttpServlet {
       return;
     }
 
-    QueryInformation queryInformation;
-    ImmutableList<Receipt> receipts;
+    ImmutableList<Receipt> receipts = null;
 
-    if (Boolean.parseBoolean(request.getParameter("isNewLoad"))) {
-      receipts = getAllReceipts();
-    } else {
+    if (!checkParameter(request, "isNewSearch") && checkParameter(request, "getNextPage")) {
+      receipts = getNextPageOfReceipts();
+    } else if (!checkParameter(request, "isNewSearch")
+        && checkParameter(request, "getPreviousPage")) {
+      receipts = getPreviousPageOfReceipts();
+    } else if (checkParameter(request, "isPageLoad")) {
+      receipts = getMatchingReceipts(true);
+    } else if (!checkParameter(request, "isPageLoad") && checkParameter(request, "isNewSearch")) {
       try {
-        queryInformation = createQueryInformation(request, response);
+        createQueryInformation(request, response);
       } catch (NullPointerException exception) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         response.getWriter().println(NULL_EXCEPTION_MESSAGE);
@@ -94,7 +106,7 @@ public class SearchServlet extends HttpServlet {
         return;
       }
 
-      receipts = getMatchingReceipts(queryInformation);
+      receipts = getMatchingReceipts(false);
     }
 
     Gson gson = new Gson();
@@ -102,9 +114,17 @@ public class SearchServlet extends HttpServlet {
     response.getWriter().println(gson.toJson(receipts));
   }
 
+  /**
+   * Check if the passed in parameter was true or false.
+   * @param parameter A string representation of a boolean: "true" or "false".
+   * @return the input string parsed to a boolean.
+   */
+  private Boolean checkParameter(HttpServletRequest request, String parameter) {
+    return Boolean.parseBoolean(request.getParameter(parameter));
+  }
+
   /** Creates a {@link QueryInformation} based on request parameters. */
-  private QueryInformation createQueryInformation(
-      HttpServletRequest request, HttpServletResponse response)
+  private void createQueryInformation(HttpServletRequest request, HttpServletResponse response)
       throws IOException, NullPointerException, NumberFormatException, ParseException {
     String timeZoneId = request.getParameter("timeZoneId");
     String category = request.getParameter("category");
@@ -113,59 +133,80 @@ public class SearchServlet extends HttpServlet {
     String minPrice = request.getParameter("min");
     String maxPrice = request.getParameter("max");
 
-    QueryInformation queryInformation =
+    queryInformation =
         new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
+  }
 
-    return queryInformation;
+  /** Returns ImmutableList of next receipts page from an existing query. */
+  private ImmutableList<Receipt> getNextPageOfReceipts() {
+    QueryResultList<Entity> results = preparedQuery.asQueryResultList(
+        FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE).startCursor(cursor));
+
+    cursor = results.getCursor();
+
+    return entitiesListToReceiptsList(results);
+  }
+
+  /** Returns ImmutableList of previous receipts page from an existing query. */
+  private ImmutableList<Receipt> getPreviousPageOfReceipts() {
+    QueryResultList<Entity> results = preparedQuery.asQueryResultList(
+        FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE).endCursor(cursor));
+
+    cursor = results.getCursor();
+
+    return entitiesListToReceiptsList(results);
   }
 
   /** Returns ImmutableList of receipts from datastore matching queryInformation fields. */
-  private ImmutableList<Receipt> getMatchingReceipts(QueryInformation queryInformation) {
-    Query query = setupQuery(queryInformation);
+  private ImmutableList<Receipt> getMatchingReceipts(boolean isPageLoad) {
+    Query query = new Query("Receipt")
+                      .addSort("timestamp", SortDirection.DESCENDING)
+                      .addSort("__key__", SortDirection.DESCENDING);
+    query.addFilter("userId", Query.FilterOperator.EQUAL, userService.getCurrentUser().getUserId());
 
-    /**
-     * Datastore doesn't support queries with multiple inequality filters
-     * (i.e price and timestamp) so price filtering is manually done here.
-     */
-    return datastore.prepare(query)
-        .asList(FetchOptions.Builder.withDefaults())
-        .stream()
-        .map(this::createReceiptFromEntity)
-        .filter(receipt
-            -> receipt.getPrice() >= queryInformation.getMinPrice()
-                && receipt.getPrice() <= queryInformation.getMaxPrice())
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  /** Returns ImmutableList of all receipts from datastore. */
-  private ImmutableList<Receipt> getAllReceipts() {
-    Query query = new Query("Receipt");
-
-    return datastore.prepare(query)
-        .asList(FetchOptions.Builder.withDefaults())
-        .stream()
-        .map(this::createReceiptFromEntity)
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  /** Creates a {@link Query} with filters set based on which values were input by user. */
-  private Query setupQuery(QueryInformation queryInformation) {
-    Query query = new Query("Receipt");
-
-    if (queryInformation.getCategory() != null && queryInformation.getCategory().size() != 0) {
-      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategory());
+    if (!isPageLoad) {
+      setupQuery(query);
     }
 
+    preparedQuery = datastore.prepare(query);
+    QueryResultList<Entity> results =
+        preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
+
+    cursor = results.getCursor();
+
+    return entitiesListToReceiptsList(results);
+  }
+
+  /** Sets up a {@link Query} with filters set based on which values were input by user. */
+  private void setupQuery(Query query) {
     query.addFilter("timestamp", Query.FilterOperator.GREATER_THAN_OR_EQUAL,
         queryInformation.getStartTimestamp());
     query.addFilter(
         "timestamp", Query.FilterOperator.LESS_THAN_OR_EQUAL, queryInformation.getEndTimestamp());
 
+    if (queryInformation.getCategory() != null && queryInformation.getCategory().size() != 0) {
+      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategory());
+    }
+
     if (!Strings.isNullOrEmpty(queryInformation.getStore())) {
       query.addFilter("store", Query.FilterOperator.EQUAL, queryInformation.getStore());
     }
+  }
 
-    return query;
+  private ImmutableList<Receipt> entitiesListToReceiptsList(QueryResultList<Entity> results) {
+    Stream<Receipt> receipts = results.stream().map(this::createReceiptFromEntity);
+
+    if (queryInformation != null) {
+      /**
+       * Datastore doesn't support queries with multiple inequality filters
+       * (i.e price and timestamp) so price filtering is manually done here.
+       */
+      receipts = receipts.filter(receipt
+          -> receipt.getPrice() >= queryInformation.getMinPrice()
+              && receipt.getPrice() <= queryInformation.getMaxPrice());
+    }
+
+    return receipts.collect(ImmutableList.toImmutableList());
   }
 
   /** Creates a {@link Receipt} from an {@link Entity}. */
