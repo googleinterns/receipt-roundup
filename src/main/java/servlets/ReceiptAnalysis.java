@@ -310,8 +310,7 @@ public class ReceiptAnalysis {
     for (String token : relevantTokens) {
       if (containsTotal(token)) {
         priceFoundAfterMostRecentTotal = false;
-      } else if (isPrice(token) && !priceFoundAfterMostRecentTotal
-          && parsePrice(token) != Double.NEGATIVE_INFINITY) {
+      } else if (!priceFoundAfterMostRecentTotal && parsePrice(token) != Double.NEGATIVE_INFINITY) {
         price = parsePrice(token);
         priceFound = true;
         priceFoundAfterMostRecentTotal = true;
@@ -320,7 +319,7 @@ public class ReceiptAnalysis {
 
     if (priceFound) {
       analysisBuilder.setPrice(price);
-      return (true);
+      return true;
     }
 
     return false;
