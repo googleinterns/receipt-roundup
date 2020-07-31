@@ -40,16 +40,14 @@ public class SpendingAnalyticsServlet extends HttpServlet {
       "No Authentication: User must be logged in to search receipts.";
 
   private final DatastoreService datastore;
-  private final UserService userService;
+  private final UserService userService = UserServiceFactory.getUserService();
 
   public SpendingAnalyticsServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
-    userService = UserServiceFactory.getUserService();
   }
 
   public SpendingAnalyticsServlet(DatastoreService datastore) {
     this.datastore = datastore;
-    userService = UserServiceFactory.getUserService();
   }
 
   @Override
