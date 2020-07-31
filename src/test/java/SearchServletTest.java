@@ -338,4 +338,38 @@ public final class SearchServletTest {
     Assert.assertEquals(expectedSecondPage.size(), returnedSecondPage.length);
     Assert.assertTrue(TestUtils.checkIdsMatch(expectedSecondPage, returnedSecondPage));
   }
+
+  @Test
+  public void paginationPreviousPage() throws IOException {
+    // This test simulates starting on page 1, moving to page 2, then moving back to 1.
+
+    // Add 12 mock receipts to datastore.
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore);
+
+    // Perform doGet - this should retrieve first page with 10 receipts.
+    when(request.getParameter("isPageLoad")).thenReturn("true");
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Perform doGet - this should retrieve second page with last 2 receipts.
+    when(request.getParameter("isNewSearch")).thenReturn("false");
+    when(request.getParameter("getNextPage")).thenReturn("true");
+    stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Perform doGet - this should retrieve first page again with 10 receipts.
+    when(request.getParameter("getNextPage")).thenReturn("false");
+    when(request.getParameter("getPreviousPage")).thenReturn("true");
+    stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure first page of returned receipts matches expected by checking ids.
+    ImmutableList<Entity> expectedFirstPage = expectedReceipts.asList().subList(2, 12);
+    Receipt[] returnedFirstPage = gson.fromJson(stringWriter.toString(), Receipt[].class);
+
+    Assert.assertEquals(expectedFirstPage.size(), returnedFirstPage.length);
+    Assert.assertTrue(TestUtils.checkIdsMatch(expectedFirstPage, returnedFirstPage));
+  }
 }
