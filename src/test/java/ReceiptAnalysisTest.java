@@ -277,7 +277,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsPriceAfterTotal()
+  public void analyzeImageAt_priceAfterTotal_returnsPrice()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithPriceTotal = "the total is $" + PRICE_VALUE;
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceTotal);
@@ -289,7 +289,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsPriceAfterLastTotal()
+  public void analyzeImageAt_multipleTotals_returnsPriceAfterLastTotal()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithPriceMultipleTotals =
         "the sub total is $12.23 and the total is $" + PRICE_VALUE;
@@ -302,7 +302,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlIgnoresTotalWithNoPrice()
+  public void analyzeImageAt_lastTotalHasNoPrice_returnsPriceAfterOtherTotal()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithPriceExtraTotal =
         "the total is $" + PRICE_VALUE + " which is the total that must be paid";
@@ -315,10 +315,11 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsPriceAfterMixedCaseTotal()
+  public void analyzeImageAt_mixedCaseTotal_returnsPriceAfterLastTotal()
       throws IOException, ReceiptAnalysisException {
-    String rawTextWithPriceTotalCaps = "the sub total is $12.23 and the tOtAL is $" + PRICE_VALUE;
-    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceTotalCaps);
+    String rawTextWithPriceMixedCaseTotal =
+        "the sub total is $12.23 and the tOtAL is $" + PRICE_VALUE;
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceMixedCaseTotal);
     stubTextClassification();
 
     AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
@@ -327,7 +328,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsPriceAfterTotalInsteadOfLargest()
+  public void analyzeImageAt_priceAfterTotalIsNotLargest_returnsPriceAfterTotal()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithMultiplePricesTotal =
         "the total is $" + PRICE_VALUE + " and the amount paid is $20.00";
