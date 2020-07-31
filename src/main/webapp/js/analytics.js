@@ -23,11 +23,14 @@ let categoryData;
 
 /** Computes and populates DataTable with analytics for both charts. */
 async function computeChartAnalytics() {
+  document.body.style.cursor = 'wait';
+
   const response = await fetch('/compute-analytics');
   const analytics = await response.json();
 
   handleStoreChart(analytics);
   handleCategoryChart(analytics);
+  document.body.style.cursor = 'default';
 }
 
 /**
