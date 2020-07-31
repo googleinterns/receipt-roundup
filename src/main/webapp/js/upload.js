@@ -129,6 +129,8 @@ function startLoading() {
 /**
  * Creates URL parameters using the properties of the receipt in the given JSON
  * response.
+ * @param {object} json The JSON response from the upload servlet.
+ * @return {URLSearchParams} The URL parameters containing the receipt fields.
  */
 function setUrlParameters(json) {
   const receipt = json.propertyMap;
@@ -149,6 +151,8 @@ function setUrlParameters(json) {
   if (receipt.timestamp) {
     params.append('timestamp', receipt.timestamp);
   }
+
+  return params;
 }
 
 /**
