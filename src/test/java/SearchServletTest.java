@@ -315,6 +315,7 @@ public final class SearchServletTest {
 
     // Perform doGet - this should retrieve max receipts for page, which is 10.
     when(request.getParameter("isPageLoad")).thenReturn("true");
+
     servlet.doGet(request, response);
     writer.flush();
 
@@ -350,12 +351,14 @@ public final class SearchServletTest {
 
     // Perform doGet - this should retrieve first page with 10 receipts.
     when(request.getParameter("isPageLoad")).thenReturn("true");
+
     servlet.doGet(request, response);
     writer.flush();
 
     // Perform doGet - this should retrieve second page with last 2 receipts.
     when(request.getParameter("isNewSearch")).thenReturn("false");
     when(request.getParameter("getNextPage")).thenReturn("true");
+
     stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
     servlet.doGet(request, response);
     writer.flush();
@@ -363,6 +366,7 @@ public final class SearchServletTest {
     // Perform doGet - this should retrieve first page again with 10 receipts.
     when(request.getParameter("getNextPage")).thenReturn("false");
     when(request.getParameter("getPreviousPage")).thenReturn("true");
+    
     stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
     servlet.doGet(request, response);
     writer.flush();
