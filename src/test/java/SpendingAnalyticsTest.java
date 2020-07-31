@@ -180,7 +180,8 @@ public final class SpendingAnalyticsTest {
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
                 /* price = */ storeOneTotal, STORE, ImmutableSet.of("candy", "drink"), RAW_TEXT))
             .add(TestUtils.createEntity(USER_ID, TIMESTAMP, IMAGE_URL,
-                /* price = */ storeTwoTotal, STORE, ImmutableSet.of("cappuccino", "food"), RAW_TEXT))
+                /* price = */ storeTwoTotal, STORE, ImmutableSet.of("cappuccino", "food"),
+                RAW_TEXT))
             .build();
 
     SpendingAnalytics analytics = new SpendingAnalytics(receipts);
