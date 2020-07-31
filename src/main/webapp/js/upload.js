@@ -80,24 +80,7 @@ async function uploadReceipt(event) {
   }
 
   const json = (await response.json());
-  const receipt = json.propertyMap;
-  const params = new URLSearchParams();
-  params.append('id', json.key.id);
-  params.append('image-url', receipt.imageUrl.value);
-
-  // Add fields that were successfully generated.
-  if (receipt.categories.length > 0) {
-    params.append('categories', receipt.categories);
-  }
-  if (receipt.price) {
-    params.append('price', receipt.price);
-  }
-  if (receipt.store) {
-    params.append('store', receipt.store);
-  }
-  if (receipt.timestamp) {
-    params.append('timestamp', receipt.timestamp);
-  }
+  const params = setUrlParameters(json);
 
   // Redirect to the receipt analysis page.
   window.location.href = `/receipt-analysis.html?${params.toString()}`;
@@ -144,6 +127,31 @@ function startLoading() {
 
     loadingBar.set(value + increment);
   }, 20);
+}
+
+/**
+ * Creates URL parameters using the properties of the receipt in the given JSON
+ * response.
+ */
+function setUrlParameters(json) {
+  const receipt = json.propertyMap;
+  const params = new URLSearchParams();
+  params.append('id', json.key.id);
+  params.append('image-url', receipt.imageUrl.value);
+
+  // Add fields that were successfully generated.
+  if (receipt.categories.length > 0) {
+    params.append('categories', receipt.categories);
+  }
+  if (receipt.price) {
+    params.append('price', receipt.price);
+  }
+  if (receipt.store) {
+    params.append('store', receipt.store);
+  }
+  if (receipt.timestamp) {
+    params.append('timestamp', receipt.timestamp);
+  }
 }
 
 /**
