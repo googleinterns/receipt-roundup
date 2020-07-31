@@ -303,9 +303,10 @@ public final class SearchServletTest {
     ImmutableSet<Entity> expectedReceipts = TestUtils.addTestReceipts(datastore);
 
     // Set userId to one that doesn't have any receipts under it.
-    helper.setEnvAttributes(new HashMap(
-        ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", "wrongUserId")));
-    helper.setUp();
+    helper
+        .setEnvAttributes(new HashMap(ImmutableMap.of(
+            "com.google.appengine.api.users.UserService.user_id_key", "wrongUserId")))
+        .setUp();
 
     TestUtils.setSearchServletRequestParameters(
         request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
