@@ -366,7 +366,7 @@ public final class SearchServletTest {
     // Perform doGet - this should retrieve first page again with 10 receipts.
     when(request.getParameter("getNextPage")).thenReturn("false");
     when(request.getParameter("getPreviousPage")).thenReturn("true");
-    
+
     stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
     servlet.doGet(request, response);
     writer.flush();

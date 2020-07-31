@@ -83,10 +83,10 @@ public class SearchServlet extends HttpServlet {
     ImmutableList<Receipt> receipts = null;
 
     if (!checkParameter(request, "isNewSearch") && checkParameter(request, "getNextPage")) {
-      receipts = getNextPageOfReceipts();
+      receipts = getPage(true);
     } else if (!checkParameter(request, "isNewSearch")
         && checkParameter(request, "getPreviousPage")) {
-      receipts = getPreviousPageOfReceipts();
+      receipts = getPage(false);
     } else if (checkParameter(request, "isPageLoad")) {
       receipts = getMatchingReceipts(true);
     } else if (!checkParameter(request, "isPageLoad") && checkParameter(request, "isNewSearch")) {
@@ -137,20 +137,16 @@ public class SearchServlet extends HttpServlet {
         new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
   }
 
-  /** Returns ImmutableList of next receipts page from an existing query. */
-  private ImmutableList<Receipt> getNextPageOfReceipts() {
-    QueryResultList<Entity> results = preparedQuery.asQueryResultList(
-        FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE).startCursor(cursor));
+  /**
+   * Gets a receipts page from an existing query.
+   * @param isNextPage If true, get the next page. If false, get the previous page.
+   */
+  private ImmutableList<Receipt> getPage(boolean isNextPage) {
+    FetchOptions options = isNextPage ? FetchOptions.Builder.withStartCursor(cursor)
+                                      : FetchOptions.Builder.withEndCursor(cursor);
+    options.limit(RECEIPTS_PER_PAGE);
 
-    cursor = results.getCursor();
-
-    return entitiesListToReceiptsList(results);
-  }
-
-  /** Returns ImmutableList of previous receipts page from an existing query. */
-  private ImmutableList<Receipt> getPreviousPageOfReceipts() {
-    QueryResultList<Entity> results = preparedQuery.asQueryResultList(
-        FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE).endCursor(cursor));
+    QueryResultList<Entity> results = preparedQuery.asQueryResultList(options);
 
     cursor = results.getCursor();
 
