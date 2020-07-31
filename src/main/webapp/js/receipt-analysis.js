@@ -122,6 +122,12 @@ async function updateReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
+  document.body.style.cursor = 'wait';
+  const saveButton = document.getElementById('submit-receipt');
+  const homeButton = document.getElementById('return-home');
+  saveButton.disabled = true;
+  homeButton.disabled = true;
+
   const receipt = getReceiptFromForm();
   const editRequest = new URLSearchParams();
 
@@ -139,12 +145,18 @@ async function updateReceipt(event) {
 
   if (response.status !== 200) {
     const error = await response.text();
+    document.body.style.cursor = 'default';
     alert(error);
+    saveButton.disabled = false;
+    homeButton.disabled = false;
     return;
   }
 
   const json = await response.json();
   const params = setUrlParameters(json);
+
+  // Restore the cursor after the edit request has loaded.
+  document.body.style.cursor = 'default';
 
   // Remove warning for unsaved changes.
   window.onbeforeunload = null;
