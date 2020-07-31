@@ -46,7 +46,7 @@ public final class TestUtils {
     return receiptEntity;
   }
 
-  /** Add 3 receipts to datastore. */
+  /** Adds 3 receipts to datastore. */
   public static ImmutableSet<Entity> addTestReceipts(DatastoreService datastore) {
     ImmutableSet<Entity> entities = ImmutableSet.of(
         createEntity(/* userId = */ "testID", /* timestamp = */ 1045237591000L,
@@ -99,7 +99,7 @@ public final class TestUtils {
     return receiptEntity;
   }
 
-  /** Set all necessary parameters that SearchServlet will ask for in a doGet. */
+  /** Sets all necessary parameters that SearchServlet will ask for in a doGet. */
   public static void setSearchServletRequestParameters(HttpServletRequest request,
       String timeZoneId, String categories, String dateRange, String store, String minPrice,
       String maxPrice) {
@@ -141,7 +141,7 @@ public final class TestUtils {
 
   /**
    * Checks receipt ids in the returned page all match the ids in the expected page.
-   * @return true if all expectedPage receipt ids found in returnedPage, else false.
+   * @return true if all expectedPage receipt ids are found in returnedPage, else false.
    */
   public static boolean checkIdsMatch(ImmutableList<Entity> expectedPage, Receipt[] returnedPage) {
     for (Entity expectedEntity : expectedPage) {

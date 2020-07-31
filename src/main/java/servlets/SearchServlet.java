@@ -164,6 +164,7 @@ public class SearchServlet extends HttpServlet {
                       .addSort("__key__", SortDirection.DESCENDING);
     query.addFilter("userId", Query.FilterOperator.EQUAL, userService.getCurrentUser().getUserId());
 
+    // Don't need to set any other filters if it's a pageLoad event.
     if (!isPageLoad) {
       setupQuery(query);
     }

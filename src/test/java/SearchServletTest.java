@@ -308,6 +308,8 @@ public final class SearchServletTest {
 
   @Test
   public void paginationNextPage() throws IOException {
+    // This test simulates starting on page 1, then moving to page 2.
+
     // Add 12 mock receipts to datastore.
     ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore);
 
