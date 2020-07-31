@@ -226,7 +226,8 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsPrice() throws IOException, ReceiptAnalysisException {
+  public void analyzeImageAt_singlePrice_returnsPrice()
+      throws IOException, ReceiptAnalysisException {
     String rawTextWithPrice = "the price is $" + PRICE_VALUE + " in total";
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPrice);
     stubTextClassification();
@@ -237,7 +238,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsPriceWithNoDollarSign()
+  public void analyzeImageAt_priceWithNoDollarSign_returnsPrice()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithPriceNoDollarSign = "the price is " + PRICE_VALUE + " in total";
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceNoDollarSign);
@@ -249,7 +250,8 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsLargestPrice() throws IOException, ReceiptAnalysisException {
+  public void analyzeImageAt_multiplePrices_returnsLargestPrice()
+      throws IOException, ReceiptAnalysisException {
     String rawTextWithMultiplePrices = "the items cost $8.99, $2.79, and $1.99, so the total is $"
         + PRICE_VALUE + " after the $1.00 discount";
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithMultiplePrices);
@@ -261,7 +263,8 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateAndPrice() throws IOException, ReceiptAnalysisException {
+  public void analyzeImageAt_dateAndPrice_returnsTimestampAndPrice()
+      throws IOException, ReceiptAnalysisException {
     String rawTextWithDateAndPrice = "the date is 05-08-2020 and the total is " + PRICE_VALUE;
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateAndPrice);
     stubTextClassification();
