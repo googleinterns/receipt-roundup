@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
 
@@ -144,9 +146,10 @@ public final class TestUtils {
    * @return true if all expectedPage receipt ids are found in returnedPage, else false.
    */
   public static boolean checkIdsMatch(ImmutableList<Entity> expectedPage, Receipt[] returnedPage) {
+    Supplier<Stream<Long>> ids = () -> Arrays.stream(returnedPage).map(Receipt::getId);
+
     for (Entity expectedEntity : expectedPage) {
-      if (!Arrays.stream(returnedPage)
-               .anyMatch(receipt -> receipt.getId() == expectedEntity.getKey().getId())) {
+      if (!ids.get().anyMatch(id -> id == expectedEntity.getKey().getId())) {
         return false;
       }
     }
