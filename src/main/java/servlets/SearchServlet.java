@@ -91,7 +91,7 @@ public class SearchServlet extends HttpServlet {
       receipts = getMatchingReceipts(true);
     } else if (!checkParameter(request, "isPageLoad") && checkParameter(request, "isNewSearch")) {
       try {
-        createQueryInformation(request, response);
+        createQueryInformation(request);
       } catch (NullPointerException exception) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         response.getWriter().println(NULL_EXCEPTION_MESSAGE);
@@ -124,7 +124,7 @@ public class SearchServlet extends HttpServlet {
   }
 
   /** Creates a {@link QueryInformation} based on request parameters. */
-  private void createQueryInformation(HttpServletRequest request, HttpServletResponse response)
+  private void createQueryInformation(HttpServletRequest request)
       throws IOException, NullPointerException, NumberFormatException, ParseException {
     String timeZoneId = request.getParameter("timeZoneId");
     String category = request.getParameter("category");
