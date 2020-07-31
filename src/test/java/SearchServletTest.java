@@ -220,7 +220,7 @@ public final class SearchServletTest {
     // Add mock receipts to datastore.
     ImmutableSet<Entity> expectedReceipts = TestUtils.addTestReceipts(datastore);
 
-    when(request.getParameter("isNewLoad")).thenReturn("true");
+    when(request.getParameter("isPageLoad")).thenReturn("true");
 
     // Perform doGet - this should retrieve all receipts.
     servlet.doGet(request, response);
@@ -304,5 +304,38 @@ public final class SearchServletTest {
 
     Assert.assertTrue(stringWriter.toString().contains(AUTHENTICATION_ERROR_MESSAGE));
     verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+  }
+
+  @Test
+  public void paginationNextPage() throws IOException {
+    // Add 12 mock receipts to datastore.
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore);
+
+    // Perform doGet - this should retrieve max receipts for page, which is 10.
+    when(request.getParameter("isPageLoad")).thenReturn("true");
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure first page of returned receipts matches expected by checking ids.
+    ImmutableList<Entity> expectedFirstPage = expectedReceipts.asList().subList(2, 12);
+    Receipt[] returnedFirstPage = gson.fromJson(stringWriter.toString(), Receipt[].class);
+
+    Assert.assertEquals(expectedFirstPage.size(), returnedFirstPage.length);
+    Assert.assertTrue(TestUtils.checkIdsMatch(expectedFirstPage, returnedFirstPage));
+
+    // Perform doGet - this should retrieve last few receipts, which is 2.
+    when(request.getParameter("isNewSearch")).thenReturn("false");
+    when(request.getParameter("getNextPage")).thenReturn("true");
+
+    stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure second page of returned receipts matches expected by checking ids.
+    ImmutableList<Entity> expectedSecondPage = expectedReceipts.asList().subList(0, 2);
+    Receipt[] returnedSecondPage = gson.fromJson(stringWriter.toString(), Receipt[].class);
+
+    Assert.assertEquals(expectedSecondPage.size(), returnedSecondPage.length);
+    Assert.assertTrue(TestUtils.checkIdsMatch(expectedSecondPage, returnedSecondPage));
   }
 }
