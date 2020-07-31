@@ -66,6 +66,7 @@ function getNextPageOfReceipts() {
   params.append('getNextPage', 'true');
 
   searchReceipts(params);
+  scrollToTop();
 }
 
 /** Fetches previous receipts page from the server and adds it to the DOM. */
@@ -75,6 +76,7 @@ function getPreviousPageOfReceipts() {
   params.append('getPreviousPage', 'true');
 
   searchReceipts(params);
+  scrollToTop();
 }
 
 /**
