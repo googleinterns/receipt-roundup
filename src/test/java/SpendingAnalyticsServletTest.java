@@ -16,12 +16,11 @@ package com.google.sps;
 
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.sps.servlets.SpendingAnalyticsServlet;
 import java.io.IOException;
@@ -38,12 +37,15 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public final class SpendingAnalyticsServletTest {
+  private static final HashMap<String, Double> EXPECTED_STORE_ANALYTICS =
+      new HashMap(ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "target", 29.01));
+  private static final HashMap<String, Double> EXPECTED_CATEGORY_ANALYTICS = new HashMap(
+      ImmutableMap.of("candy", 26.12, "drink", 26.12, "cappuccino", 14.51, "food", 43.52));
+
   // Test Receipt fields.
   private static final String USER_ID = "1";
   private static final long TIMESTAMP = 6292020;
   private static final String IMAGE_URL = "img/walmart-receipt.jpg";
-  private static final ImmutableSet<String> CATEGORIES =
-      ImmutableSet.of("Cappuccino", "Sandwich", "Lunch");
   private static final String RAW_TEXT = "Walmart\nAlways Low Prices At Walmart\n";
 
   // Local Datastore
@@ -82,22 +84,25 @@ public final class SpendingAnalyticsServletTest {
     // Walmart: $26.12, Contoso: $14.51, Target: $29.01
 
     TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
-        /* price = */ 26.12, /* store = */ "walmart", CATEGORIES, RAW_TEXT);
+        /* price = */ 26.12, /* store = */ "walmart",
+        /* categories = */ ImmutableSet.of("candy", "drink"), RAW_TEXT);
     TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
-        /* price = */ 14.51, /* store = */ "contoso", CATEGORIES, RAW_TEXT);
+        /* price = */ 14.51, /* store = */ "contoso",
+        /* categories = */ ImmutableSet.of("cappuccino", "food"), RAW_TEXT);
     TestUtils.addTestReceipt(datastore, USER_ID, TIMESTAMP, IMAGE_URL,
-        /* price = */ 29.01, /* store = */ "target", CATEGORIES, RAW_TEXT);
+        /* price = */ 29.01, /* store = */ "target", /* categories = */ ImmutableSet.of("food"),
+        RAW_TEXT);
 
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure all stores returned in HashMap.
     HashMap<String, Double> storeAnalytics =
-        new ObjectMapper().readValue(stringWriter.toString(), HashMap.class);
-    Assert.assertEquals(3, storeAnalytics.size());
-    Assert.assertTrue(storeAnalytics.containsKey("walmart"));
-    Assert.assertTrue(storeAnalytics.containsKey("contoso"));
-    Assert.assertTrue(storeAnalytics.containsKey("target"));
+        TestUtils.parseAnalytics(stringWriter.toString(), "storeAnalytics");
+    HashMap<String, Double> categoryAnalytics =
+        TestUtils.parseAnalytics(stringWriter.toString(), "categoryAnalytics");
+
+    Assert.assertEquals(EXPECTED_STORE_ANALYTICS, storeAnalytics);
+    Assert.assertEquals(EXPECTED_CATEGORY_ANALYTICS, categoryAnalytics);
   }
 
   @Test
@@ -105,9 +110,13 @@ public final class SpendingAnalyticsServletTest {
     servlet.doGet(request, response);
     writer.flush();
 
-    // Make sure empty HashMap is returned.
+    // Make sure empty HashMaps are returned.
     HashMap<String, Double> storeAnalytics =
-        new ObjectMapper().readValue(stringWriter.toString(), HashMap.class);
+        TestUtils.parseAnalytics(stringWriter.toString(), "storeAnalytics");
+    HashMap<String, Double> categoryAnalytics =
+        TestUtils.parseAnalytics(stringWriter.toString(), "categoryAnalytics");
+
     Assert.assertTrue(storeAnalytics.isEmpty());
+    Assert.assertTrue(categoryAnalytics.isEmpty());
   }
 }

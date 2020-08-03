@@ -114,7 +114,7 @@ public final class UploadReceiptServletTest {
   private static final AnalysisResults ANALYSIS_RESULTS =
       new AnalysisResults.Builder(RAW_TEXT.getValue())
           .setCategories(GENERATED_CATEGORIES)
-          .setTimestamp(PAST_TIMESTAMP)
+          .setTransactionTimestamp(PAST_TIMESTAMP)
           .setPrice(PRICE)
           .setStore(STORE)
           .build();
@@ -263,7 +263,7 @@ public final class UploadReceiptServletTest {
     String store = "    TraDeR   JOE's  ";
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(PAST_TIMESTAMP)
+                                          .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setPrice(PRICE)
                                           .setStore(store)
                                           .build();
@@ -292,7 +292,7 @@ public final class UploadReceiptServletTest {
     // Mock receipt analysis.
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(PAST_TIMESTAMP)
+                                          .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setPrice(PRICE)
                                           .build();
     mockStatic(ReceiptAnalysis.class);
@@ -319,7 +319,7 @@ public final class UploadReceiptServletTest {
         ImmutableSet.of("   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH", "  dIninG ");
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(generatedCategories)
-                                          .setTimestamp(PAST_TIMESTAMP)
+                                          .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setPrice(PRICE)
                                           .setStore(STORE)
                                           .build();
@@ -400,9 +400,10 @@ public final class UploadReceiptServletTest {
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(futureTimestamp)
-                                          .setPrice(PRICE);
-    .setStore(STORE).build();
+                                          .setTransactionTimestamp(futureTimestamp)
+                                          .setPrice(PRICE)
+                                          .setStore(STORE)
+                                          .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
@@ -447,9 +448,10 @@ public final class UploadReceiptServletTest {
     double roundedPrice = 17.24;
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(PAST_TIMESTAMP)
+                                          .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setPrice(price)
-                                          .setStore(STORE);
+                                          .setStore(STORE)
+                                          .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
         .thenReturn(analysisResults);
@@ -461,30 +463,6 @@ public final class UploadReceiptServletTest {
     Entity receipt = results.asSingleEntity();
 
     Assert.assertEquals(roundedPrice, receipt.getProperty("price"));
-  }
-
-  @Test
-  public void doPostThrowsIfPriceNegative() throws IOException, ReceiptAnalysisException {
-    createMockBlob(request, VALID_CONTENT_TYPE, VALID_FILENAME, IMAGE_SIZE_1MB);
-    stubUrlComponents(
-        request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
-
-    // Mock receipt analysis.
-    double negativePrice = -12.55;
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
-                                          .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(futureTimestamp)
-                                          .setPrice(negativePrice);
-    .setStore(STORE);
-    mockStatic(ReceiptAnalysis.class);
-    when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
-        .thenReturn(analysisResults);
-
-    servlet.doPost(request, response);
-    writer.flush();
-
-    Assert.assertEquals(PRICE_NEGATIVE_WARNING, stringWriter.toString());
-    verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
   }
 
   /**
