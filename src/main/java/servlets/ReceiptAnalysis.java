@@ -294,7 +294,9 @@ public class ReceiptAnalysis {
 
   /**
    * Checks the raw text in the builder for a price appearing after the word "total" and adds it to
-   * the builder if found. The return value indicates whether a price was added.
+   * the builder if found.
+   *
+   * @return whether or not a price was added.
    */
   private static boolean findPriceAfterTotal(AnalysisResults.Builder analysisBuilder) {
     ImmutableList<String> relevantTokens =
