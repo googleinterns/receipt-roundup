@@ -37,7 +37,13 @@ function loadReceiptAnalysis() {
     document.getElementById('store-input').value = receipt.storeName;
   }
   if (receipt.price) {
-    document.getElementById('price-input').value = `$${receipt.price}`;
+    document.getElementById('price-input').value =
+        Number(receipt.price).toLocaleString(undefined, {
+          maximumFractionDigits: 2,
+          currency: 'USD',
+          style: 'currency',
+          currencyDisplay: 'symbol',
+        });
   }
   if (receipt.categories) {
     document.getElementById('categories-input').value = receipt.categories;
