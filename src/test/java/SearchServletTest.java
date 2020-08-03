@@ -23,6 +23,9 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.After;
@@ -60,9 +64,19 @@ public final class SearchServletTest {
   private static final String MIN_PRICE = "5.00";
   private static final String MAX_PRICE = "30.00";
 
+  private static final String DOMAIN_NAME = "gmail.com";
+  private static final String USER_EMAIL = "test@gmail.com";
+  private static final String USER_ID = "testID";
+
   // Local Datastore
   private final LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig()).setEnvIsLoggedIn(true);
+      new LocalServiceTestHelper(
+          new LocalDatastoreServiceTestConfig(), new LocalUserServiceTestConfig())
+          .setEnvIsLoggedIn(true)
+          .setEnvEmail(USER_EMAIL)
+          .setEnvAuthDomain(DOMAIN_NAME)
+          .setEnvAttributes(new HashMap(
+              ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", USER_ID)));
 
   @Mock private SearchServlet servlet;
   @Mock private HttpServletRequest request;
@@ -274,6 +288,33 @@ public final class SearchServletTest {
 
     Assert.assertTrue(stringWriter.toString().contains(PARSE_EXCEPTION_MESSAGE));
     verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void queryReceiptsWithDifferentUserId() throws IOException {
+    // All receipts under the userId: "testId".
+    //
+    // id   Timestamp      Price          Store                    Categories
+    // 1  1045237591000    26.12        "walmart"         ["candy", "drink", "personal"]
+    // 2  1560193140000    14.51        "contoso"         ["cappuccino", "sandwich", "lunch"]
+    // 3  1491582960000    29.01   "main st restaurant"   ["food", "meal", "lunch"]
+
+    // Add mock receipts to datastore.
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addTestReceipts(datastore);
+
+    // Set userId to one that doesn't have any receipts under it.
+    helper
+        .setEnvAttributes(new HashMap(ImmutableMap.of(
+            "com.google.appengine.api.users.UserService.user_id_key", "wrongUserId")))
+        .setUp();
+
+    TestUtils.setSearchServletRequestParameters(
+        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, MAX_PRICE);
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // No receipts should be returned (empty string).
+    Assert.assertEquals(ImmutableList.of().toString() + "\n", stringWriter.toString());
   }
 
   @Test

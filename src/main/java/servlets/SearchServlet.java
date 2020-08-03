@@ -14,7 +14,6 @@
 
 package com.google.sps.servlets;
 
-import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -140,6 +139,7 @@ public class SearchServlet extends HttpServlet {
   /** Returns ImmutableList of all receipts from datastore. */
   private ImmutableList<Receipt> getAllReceipts() {
     Query query = new Query("Receipt");
+    query.addFilter("userId", Query.FilterOperator.EQUAL, userService.getCurrentUser().getUserId());
 
     return datastore.prepare(query)
         .asList(FetchOptions.Builder.withDefaults())
@@ -151,6 +151,7 @@ public class SearchServlet extends HttpServlet {
   /** Creates a {@link Query} with filters set based on which values were input by user. */
   private Query setupQuery(QueryInformation queryInformation) {
     Query query = new Query("Receipt");
+    query.addFilter("userId", Query.FilterOperator.EQUAL, userService.getCurrentUser().getUserId());
 
     if (queryInformation.getCategory() != null && queryInformation.getCategory().size() != 0) {
       query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategory());
