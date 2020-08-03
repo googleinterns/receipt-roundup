@@ -45,15 +45,15 @@ public class SpendingAnalyticsServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    HashMap<String, Double> storeAnalytics = getStoreAnalytics();
+    SpendingAnalytics analytics = getSpendingAnalytics();
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
-    response.getWriter().println(gson.toJson(storeAnalytics));
+    response.getWriter().println(gson.toJson(analytics));
   }
 
-  /** Returns analytics HashMap mapping a store to the total amount spent there. */
-  private HashMap<String, Double> getStoreAnalytics() {
+  /** Returns information for both category and store analytics. */
+  private SpendingAnalytics getSpendingAnalytics() {
     Query query = new Query("Receipt");
     ImmutableSet<Entity> allReceipts = datastore.prepare(query)
                                            .asList(FetchOptions.Builder.withDefaults())
@@ -61,6 +61,7 @@ public class SpendingAnalyticsServlet extends HttpServlet {
                                            .collect(ImmutableSet.toImmutableSet());
 
     SpendingAnalytics analytics = new SpendingAnalytics(allReceipts);
-    return analytics.getStoreAnalytics();
+
+    return analytics;
   }
 }

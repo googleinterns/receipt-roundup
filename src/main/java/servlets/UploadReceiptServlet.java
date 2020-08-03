@@ -233,7 +233,7 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setUnindexedProperty("imageUrl", imageUrl);
 
     // Set the timestamp if a date was parsed.
-    results.getTimestamp().ifPresent(timestamp -> {
+    results.getTransactionTimestamp().ifPresent(timestamp -> {
       try {
         FormatUtils.checkTimestampIsInPast(timestamp, clock);
       } catch (InvalidDateException exception) {
@@ -244,8 +244,15 @@ public class UploadReceiptServlet extends HttpServlet {
       receipt.setProperty("timestamp", timestamp);
     });
 
-    // TODO: Replace with parsed price.
-    receipt.setProperty("price", FormatUtils.roundPrice(request.getParameter("price")));
+    // Set the price if it was parsed.
+    results.getPrice().ifPresent(price -> {
+      try {
+        receipt.setProperty("price", FormatUtils.roundPrice(price));
+      } catch (InvalidPriceException exception) {
+        // Don't add price property if parsing is invalid
+        return;
+      }
+    });
 
     // Text objects wrap around a string of unlimited size while strings are limited to 1500 bytes.
     receipt.setUnindexedProperty("rawText", new Text(results.getRawText()));
@@ -253,7 +260,7 @@ public class UploadReceiptServlet extends HttpServlet {
         "categories", FormatUtils.sanitizeCategories(results.getCategories().stream()));
     // If a logo was detected, set the store name.
     results.getStore().ifPresent(
-        store -> { receipt.setProperty("store", FormatUtils.sanitize(store)); });
+        store -> receipt.setProperty("store", FormatUtils.sanitize(store)));
 
     return receipt;
   }

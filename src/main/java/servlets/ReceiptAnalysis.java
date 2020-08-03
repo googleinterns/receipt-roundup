@@ -60,12 +60,12 @@ public class ReceiptAnalysis {
   // is in identifying the detected logo, with higher scores meaning higher certainty. This is the
   // minimum confidence score that a detected logo must have to be considered significant for
   // receipt analysis.
-  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4f;
-  // Matches strings containing at least one digit.
-  private static final Pattern digitRegex = Pattern.compile(".*\\d.*");
+  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.6f;
   // Matches strings in U.S. date format.
   private static final Pattern dateRegex =
       Pattern.compile("\\d?\\d([/-])\\d?\\d\\1\\d{2}(\\d{2})?");
+  // Matches strings formatted as prices in dollars.
+  private static final Pattern priceRegex = Pattern.compile("\\$?\\d+\\.\\d\\d");
 
   /** Returns the text and categorization of the image at the requested URL. */
   public static AnalysisResults analyzeImageAt(URL url)
@@ -125,8 +125,8 @@ public class ReceiptAnalysis {
     AnalysisResults.Builder analysisBuilder = retrieveText(imageBytes);
     ImmutableSet<String> categories = categorizeText(analysisBuilder.getRawText());
 
-    Stream<String> tokens = getTokensFromRawText(analysisBuilder.getRawText());
-    checkForParsableDate(analysisBuilder, tokens);
+    checkForParsableDate(analysisBuilder);
+    checkForParsablePrices(analysisBuilder);
 
     return analysisBuilder.setCategories(categories).build();
   }
@@ -212,12 +212,12 @@ public class ReceiptAnalysis {
   }
 
   /**
-   * Checks the provided tokens for a date that can be parsed. If one is found, it is added to the
-   * builder as a timestamp.
+   * Checks the raw text in the builder for a date that can be parsed. If one is found, it is added
+   * to the builder as a timestamp.
    */
-  private static void checkForParsableDate(
-      AnalysisResults.Builder analysisBuilder, Stream<String> tokens) {
-    Stream<String> dates = tokens.filter(ReceiptAnalysis::isDate);
+  private static void checkForParsableDate(AnalysisResults.Builder analysisBuilder) {
+    Stream<String> dates =
+        getTokensFromRawText(analysisBuilder.getRawText()).filter(ReceiptAnalysis::isDate);
     // Assume that the first date on the receipt is the transaction date.
     Optional<String> firstDate = dates.findFirst();
 
@@ -246,7 +246,7 @@ public class ReceiptAnalysis {
       dateAndTime = fixYearIfInFuture(dateAndTime);
 
       long timestamp = dateAndTime.toInstant().toEpochMilli();
-      analysisBuilder.setTimestamp(timestamp);
+      analysisBuilder.setTransactionTimestamp(timestamp);
     } catch (DateTimeParseException e) {
       // Invalid month or day
       return;
@@ -265,18 +265,10 @@ public class ReceiptAnalysis {
   }
 
   /**
-   * Splits a string into a stream of strings, and filters out any that don't have at least one
-   * digit.
+   * Splits a string on whitespace and returns a stream of the resulting strings.
    */
   private static Stream<String> getTokensFromRawText(String rawText) {
-    return Stream.of(rawText.split("\\s")).filter(ReceiptAnalysis::hasDigit);
-  }
-
-  /**
-   * Checks if the token contains at least one digit.
-   */
-  private static boolean hasDigit(String token) {
-    return digitRegex.matcher(token).matches();
+    return Stream.of(rawText.split("\\s"));
   }
 
   /**
@@ -284,6 +276,45 @@ public class ReceiptAnalysis {
    */
   private static boolean isDate(String token) {
     return dateRegex.matcher(token).matches();
+  }
+
+  /**
+   * Checks the raw text in the builder for prices that can be parsed. The largest price found, if
+   * it exists, is added to the builder.
+   */
+  private static void checkForParsablePrices(AnalysisResults.Builder analysisBuilder) {
+    // Assume that the largest price on the receipt is the total price.
+    double largestPrice = getTokensFromRawText(analysisBuilder.getRawText())
+                              .filter(ReceiptAnalysis::isPrice)
+                              .mapToDouble(ReceiptAnalysis::parsePrice)
+                              .reduce(Double.NEGATIVE_INFINITY, Double::max);
+
+    if (largestPrice != Double.NEGATIVE_INFINITY) {
+      analysisBuilder.setPrice(largestPrice);
+    }
+  }
+
+  /**
+   * Returns the price represented by the string as a double, or Double.NEGATIVE_INFINITY if the
+   * string cannot be parsed.
+   */
+  private static double parsePrice(String price) {
+    if (price.startsWith("$")) {
+      price = price.substring(1);
+    }
+
+    try {
+      return Double.parseDouble(price);
+    } catch (NumberFormatException e) {
+      return Double.NEGATIVE_INFINITY;
+    }
+  }
+
+  /**
+   * Checks if the token is formatted as a price.
+   */
+  private static boolean isPrice(String token) {
+    return priceRegex.matcher(token).matches();
   }
 
   public static class ReceiptAnalysisException extends Exception {

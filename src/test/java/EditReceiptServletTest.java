@@ -68,7 +68,7 @@ public final class EditReceiptServletTest {
   private static final String PRICE_NOT_PARSABLE_WARNING =
       "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price could not be parsed.\n";
   private static final String PRICE_NEGATIVE_WARNING =
-      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price must be positive.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price must be non-negative.\n";
   private static final String INVALID_ID_WARNING =
       "java.lang.NumberFormatException: For input string: \"invalid\"\n";
   private static final String ENTITY_NOT_FOUND_WARNING =
