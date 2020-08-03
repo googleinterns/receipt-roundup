@@ -18,7 +18,7 @@ input {
 }
 
 #upload-form {
-  background: linear-gradient(#e3ffe7 0%, #d9e7ff 100%);
+  background: #f7f7f7;
   border: solid 2px transparent;
   border-radius: 30px;
   margin: 10px;
