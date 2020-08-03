@@ -278,7 +278,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtThrowsIfEmptyBatchResponse()
+  public void analyzeImageAt_emptyBatchResponse_throwsException()
       throws IOException, ReceiptAnalysisException {
     BatchAnnotateImagesResponse batchResponse = BatchAnnotateImagesResponse.newBuilder().build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
@@ -290,7 +290,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtThrowsIfResponseHasError()
+  public void analyzeImageAt_responseError_throwsException()
       throws IOException, ReceiptAnalysisException {
     AnnotateImageResponse response =
         AnnotateImageResponse.newBuilder().setError(Status.getDefaultInstance()).build();
@@ -305,7 +305,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtThrowsIfEmptyTextAnnotationsList()
+  public void analyzeImageAt_emptyTextAnnotationsList_throwsException()
       throws IOException, ReceiptAnalysisException {
     AnnotateImageResponse response = AnnotateImageResponse.newBuilder().build();
     BatchAnnotateImagesResponse batchResponse =
@@ -319,7 +319,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtThrowsIfImageRequestFails()
+  public void analyzeImageAt_imageRequestFailure_throwsException()
       throws IOException, ReceiptAnalysisException {
     StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
     ApiException clientException = new ApiException(null, statusCode, false);
@@ -333,7 +333,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtThrowsIfTextRequestFails()
+  public void analyzeImageAt_textRequestFailure_throwsException()
       throws IOException, ReceiptAnalysisException {
     EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
     AnnotateImageResponse imageResponse =
