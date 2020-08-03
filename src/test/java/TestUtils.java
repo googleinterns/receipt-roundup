@@ -80,7 +80,7 @@ public final class TestUtils {
     return receiptEntity;
   }
 
-  /** Set all necessary parameters that SearchServlet will ask for in a doGet. */
+  /** Sets all necessary parameters that SearchServlet will ask for in a doGet. */
   public static void setSearchServletRequestParameters(HttpServletRequest request,
       String timeZoneId, String categories, String dateRange, String store, String minPrice,
       String maxPrice) {
@@ -110,7 +110,8 @@ public final class TestUtils {
 
     return analytics;
   }
-  /* * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
+  /**
+   * Removes the unique id property from a receipt entity JSON string, leaving only the receipt
    * properties.
    */
   public static String extractProperties(String json) {
