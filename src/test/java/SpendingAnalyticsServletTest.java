@@ -42,10 +42,10 @@ public final class SpendingAnalyticsServletTest {
   private static final String AUTHENTICATION_ERROR_MESSAGE =
       "No Authentication: User must be logged in to search receipts.";
 
-  private static final HashMap<String, Double> EXPECTED_STORE_ANALYTICS =
-      new HashMap(ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "target", 29.01));
-  private static final HashMap<String, Double> EXPECTED_CATEGORY_ANALYTICS = new HashMap(
-      ImmutableMap.of("candy", 26.12, "drink", 26.12, "cappuccino", 14.51, "food", 43.52));
+  private static final ImmutableMap<String, Double> EXPECTED_STORE_ANALYTICS =
+      ImmutableMap.of("walmart", 26.12, "contoso", 14.51, "target", 29.01);
+  private static final ImmutableMap<String, Double> EXPECTED_CATEGORY_ANALYTICS =
+      ImmutableMap.of("candy", 26.12, "drink", 26.12, "cappuccino", 14.51, "food", 43.52);
 
   // Test Receipt fields.
   private static final long TIMESTAMP = 6292020;
