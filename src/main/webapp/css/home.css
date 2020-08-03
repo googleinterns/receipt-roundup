@@ -36,3 +36,9 @@
 .slider-keypress .noUi-connect {
   background: #17a2b8;
 }
+
+.user-img {
+  display: block;
+  height: 2.6vh;
+  width: 2vw;
+}
