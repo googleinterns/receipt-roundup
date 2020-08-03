@@ -66,17 +66,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest(
     {ImageAnnotatorClient.class, LanguageServiceClient.class, ReceiptAnalysis.class, URL.class})
 public final class ReceiptAnalysisTest {
-  private static final String EMPTY_BATCH_RESPONSE_WARNING =
-      "Received empty batch image annotation response.";
-  private static final String RESPONSE_ERROR_WARNING =
-      "Received image annotation response with error.";
-  private static final String EMPTY_TEXT_ANNOTATIONS_LIST_WARNING =
-      "Received image annotation response without text annotations.";
-  private static final String IMAGE_REQUEST_FAILED_WARNING = "Image annotation request failed.";
-  private static final String TEXT_REQUEST_FAILED_WARNING = "Classify text request failed.";
-
   private static final ByteString IMAGE_BYTES = ByteString.copyFromUtf8("byte string");
-  private static final String RAW_TEXT = "raw text";
+  private static final Optional<String> RAW_TEXT = Optional.of("raw text");
 
   private static final String GENERAL_CATEGORY_NAME = "General";
   private static final String BROADER_CATEGORY_NAME = "Broader";
@@ -124,7 +115,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAt_url_returnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT);
+    stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT.get());
     stubTextClassification();
     ImmutableList<AnnotateImageRequest> imageRequests = createImageRequest();
     ClassifyTextRequest classifyRequest = createClassifyRequest();
@@ -143,7 +134,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAt_url_returnsAnalysisResultsWithNoStore()
       throws IOException, ReceiptAnalysisException {
-    AnnotateImageResponse imageResponse = createImageResponseWithText(RAW_TEXT).build();
+    AnnotateImageResponse imageResponse = createImageResponseWithText(RAW_TEXT.get()).build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(imageResponse).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
@@ -158,7 +149,7 @@ public final class ReceiptAnalysisTest {
   @Test
   public void analyzeImageAt_lowConfidenceScore_ignoresLogo()
       throws IOException, ReceiptAnalysisException {
-    stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD, RAW_TEXT);
+    stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD, RAW_TEXT.get());
     stubTextClassification();
     ImmutableList<AnnotateImageRequest> imageRequests = createImageRequest();
     ClassifyTextRequest classifyRequest = createClassifyRequest();
@@ -278,19 +269,20 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAt_emptyBatchResponse_throwsException()
+  public void analyzeImageAt_emptyBatchResponse_returnsEmptyAnalysisResults()
       throws IOException, ReceiptAnalysisException {
     BatchAnnotateImagesResponse batchResponse = BatchAnnotateImagesResponse.newBuilder().build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
-    ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(EMPTY_BATCH_RESPONSE_WARNING, exception.getMessage());
+    Assert.assertEquals(Optional.empty(), results.getRawText());
+    Assert.assertEquals(ImmutableSet.of(), results.getCategories());
+    Assert.assertEquals(Optional.empty(), results.getStore());
   }
 
   @Test
-  public void analyzeImageAt_responseError_throwsException()
+  public void analyzeImageAt_responseError_returnsEmptyAnalysisResults()
       throws IOException, ReceiptAnalysisException {
     AnnotateImageResponse response =
         AnnotateImageResponse.newBuilder().setError(Status.getDefaultInstance()).build();
@@ -298,44 +290,65 @@ public final class ReceiptAnalysisTest {
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
-    ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(RESPONSE_ERROR_WARNING, exception.getMessage());
+    Assert.assertEquals(Optional.empty(), results.getRawText());
+    Assert.assertEquals(ImmutableSet.of(), results.getCategories());
+    Assert.assertEquals(Optional.empty(), results.getStore());
   }
 
   @Test
-  public void analyzeImageAt_emptyTextAnnotationsList_throwsException()
+  public void analyzeImageAt_emptyTextAnnotationsListWithoutLogo_returnsEmptyAnalysisResults()
       throws IOException, ReceiptAnalysisException {
     AnnotateImageResponse response = AnnotateImageResponse.newBuilder().build();
     BatchAnnotateImagesResponse batchResponse =
         BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
     when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
 
-    ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(EMPTY_TEXT_ANNOTATIONS_LIST_WARNING, exception.getMessage());
+    Assert.assertEquals(Optional.empty(), results.getRawText());
+    Assert.assertEquals(ImmutableSet.of(), results.getCategories());
+    Assert.assertEquals(Optional.empty(), results.getStore());
   }
 
   @Test
-  public void analyzeImageAt_imageRequestFailure_throwsException()
+  public void analyzeImageAt_emptyTextAnnotationsListWithLogo_setsLogoOnly()
+      throws IOException, ReceiptAnalysisException {
+    EntityAnnotation logoAnnotation =
+        EntityAnnotation.newBuilder().setDescription(STORE.get()).setScore(LOGO_CONFIDENCE).build();
+    AnnotateImageResponse response =
+        AnnotateImageResponse.newBuilder().addLogoAnnotations(logoAnnotation).build();
+    BatchAnnotateImagesResponse batchResponse =
+        BatchAnnotateImagesResponse.newBuilder().addResponses(response).build();
+    when(imageClient.batchAnnotateImages(anyList())).thenReturn(batchResponse);
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(Optional.empty(), results.getRawText());
+    Assert.assertEquals(ImmutableSet.of(), results.getCategories());
+    Assert.assertEquals(STORE, results.getStore());
+  }
+
+  @Test
+  public void analyzeImageAt_imageRequestFailure_returnsEmptyAnalysisResults()
       throws IOException, ReceiptAnalysisException {
     StatusCode statusCode = GrpcStatusCode.of(io.grpc.Status.INTERNAL.getCode());
     ApiException clientException = new ApiException(null, statusCode, false);
     when(imageClient.batchAnnotateImages(anyList())).thenThrow(clientException);
 
-    ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(IMAGE_REQUEST_FAILED_WARNING, exception.getMessage());
-    Assert.assertEquals(clientException, exception.getCause());
+    Assert.assertEquals(Optional.empty(), results.getRawText());
+    Assert.assertEquals(ImmutableSet.of(), results.getCategories());
+    Assert.assertEquals(Optional.empty(), results.getStore());
   }
 
   @Test
-  public void analyzeImageAt_textRequestFailure_throwsException()
+  public void analyzeImageAt_textRequestFailure_returnsEmptyCategories()
       throws IOException, ReceiptAnalysisException {
-    EntityAnnotation annotation = EntityAnnotation.newBuilder().setDescription(RAW_TEXT).build();
+    EntityAnnotation annotation =
+        EntityAnnotation.newBuilder().setDescription(RAW_TEXT.get()).build();
     AnnotateImageResponse imageResponse =
         AnnotateImageResponse.newBuilder().addTextAnnotations(annotation).build();
     BatchAnnotateImagesResponse batchResponse =
@@ -346,11 +359,9 @@ public final class ReceiptAnalysisTest {
     ApiException clientException = new ApiException(null, statusCode, false);
     when(languageClient.classifyText(any(ClassifyTextRequest.class))).thenThrow(clientException);
 
-    ReceiptAnalysisException exception = Assertions.assertThrows(
-        ReceiptAnalysisException.class, () -> { ReceiptAnalysis.analyzeImageAt(url); });
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
 
-    Assert.assertEquals(TEXT_REQUEST_FAILED_WARNING, exception.getMessage());
-    Assert.assertEquals(clientException, exception.getCause());
+    Assert.assertEquals(ImmutableSet.of(), results.getCategories());
   }
 
   private void stubAnnotationResponse(float confidenceScore, String rawText) {
@@ -387,7 +398,8 @@ public final class ReceiptAnalysisTest {
   }
 
   private ClassifyTextRequest createClassifyRequest() {
-    Document document = Document.newBuilder().setContent(RAW_TEXT).setType(Type.PLAIN_TEXT).build();
+    Document document =
+        Document.newBuilder().setContent(RAW_TEXT.get()).setType(Type.PLAIN_TEXT).build();
     return ClassifyTextRequest.newBuilder().setDocument(document).build();
   }
 }
