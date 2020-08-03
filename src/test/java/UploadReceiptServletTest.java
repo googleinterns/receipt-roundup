@@ -116,7 +116,7 @@ public final class UploadReceiptServletTest {
   private static final AnalysisResults ANALYSIS_RESULTS =
       new AnalysisResults.Builder(RAW_TEXT.getValue())
           .setCategories(GENERATED_CATEGORIES)
-          .setTimestamp(PAST_TIMESTAMP)
+          .setTransactionTimestamp(PAST_TIMESTAMP)
           .setStore(STORE)
           .build();
 
@@ -267,7 +267,7 @@ public final class UploadReceiptServletTest {
     String store = "    TraDeR   JOE's  ";
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(PAST_TIMESTAMP)
+                                          .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setStore(store)
                                           .build();
     mockStatic(ReceiptAnalysis.class);
@@ -296,7 +296,7 @@ public final class UploadReceiptServletTest {
     // Mock receipt analysis.
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(PAST_TIMESTAMP)
+                                          .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .build();
     mockStatic(ReceiptAnalysis.class);
     when(ReceiptAnalysis.analyzeImageAt(new URL(LIVE_SERVER_ABSOLUTE_URL)))
@@ -323,7 +323,7 @@ public final class UploadReceiptServletTest {
         ImmutableSet.of("   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH", "  dIninG ");
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(generatedCategories)
-                                          .setTimestamp(PAST_TIMESTAMP)
+                                          .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setStore(STORE)
                                           .build();
     mockStatic(ReceiptAnalysis.class);
@@ -404,7 +404,7 @@ public final class UploadReceiptServletTest {
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
     AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
-                                          .setTimestamp(futureTimestamp)
+                                          .setTransactionTimestamp(futureTimestamp)
                                           .setStore(STORE)
                                           .build();
     mockStatic(ReceiptAnalysis.class);

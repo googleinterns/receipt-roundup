@@ -233,7 +233,7 @@ public class UploadReceiptServlet extends HttpServlet {
     receipt.setUnindexedProperty("imageUrl", imageUrl);
 
     // Set the timestamp if a date was parsed.
-    results.getTimestamp().ifPresent(timestamp -> {
+    results.getTransactionTimestamp().ifPresent(timestamp -> {
       try {
         FormatUtils.checkTimestampIsInPast(timestamp, clock);
       } catch (InvalidDateException exception) {
