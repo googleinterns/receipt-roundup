@@ -119,7 +119,7 @@ public class SearchServlet extends HttpServlet {
    * @param parameter A string representation of a boolean: "true" or "false".
    * @return the input string parsed to a boolean.
    */
-  private Boolean checkParameter(HttpServletRequest request, String parameter) {
+  private boolean checkParameter(HttpServletRequest request, String parameter) {
     return Boolean.parseBoolean(request.getParameter(parameter));
   }
 
