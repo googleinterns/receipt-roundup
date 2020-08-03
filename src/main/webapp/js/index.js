@@ -12,6 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/* global capitalizeFirstLetters, loadPage */
+
+/**
+ * Checks that the user is logged in then loads the logout button and receipts.
+ */
+function load() {
+  loadPage(getAllReceipts, loadLogoutButton);  // From js/common.js
+}
+
+/**
+ * Adds a URL to the logout button and displays user's email.
+ * @param {object} account
+ */
+async function loadLogoutButton(account) {
+  document.getElementById('logout-button').href = account.logoutUrl;
+
+  document.getElementById('user-display').innerHTML =
+      `You are signed in as ${account.email}`;
+}
+
 /** Fetches all receipts from the server and adds them to the DOM. */
 async function getAllReceipts() {
   const params = new URLSearchParams();
@@ -22,20 +42,6 @@ async function getAllReceipts() {
 
   clearExistingDisplay();
   displayReceipts(receipts);
-}
-
-/** Fetches the login status and adds a URL to the logout button. */
-async function checkAuthentication() {
-  const response = await fetch('/login-status');
-  const account = await response.json();
-
-  // Redirect to the login page if the user is not logged in.
-  if (!account.loggedIn) {
-    window.location.replace('/login.html');
-  }
-
-  const logoutButton = document.getElementById('logout-button');
-  logoutButton.href = account.logoutUrl;
 }
 
 /** Fetches matching receipts from the server and adds them to the DOM. */
@@ -120,18 +126,12 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
   receiptCardClone.querySelector('.col-md-6').id = receipt.id;
 
-  // Attach listener to trigger the deletion of this receipt.
+  // Attach listeners to trigger the deletion and editing of this receipt.
   attachDeleteButtonEventListener(receipt, receiptCardClone);
+  attachEditButtonEventListener(receipt, receiptCardClone);
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
-}
-
-/** Capitalize the first letter of each word in a string. */
-function capitalizeFirstLetters(lowercasedString) {
-  return lowercasedString.split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
 }
 
 /**
@@ -156,6 +156,26 @@ async function deleteReceipt(receipt) {
   const params = new URLSearchParams();
   params.append('id', receipt.id);
   await fetch('/delete-receipt', {method: 'POST', body: params});
+}
+
+/**
+ * Attaches event listener to edit button.
+ * @param {Receipt} receipt A Receipt datastore object.
+ * @param {receiptCardClone} DocumentFragment Receipt card wrapper.
+ */
+function attachEditButtonEventListener(receipt, receiptCardClone) {
+  receiptCardClone.querySelector('#edit').addEventListener('click', () => {
+    const params = new URLSearchParams();
+    params.append('id', receipt.id);
+    params.append('categories', receipt.categories);
+    params.append('image-url', receipt.imageUrl);
+    params.append('price', receipt.price);
+    params.append('store', receipt.store);
+    params.append('timestamp', receipt.timestamp);
+
+    // Redirect to the receipt analysis page.
+    window.location.href = `/receipt-analysis.html?${params.toString()}`;
+  });
 }
 
 /**

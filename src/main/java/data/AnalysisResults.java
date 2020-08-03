@@ -28,7 +28,7 @@ public class AnalysisResults {
   private final Optional<Long> transactionTimestamp;
   private final Optional<Double> price;
 
-  public AnalysisResults(String rawText, Set<String> categories, Optional<String> store,
+  private AnalysisResults(String rawText, Set<String> categories, Optional<String> store,
       Optional<Long> transactionTimestamp, Optional<Double> price) {
     this.rawText = rawText;
     this.categories = ImmutableSet.copyOf(categories);
@@ -60,7 +60,7 @@ public class AnalysisResults {
   public static class Builder {
     private final String rawText;
     private ImmutableSet<String> categories;
-    private Optional<String> store;
+    private Optional<String> store = Optional.empty();
     private Optional<Long> transactionTimestamp = Optional.empty();
     private Optional<Double> price = Optional.empty();
 
@@ -93,11 +93,6 @@ public class AnalysisResults {
     }
 
     public AnalysisResults build() {
-      // No logo was detected.
-      if (store == null) {
-        store = Optional.empty();
-      }
-
       return new AnalysisResults(rawText, categories, store, transactionTimestamp, price);
     }
   }
