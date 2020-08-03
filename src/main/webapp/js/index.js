@@ -34,6 +34,8 @@ async function loadLogoutButton(account) {
 
 /** Fetches all receipts from the server and adds them to the DOM. */
 async function getAllReceipts() {
+  document.body.style.cursor = 'wait';
+
   const params = new URLSearchParams();
   params.append('isNewLoad', 'true');
 
@@ -42,10 +44,13 @@ async function getAllReceipts() {
 
   clearExistingDisplay();
   displayReceipts(receipts);
+  document.body.style.cursor = 'default';
 }
 
 /** Fetches matching receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
+  document.body.style.cursor = 'wait';
+
   const params = new URLSearchParams();
   params.append('isNewLoad', 'false');
   params.append('category', document.getElementById('category-input').value);
@@ -62,6 +67,7 @@ async function searchReceipts() {
 
   clearExistingDisplay();
   displayReceipts(receipts);
+  document.body.style.cursor = 'default';
 }
 
 /** Clears out receipts display including old receipts and error messages. */
