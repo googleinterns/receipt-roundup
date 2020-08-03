@@ -50,8 +50,6 @@ import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Class with static methods that return the text of a specified image using the Cloud Vision API,
@@ -62,7 +60,7 @@ public class ReceiptAnalysis {
   // is in identifying the detected logo, with higher scores meaning higher certainty. This is the
   // minimum confidence score that a detected logo must have to be considered significant for
   // receipt analysis.
-  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.4f;
+  private static final float LOGO_DETECTION_CONFIDENCE_THRESHOLD = 0.6f;
   // Matches strings in U.S. date format.
   private static final Pattern dateRegex =
       Pattern.compile("\\d?\\d([/-])\\d?\\d\\1\\d{2}(\\d{2})?");
@@ -209,10 +207,10 @@ public class ReceiptAnalysis {
 
   /**
    * Parse category strings into more natural categories
-   * e.g. "/Food & Drink/Restaurants" becomes "Food & Drink" and "Restaurants"
+   * e.g. "/Food & Drink/Restaurants" becomes "Food", "Drink", and "Restaurants"
    */
   private static Stream<String> parseCategory(ClassificationCategory category) {
-    return Stream.of(category.getName().substring(1).split("/"));
+    return Stream.of(category.getName().substring(1).split("/| & "));
   }
 
   /**

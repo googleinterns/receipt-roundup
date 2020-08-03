@@ -33,7 +33,6 @@ import com.google.sps.data.Receipt;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -174,7 +173,6 @@ public class SearchServlet extends HttpServlet {
     long id = entity.getKey().getId();
     String userId = (String) entity.getProperty("userId");
     long timestamp = (long) entity.getProperty("timestamp");
-    BlobKey blobKey = (BlobKey) entity.getProperty("blobKey");
     String imageUrl = (String) entity.getProperty("imageUrl");
     double price = (double) entity.getProperty("price");
     String store = (String) entity.getProperty("store");
@@ -182,6 +180,6 @@ public class SearchServlet extends HttpServlet {
         ImmutableSet.copyOf((ArrayList) entity.getProperty("categories"));
     // String rawText = (new Text((String) entity.getProperty("rawText"))).getValue();
     String rawText = "Test";
-    return new Receipt(id, userId, timestamp, blobKey, imageUrl, price, store, categories, rawText);
+    return new Receipt(id, userId, timestamp, imageUrl, price, store, categories, rawText);
   }
 }

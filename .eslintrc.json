@@ -1,6 +1,6 @@
 {
   "parserOptions": {
-    "ecmaVersion": 2017
+    "ecmaVersion": 2018
   },
   "env": {
     "browser": true,
@@ -9,7 +9,8 @@
   },
   "globals": {
     "moment": true,
-    "noUiSlider": true
+    "noUiSlider": true,
+    "google": true
   },
   "extends": ["eslint:recommended", "google"],
   "rules": {
