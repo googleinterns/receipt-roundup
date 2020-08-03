@@ -19,6 +19,9 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.sps.data.SpendingAnalytics;
@@ -33,7 +36,11 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet that computes user spending analytics from datastore data. */
 @WebServlet("/compute-analytics")
 public class SpendingAnalyticsServlet extends HttpServlet {
+  private static final String AUTHENTICATION_ERROR_MESSAGE =
+      "No Authentication: User must be logged in to search receipts.";
+
   private final DatastoreService datastore;
+  private final UserService userService = UserServiceFactory.getUserService();
 
   public SpendingAnalyticsServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
@@ -45,6 +52,12 @@ public class SpendingAnalyticsServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    if (!userService.isUserLoggedIn()) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.getWriter().println(AUTHENTICATION_ERROR_MESSAGE);
+      return;
+    }
+
     SpendingAnalytics analytics = getSpendingAnalytics();
 
     Gson gson = new Gson();
@@ -55,6 +68,7 @@ public class SpendingAnalyticsServlet extends HttpServlet {
   /** Returns information for both category and store analytics. */
   private SpendingAnalytics getSpendingAnalytics() {
     Query query = new Query("Receipt");
+    query.addFilter("userId", Query.FilterOperator.EQUAL, userService.getCurrentUser().getUserId());
     ImmutableSet<Entity> allReceipts = datastore.prepare(query)
                                            .asList(FetchOptions.Builder.withDefaults())
                                            .stream()
