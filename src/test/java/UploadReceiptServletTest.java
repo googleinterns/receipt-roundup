@@ -112,7 +112,8 @@ public final class UploadReceiptServletTest {
   private static final double PRICE = 5.89;
   private static final String STORE = "mcdonald's";
   private static final AnalysisResults ANALYSIS_RESULTS =
-      new AnalysisResults.Builder(RAW_TEXT.getValue())
+      new AnalysisResults.Builder()
+          .setRawText(RAW_TEXT.getValue())
           .setCategories(GENERATED_CATEGORIES)
           .setTransactionTimestamp(PAST_TIMESTAMP)
           .setPrice(PRICE)
@@ -261,7 +262,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     String store = "    TraDeR   JOE's  ";
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
+                                          .setRawText(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setPrice(PRICE)
@@ -290,7 +292,8 @@ public final class UploadReceiptServletTest {
         request, LIVE_SERVER_SCHEME, LIVE_SERVER_NAME, LIVE_SERVER_PORT, LIVE_SERVER_CONTEXT_PATH);
 
     // Mock receipt analysis.
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
+                                          .setRawText(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setPrice(PRICE)
@@ -317,7 +320,8 @@ public final class UploadReceiptServletTest {
     // Mock receipt analysis.
     Set<String> generatedCategories =
         ImmutableSet.of("   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH", "  dIninG ");
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
+                                          .setRawText(RAW_TEXT.getValue())
                                           .setCategories(generatedCategories)
                                           .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setPrice(PRICE)
@@ -398,7 +402,8 @@ public final class UploadReceiptServletTest {
 
     // Mock receipt analysis.
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
+                                          .setRawText(RAW_TEXT.getValue())
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTransactionTimestamp(futureTimestamp)
                                           .setPrice(PRICE)
@@ -446,7 +451,7 @@ public final class UploadReceiptServletTest {
     // Mock receipt analysis.
     double price = 17.236;
     double roundedPrice = 17.24;
-    AnalysisResults analysisResults = new AnalysisResults.Builder(RAW_TEXT.getValue())
+    AnalysisResults analysisResults = new AnalysisResults.Builder()
                                           .setCategories(GENERATED_CATEGORIES)
                                           .setTransactionTimestamp(PAST_TIMESTAMP)
                                           .setPrice(price)

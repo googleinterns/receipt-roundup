@@ -22,13 +22,13 @@ import java.util.Set;
  * Object for holding the analysis results served by ReceiptAnalysisServlet.
  */
 public class AnalysisResults {
-  private final String rawText;
+  private final Optional<String> rawText;
   private final ImmutableSet<String> categories;
   private final Optional<String> store;
   private final Optional<Long> transactionTimestamp;
   private final Optional<Double> price;
 
-  private AnalysisResults(String rawText, Set<String> categories, Optional<String> store,
+  private AnalysisResults(Optional<String> rawText, Set<String> categories, Optional<String> store,
       Optional<Long> transactionTimestamp, Optional<Double> price) {
     this.rawText = rawText;
     this.categories = ImmutableSet.copyOf(categories);
@@ -37,7 +37,7 @@ public class AnalysisResults {
     this.price = price;
   }
 
-  public String getRawText() {
+  public Optional<String> getRawText() {
     return rawText;
   }
 
@@ -58,18 +58,19 @@ public class AnalysisResults {
   }
 
   public static class Builder {
-    private final String rawText;
-    private ImmutableSet<String> categories;
+    private Optional<String> rawText = Optional.empty();
+    private ImmutableSet<String> categories = ImmutableSet.of();
     private Optional<String> store = Optional.empty();
     private Optional<Long> transactionTimestamp = Optional.empty();
     private Optional<Double> price = Optional.empty();
 
-    public Builder(String rawText) {
-      this.rawText = rawText;
+    public Optional<String> getRawText() {
+      return rawText;
     }
 
-    public String getRawText() {
-      return rawText;
+    public Builder setRawText(String rawText) {
+      this.rawText = Optional.of(rawText);
+      return this;
     }
 
     public Builder setCategories(Set<String> categories) {
