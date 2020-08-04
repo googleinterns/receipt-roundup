@@ -76,8 +76,8 @@
       </div>
     </div>
     <h1 class="text-center">Home</h1>
-    <form onsubmit="return false">
-      <div class="row mb-4 search-bar vertical-center">
+    <form onsubmit="return false" class="search-bar">
+      <div class="row vertical-center ml-1 mr-1">
         <div class="col-md-2 d-flex justify-content-center pt-2">
           <input class="form-control mr-sm-2" name="category" id="category-input" placeholder="Category" type="text" />
         </div>
@@ -115,7 +115,7 @@
       </div>
     </form>
     <!-- The columns will automatically stack on top of each other when the screen is less than 768px wide. -->
-    <div id="receipts-display" class="row"></div>
+    <div id="receipts-display" class="row mt-4"></div>
   </div>
 </body>
 <template id="receipt-card-template">
