@@ -1,16 +1,11 @@
 body {
-  background: azure;
+  background: url('/img/landscape.jpg') center/cover no-repeat fixed;
 }
 
 h1 {
-  font-size: 40px;
-  margin: 20px 0 0;
-  text-align: center;
-}
-
-h2 {
-  color: midnightblue;
-  font-size: 25px;
+  color: aliceblue;
+  font-family: 'Ewert', cursive;
+  font-size: 45px;
   margin: 20px 0 0;
   text-align: center;
 }
@@ -20,14 +15,22 @@ h2 {
 }
 
 p {
-  color: dimgray;
+  color: powderblue;
   font-size: 20px;
+  text-align: center;
+}
+
+.container {
+  bottom: 0;
+  left: 50%;
+  position: absolute;
+  transform: translate(-50%);
 }
 
 #login-link {
   display: block;
   font-size: 20px;
-  margin: 50px auto;
+  margin: 0 auto 80px;
   width: 290px;
 }
 
@@ -37,12 +40,7 @@ i {
 
 @media screen and (min-width: 480px) {
   h1 {
-    font-size: 50px;
-  }
-
-  h2 {
-    font-size: 35px;
-    margin: 20vh 20px 0;
+    font-size: 60px;
   }
 
   #description {
@@ -51,6 +49,5 @@ i {
 
   p {
     font-size: 25px;
-    text-align: justify;
   }
 }
