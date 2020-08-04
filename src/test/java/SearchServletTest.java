@@ -311,7 +311,7 @@ public final class SearchServletTest {
     // This test simulates starting on page 1, then moving to page 2.
 
     // Add 12 mock receipts to datastore.
-    ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore);
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore, 12);
 
     // Perform doGet - this should retrieve max receipts for page, which is 10.
     when(request.getParameter("isPageLoad")).thenReturn("true");
@@ -347,7 +347,7 @@ public final class SearchServletTest {
     // This test simulates starting on page 1, moving to page 2, then moving back to 1.
 
     // Add 12 mock receipts to datastore.
-    ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore);
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore, 12);
 
     // Perform doGet - this should retrieve first page with 10 receipts.
     when(request.getParameter("isPageLoad")).thenReturn("true");

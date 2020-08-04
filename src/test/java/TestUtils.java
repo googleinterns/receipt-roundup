@@ -66,11 +66,15 @@ public final class TestUtils {
     return entities;
   }
 
-  /** Adds 12 receipts to datastore. */
-  public static ImmutableSet<Entity> addManyTestReceipts(DatastoreService datastore) {
+  /**
+   * Adds receipts to datastore.
+   * @param numReceipts Number of receipts to add.
+   */
+  public static ImmutableSet<Entity> addManyTestReceipts(
+      DatastoreService datastore, int numReceipts) {
     ImmutableSet.Builder<Entity> entities = new ImmutableSet.Builder<Entity>();
 
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < numReceipts; i++) {
       entities.add(createEntity(/* userId = */ "testID",
           /* timestamp = */ 1045237591000L, "img/walmart-receipt.jpg", 26.12, "walmart",
           ImmutableSet.of("candy", "drink"), ""));
