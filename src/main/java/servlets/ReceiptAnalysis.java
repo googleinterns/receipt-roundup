@@ -68,6 +68,8 @@ public class ReceiptAnalysis {
   private static final Pattern priceRegex = Pattern.compile("\\$?\\d+\\.\\d\\d");
   // Matches strings containing the word "total" with any capitalization.
   private static final Pattern totalRegex = Pattern.compile(".*total.*", Pattern.CASE_INSENSITIVE);
+  // Matches strings containing the word "sub" with any capitalization.
+  private static final Pattern subRegex = Pattern.compile(".*sub.*", Pattern.CASE_INSENSITIVE);
 
   /** Returns the text and categorization of the image at the requested URL. */
   public static AnalysisResults analyzeImageAt(URL url) throws IOException {
@@ -369,10 +371,10 @@ public class ReceiptAnalysis {
   }
 
   /**
-   * Checks if the token contains the word "total".
+   * Checks if the token contains "total" and doesn't contain "sub".
    */
   private static boolean containsTotal(String token) {
-    return totalRegex.matcher(token).matches();
+    return totalRegex.matcher(token).matches() && !subRegex.matcher(token).matches();
   }
 
   public static class ReceiptAnalysisException extends Exception {

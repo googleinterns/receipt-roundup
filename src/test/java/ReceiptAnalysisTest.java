@@ -294,6 +294,18 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
+  public void analyzeImageAt_subtotalToken_returnsLargestPrice()
+      throws IOException, ReceiptAnalysisException {
+    String rawTextWithPriceSubtotal = "the subtotal is $12.23 and the balance is $" + PRICE_VALUE;
+    stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithPriceSubtotal);
+    stubTextClassification();
+
+    AnalysisResults results = ReceiptAnalysis.analyzeImageAt(url);
+
+    Assert.assertEquals(PRICE, results.getPrice());
+  }
+
+  @Test
   public void analyzeImageAt_lastTotalHasNoPrice_returnsPriceAfterOtherTotal()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithPriceExtraTotal =
