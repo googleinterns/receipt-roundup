@@ -6,3 +6,7 @@
 .row {
   margin: 0 !important;
 }
+
+#home-icon {
+  width: 20px;
+}
