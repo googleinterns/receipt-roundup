@@ -28,8 +28,7 @@ function load() {
 async function loadLogoutButton(account) {
   document.getElementById('logout-button').href = account.logoutUrl;
 
-  document.getElementById('user-display').innerHTML =
-      `You are signed in as ${account.email}`;
+  document.getElementById('user-display').innerHTML = `${account.email}`;
 }
 
 /** Fetches all receipts from the server and adds them to the DOM. */
