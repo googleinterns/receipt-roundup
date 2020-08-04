@@ -23,6 +23,10 @@
 <title>Receipt Analysis</title>
 
 <body onload="load()">
+  <button href="/" class="btn btn-info btn-sm mt-2 ml-2" type="button" onclick="redirectHome()">
+    <img id="home-icon" src="img/home.svg" alt="Home" />
+  </button>
+
   <h1 class="p-3 text-center">Receipt Analysis</h1>
 
   <div class="container-fluid">
@@ -75,13 +79,6 @@
         </div>
       </form>
       <img id="receipt-image" src="data:," alt="Receipt image" class="d-block p-2 img-fluid" />
-    </div>
-
-    <!-- TODO: Add warning if user has an incomplete receipt. -->
-    <div class="my-4 d-flex justify-content-center">
-      <button id="return-home" href="/" class="btn btn-lg btn-info" type="button" onclick="redirectHome()">
-        Return to Home
-      </button>
     </div>
   </div>
 
