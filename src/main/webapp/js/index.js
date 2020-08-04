@@ -122,13 +122,14 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('#total').innerText =
       `Total: $${receipt.price.toFixed(2)}`;
 
-  const categoriesContainer = receiptCardClone.getElementById('categories-container');
+  const categoriesContainer =
+      receiptCardClone.getElementById('categories-container');
 
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length; i++) {
     const category = capitalizeFirstLetters(categories[i]);
     categoriesContainer.appendChild(buildCategoryElement(category));
-  }	  
+  }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
   receiptCardClone.querySelector('.col-md-6').id = receipt.id;
