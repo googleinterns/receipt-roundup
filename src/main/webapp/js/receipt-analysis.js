@@ -242,8 +242,7 @@ function formatCurrency(event) {
 }
 
 /**
- * Redirects the user to the home page when the home button is
- * clicked.
+ * Redirects the user to the home page.
  */
 function redirectHome() {
   if (isFormSaved()) {
