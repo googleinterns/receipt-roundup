@@ -286,8 +286,12 @@ public class ReceiptAnalysis {
    * a price, it is added to the builder.
    */
   private static void checkForParsablePrices(AnalysisResults.Builder analysisBuilder) {
-    if (!findPriceAfterTotal(analysisBuilder)) {
-      findLargestPrice(analysisBuilder);
+    if (findPriceAfterTotal(analysisBuilder)) {
+      return;
+    }
+
+    if (findLargestPrice(analysisBuilder)) {
+      return;
     }
   }
 
