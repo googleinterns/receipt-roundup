@@ -35,7 +35,7 @@ async function loadLogoutButton(account) {
 /** Fetches all receipts from the server and adds them to the DOM. */
 async function getAllReceipts() {
   const params = new URLSearchParams();
-  params.append('isNewLoad', 'true');
+  params.append('isPageLoad', 'true');
 
   const response = await fetch(`/search-receipts?${params.toString()}`);
   const receipts = await response.json();
@@ -47,7 +47,7 @@ async function getAllReceipts() {
 /** Fetches matching receipts from the server and adds them to the DOM. */
 async function searchReceipts() {
   const params = new URLSearchParams();
-  params.append('isNewLoad', 'false');
+  params.append('isPageLoad', 'false');
   params.append('category', document.getElementById('category-input').value);
   params.append(
       'dateRange', document.getElementById('date-range-input').textContent);

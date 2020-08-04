@@ -82,14 +82,36 @@ public class SearchServlet extends HttpServlet {
 
     ImmutableList<Receipt> receipts = null;
 
-    if (!checkParameter(request, "isNewSearch") && checkParameter(request, "getNextPage")) {
-      receipts = getPage(true);
-    } else if (!checkParameter(request, "isNewSearch")
-        && checkParameter(request, "getPreviousPage")) {
-      receipts = getPage(false);
-    } else if (checkParameter(request, "isPageLoad")) {
+    // if (!checkParameter(request, "isNewSearch") && checkParameter(request, "getNextPage")) {
+    //   receipts = getPage(true);
+    // } else if (!checkParameter(request, "isNewSearch")
+    //     && checkParameter(request, "getPreviousPage")) {
+    //   receipts = getPage(false);
+    // } else if (checkParameter(request, "isPageLoad")) {
+    //   receipts = getMatchingReceipts(true);
+    // } else if (!checkParameter(request, "isPageLoad") && checkParameter(request, "isNewSearch")) {
+    //   try {
+    //     createQueryInformation(request);
+    //   } catch (NullPointerException exception) {
+    //     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    //     response.getWriter().println(NULL_EXCEPTION_MESSAGE);
+    //     return;
+    //   } catch (NumberFormatException exception) {
+    //     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    //     response.getWriter().println(NUMBER_EXCEPTION_MESSAGE);
+    //     return;
+    //   } catch (ParseException exception) {
+    //     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    //     response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
+    //     return;
+    //   }
+
+    //   receipts = getMatchingReceipts(false);
+    // }
+
+    if (checkParameter(request, "isPageLoad")) {
       receipts = getMatchingReceipts(true);
-    } else if (!checkParameter(request, "isPageLoad") && checkParameter(request, "isNewSearch")) {
+    } else if (checkParameter(request, "isNewSearch")) {
       try {
         createQueryInformation(request);
       } catch (NullPointerException exception) {
@@ -107,7 +129,11 @@ public class SearchServlet extends HttpServlet {
       }
 
       receipts = getMatchingReceipts(false);
-    }
+    } else if (checkParameter(request, "getNextPage")) {
+      receipts = getPage(true);
+    } else if (checkParameter(request, "getPreviousPage")) {
+      receipts = getPage(false);
+    } 
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
