@@ -130,10 +130,3 @@ $(window).resize(function() {
   drawStoreChart(storeData);
   drawCategoryChart(categoryData);
 });
-
-/**
- * Redirects the user to the home page.
- */
-function redirectHome() {
-  window.location.href = '/';
-}
