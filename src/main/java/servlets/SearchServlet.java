@@ -60,9 +60,9 @@ public class SearchServlet extends HttpServlet {
   private final DatastoreService datastore;
   private final UserService userService = UserServiceFactory.getUserService();
 
-  private static Cursor cursor;
-  private static PreparedQuery preparedQuery;
-  private static QueryInformation queryInformation;
+  private Cursor cursor;
+  private PreparedQuery preparedQuery;
+  private QueryInformation queryInformation;
 
   public SearchServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
