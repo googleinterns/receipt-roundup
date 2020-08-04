@@ -125,7 +125,6 @@ public class ReceiptAnalysis {
 
     // Generate categories and parse date and price if text was extracted.
     if (analysisBuilder.getRawText().isPresent()) {
-      System.out.println(analysisBuilder.getRawText().get());
       ImmutableSet<String> categories = categorizeText(analysisBuilder.getRawText().get());
       analysisBuilder.setCategories(categories);
 
