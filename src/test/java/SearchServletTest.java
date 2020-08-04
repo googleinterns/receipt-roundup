@@ -339,7 +339,6 @@ public final class SearchServletTest {
     ImmutableList<Entity> expectedSecondPage = expectedReceipts.asList().subList(0, 2);
     Receipt[] returnedSecondPage = gson.fromJson(stringWriter.toString(), Receipt[].class);
 
-    Assert.assertEquals(expectedSecondPage.size(), returnedSecondPage.length);
     Assert.assertTrue(TestUtils.checkIdsMatch(expectedSecondPage, returnedSecondPage));
   }
 
@@ -377,7 +376,6 @@ public final class SearchServletTest {
     ImmutableList<Entity> expectedFirstPage = expectedReceipts.asList().subList(2, 12);
     Receipt[] returnedFirstPage = gson.fromJson(stringWriter.toString(), Receipt[].class);
 
-    Assert.assertEquals(expectedFirstPage.size(), returnedFirstPage.length);
     Assert.assertTrue(TestUtils.checkIdsMatch(expectedFirstPage, returnedFirstPage));
   }
 }

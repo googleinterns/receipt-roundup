@@ -150,6 +150,10 @@ public final class TestUtils {
    * @return true if all expectedPage receipt ids are found in returnedPage, else false.
    */
   public static boolean checkIdsMatch(ImmutableList<Entity> expectedPage, Receipt[] returnedPage) {
+    if (expectedPage.size() != returnedPage.length) {
+      return false;
+    }
+
     Supplier<Stream<Long>> ids = () -> Arrays.stream(returnedPage).map(Receipt::getId);
 
     for (Entity expectedEntity : expectedPage) {
