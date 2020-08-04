@@ -115,7 +115,7 @@ public class SearchServlet extends HttpServlet {
   }
 
   /**
-   * Check if the passed in parameter was true or false.
+   * Checks if the passed in parameter was true or false.
    * @param parameter A string representation of a boolean: "true" or "false".
    * @return the input string parsed to a boolean.
    */
