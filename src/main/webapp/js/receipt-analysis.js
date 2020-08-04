@@ -38,12 +38,7 @@ function loadReceiptAnalysis() {
   }
   if (receipt.price) {
     document.getElementById('price-input').value =
-        Number(receipt.price).toLocaleString(undefined, {
-          maximumFractionDigits: 2,
-          currency: 'USD',
-          style: 'currency',
-          currencyDisplay: 'symbol',
-        });
+        `$${Number(receipt.price).toFixed(2)}`;
   }
   if (receipt.categories) {
     document.getElementById('categories-input').value = receipt.categories;
