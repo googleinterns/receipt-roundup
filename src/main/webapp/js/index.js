@@ -216,6 +216,8 @@ $(function() {
               ],
             },
             showDropdowns: true,
+            linkedCalendars: false,
+            applyButtonClasses: 'btn btn-info',
           },
 
           cb);
