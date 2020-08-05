@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /** Class that contains helpful methods used for testing. */
@@ -135,6 +136,14 @@ public final class TestUtils {
     }
 
     return analytics;
+  }
+
+  /**
+   * Parses a json string containing a ServerResponse.
+   * @return only the receipts part of the string.
+   */
+  public static String getReceiptsString(String json) throws IOException {
+    return new JSONObject(json).getJSONArray("matchingReceipts").toString();
   }
 
   /**

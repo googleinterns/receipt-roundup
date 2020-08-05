@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.sps.data.QueryInformation;
 import com.google.sps.data.Receipt;
+import com.google.sps.data.ServerResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -41,7 +42,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.json.JSONObject;
 
 /** Servlet that searches and returns matching receipts from datastore. */
 @WebServlet("/search-receipts")
@@ -80,10 +80,10 @@ public class SearchServlet extends HttpServlet {
       return;
     }
 
-    JSONObject receipts = null;
+    ServerResponse serverResponse = null;
 
     if (checkParameter(request, "isPageLoad")) {
-      receipts = getMatchingReceipts(true);
+      serverResponse = getMatchingReceipts(true);
     } else if (checkParameter(request, "isNewSearch")) {
       try {
         createQueryInformation(request);
@@ -101,19 +101,16 @@ public class SearchServlet extends HttpServlet {
         return;
       }
 
-      receipts = getMatchingReceipts(false);
+      serverResponse = getMatchingReceipts(false);
     } else if (checkParameter(request, "getNextPage")) {
-      receipts = getPage(true, request.getParameter("encodedCursor"));
+      serverResponse = getPage(true, request.getParameter("encodedCursor"));
     } else if (checkParameter(request, "getPreviousPage")) {
-      receipts = getPage(false, request.getParameter("encodedCursor"));
+      serverResponse = getPage(false, request.getParameter("encodedCursor"));
     }
-
-    System.out.println(receipts);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
-    // System.out.println(gson.toJson(receipts));
-    response.getWriter().println(receipts);
+    response.getWriter().println(gson.toJson(serverResponse));
   }
 
   /**
@@ -142,28 +139,26 @@ public class SearchServlet extends HttpServlet {
   /**
    * Gets a receipts page from an existing query.
    * @param isNextPage If true, get the next page. If false, get the previous page.
+   * @return a ServerResponse object containing the receipts page and encodedCursor.
    */
-  private JSONObject getPage(boolean isNextPage, String encodedCursor) {
+  private ServerResponse getPage(boolean isNextPage, String encodedCursor) {
     Cursor cursor = Cursor.fromWebSafeString(encodedCursor);
     FetchOptions options = isNextPage ? FetchOptions.Builder.withStartCursor(cursor)
                                       : FetchOptions.Builder.withEndCursor(cursor);
     options.limit(RECEIPTS_PER_PAGE);
 
     QueryResultList<Entity> results = preparedQuery.asQueryResultList(options);
-
+    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
     encodedCursor = results.getCursor().toWebSafeString();
 
-    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
-
-    JSONObject json = new JSONObject();
-    json.put("receipts", receipts);
-    json.put("cursor", encodedCursor);
-
-    return json;
+    return new ServerResponse(receipts, encodedCursor);
   }
 
-  /** Returns ImmutableList of receipts from datastore matching queryInformation fields. */
-  private JSONObject getMatchingReceipts(boolean isPageLoad) {
+  /**
+   * Gets receipts from datastore matching queryInformation fields and encodedCursor.
+   * @return a ServerResponse object containing the receipts and encodedCursor.
+   */
+  private ServerResponse getMatchingReceipts(boolean isPageLoad) {
     Query query = new Query("Receipt")
                       .addSort("timestamp", SortDirection.DESCENDING)
                       .addSort("__key__", SortDirection.DESCENDING);
@@ -178,15 +173,10 @@ public class SearchServlet extends HttpServlet {
     QueryResultList<Entity> results =
         preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
 
+    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
     String encodedCursor = results.getCursor().toWebSafeString();
 
-    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
-
-    JSONObject json = new JSONObject();
-    json.put("receipts", receipts);
-    json.put("cursor", encodedCursor);
-    
-    return json;
+    return new ServerResponse(receipts, encodedCursor);
   }
 
   /** Sets up a {@link Query} with filters set based on which values were input by user. */
