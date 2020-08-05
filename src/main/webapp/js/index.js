@@ -122,10 +122,13 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('#total').innerText =
       `Total: $${receipt.price.toFixed(2)}`;
 
+  const categoriesContainer =
+      receiptCardClone.getElementById('categories-container');
+
   const categories = Array.from(receipt.categories);
-  for (let i = 0; i < categories.length && i < 3; i++) {
-    receiptCardClone.querySelector('#c' + i).innerText =
-        capitalizeFirstLetters(categories[i]);
+  for (let i = 0; i < categories.length; i++) {
+    const category = capitalizeFirstLetters(categories[i]);
+    categoriesContainer.appendChild(createCategoryElement(category));
   }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
@@ -137,6 +140,15 @@ function createReceiptCardElement(receipt) {
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
+}
+
+/** Creates the div element for a category along with its children. */
+function createCategoryElement(category) {
+  const categoryElement =
+      document.querySelector('#category-template').content.cloneNode(true);
+  categoryElement.querySelector('#category-name').innerText = category;
+
+  return categoryElement;
 }
 
 /**
