@@ -307,7 +307,6 @@ public class ReceiptAnalysis {
             .filter(token -> isPrice(token) || containsTotalText(token))
             .collect(ImmutableList.toImmutableList());
 
-    double price = 0;
     boolean priceFound = false;
     boolean priceFoundAfterMostRecentTotal = true;
 
@@ -316,18 +315,13 @@ public class ReceiptAnalysis {
       if (containsTotalText(token)) {
         priceFoundAfterMostRecentTotal = false;
       } else if (!priceFoundAfterMostRecentTotal && parsePrice(token) != Double.NEGATIVE_INFINITY) {
-        price = parsePrice(token);
+        analysisBuilder.setPrice(parsePrice(token));
         priceFound = true;
         priceFoundAfterMostRecentTotal = true;
       }
     }
 
-    if (priceFound) {
-      analysisBuilder.setPrice(price);
-      return true;
-    }
-
-    return false;
+    return priceFound;
   }
 
   /**
