@@ -183,6 +183,7 @@ async function deleteReceipt(receipt) {
 function attachEditButtonEventListener(receipt, receiptCardClone) {
   receiptCardClone.querySelector('#edit').addEventListener('click', () => {
     const params = new URLSearchParams();
+    params.append('show-edit-text', true);
     params.append('id', receipt.id);
     params.append('categories', receipt.categories);
     params.append('image-url', receipt.imageUrl);
