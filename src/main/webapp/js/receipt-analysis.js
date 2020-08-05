@@ -242,9 +242,9 @@ function formatCurrency(event) {
 }
 
 /**
- * Redirects the user to the home page.
+ * Redirects the user to the home page if all fields are set and saved.
  */
-function redirectHome() {
+function redirectHomeIfComplete() {
   if (isFormSaved()) {
     // Remove warning for unsaved changes.
     window.onbeforeunload = null;
