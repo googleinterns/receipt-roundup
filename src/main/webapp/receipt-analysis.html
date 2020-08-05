@@ -26,7 +26,12 @@
   <h1 id="header" class="p-3 text-center">Receipt Analysis</h1>
 
   <div class="container-fluid">
-    <p id="instructions" class="text-center">Success! The following receipt has been added to your account:</p>
+    <div class="instructions-container m-auto">
+      <p id="instructions" class="text-center">
+        The following information was extracted from your receipt. Please fix any mistakes and fill in any missing
+        items, then click the "Save Changes" button.
+      </p>
+    </div>
 
     <div class="card m-auto p-3">
       <form id="update-receipt-form" action="#" onsubmit="updateReceipt(event)">
