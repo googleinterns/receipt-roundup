@@ -1,5 +1,5 @@
 body {
-  background: url('/img/landscape.jpg') center/cover no-repeat fixed;
+  background: url(/img/landscape.jpg) center/cover no-repeat fixed;
 }
 
 h1 {
