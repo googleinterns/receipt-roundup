@@ -304,7 +304,7 @@ public class ReceiptAnalysis {
   private static boolean findPriceAfterTotal(AnalysisResults.Builder analysisBuilder) {
     ImmutableList<String> relevantTokens =
         getTokensFromRawText(analysisBuilder.getRawText().get())
-            .filter(token -> isPrice(token) || containsTotal(token))
+            .filter(token -> isPrice(token) || containsTotalText(token))
             .collect(ImmutableList.toImmutableList());
 
     double price = 0;
@@ -313,7 +313,7 @@ public class ReceiptAnalysis {
 
     // Try to find the first price after each token containing "total", and keep the last one found.
     for (String token : relevantTokens) {
-      if (containsTotal(token)) {
+      if (containsTotalText(token)) {
         priceFoundAfterMostRecentTotal = false;
       } else if (!priceFoundAfterMostRecentTotal && parsePrice(token) != Double.NEGATIVE_INFINITY) {
         price = parsePrice(token);
@@ -374,7 +374,7 @@ public class ReceiptAnalysis {
   /**
    * Checks if the token contains the word "total".
    */
-  private static boolean containsTotal(String token) {
+  private static boolean containsTotalText(String token) {
     return totalRegex.matcher(token).matches();
   }
 
