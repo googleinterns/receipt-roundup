@@ -126,10 +126,9 @@ function createReceiptCardElement(receipt) {
       receiptCardClone.getElementById('categories-container');
 
   const categories = Array.from(receipt.categories);
-  for (let i = 0; i < categories.length; i++) {
-    const category = capitalizeFirstLetters(categories[i]);
+  categories.forEach((category) => {
     categoriesContainer.appendChild(createCategoryElement(category));
-  }
+  });
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
   receiptCardClone.querySelector('.col-md-6').id = receipt.id;
@@ -144,6 +143,7 @@ function createReceiptCardElement(receipt) {
 
 /** Creates the div element for a category along with its children. */
 function createCategoryElement(category) {
+  category = capitalizeFirstLetters(category);
   const categoryElement =
       document.querySelector('#category-template').content.cloneNode(true);
   categoryElement.querySelector('#category-name').innerText = category;
