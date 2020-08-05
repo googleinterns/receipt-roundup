@@ -14,6 +14,8 @@
 
 /* global capitalizeFirstLetters, loadPage */
 
+let cursor;
+
 /** Checks if user is logged in then loads the logout button and receipts. */
 function load() {
   loadPage(getAllReceipts, loadLogoutButton);  // From js/common.js
@@ -63,7 +65,8 @@ function getNextPageOfReceipts() {
   const params = new URLSearchParams();
   params.append('isPageLoad', 'false');
   params.append('isNewSearch', 'false');
-  params.append('getNextPage', 'true');
+  params.append('getNextPage', 'true'); 
+  params.append('encodedCursor', cursor);
 
   searchReceipts(params);
   scrollToTop();
@@ -76,6 +79,7 @@ function getPreviousPageOfReceipts() {
   params.append('isNewSearch', 'false');
   params.append('getNextPage', 'false');
   params.append('getPreviousPage', 'true');
+  params.append('encodedCursor', cursor);
 
   searchReceipts(params);
   scrollToTop();
@@ -87,7 +91,10 @@ function getPreviousPageOfReceipts() {
  */
 async function searchReceipts(params) {
   const response = await fetch(`/search-receipts?${params.toString()}`);
-  const receipts = await response.json();
+  const info = await response.json();
+  console.log(info);
+  const receipts = info.receipts;
+  cursor = info.cursor;
 
   clearExistingDisplay();
   displayReceipts(receipts);
