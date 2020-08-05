@@ -125,7 +125,7 @@ async function updateReceipt(event) {
 
   document.body.style.cursor = 'wait';
   const saveButton = document.getElementById('submit-receipt');
-  const homeButton = document.getElementById('return-home');
+  const homeButton = document.getElementById('home-button');
   saveButton.disabled = true;
   homeButton.disabled = true;
 
@@ -243,10 +243,9 @@ function formatCurrency(event) {
 }
 
 /**
- * Redirects the user to the home page when the "Return to Home" button is
- * clicked.
+ * Redirects the user to the home page if all fields are set and saved.
  */
-function redirectHome() {
+function redirectHomeIfComplete() {
   if (isFormSaved()) {
     // Remove warning for unsaved changes.
     window.onbeforeunload = null;
