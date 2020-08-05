@@ -120,7 +120,7 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('#store-name').innerText =
       capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
-      'Total: $' + receipt.price;
+      `Total: $${receipt.price.toFixed(2)}`;
 
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length && i < 3; i++) {
@@ -217,6 +217,8 @@ $(function() {
               ],
             },
             showDropdowns: true,
+            linkedCalendars: false,
+            applyButtonClasses: 'btn btn-info',
           },
 
           cb);
