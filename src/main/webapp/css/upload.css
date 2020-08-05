@@ -4,8 +4,8 @@ h1 {
   text-align: center;
 }
 
-label {
-  font-size: 20px;
+.card {
+  max-width: 600px;
 }
 
 #upload-form,
@@ -14,9 +14,6 @@ input {
 }
 
 #upload-form {
-  background: linear-gradient(#e3ffe7 0%, #d9e7ff 100%);
-  border: solid 2px transparent;
-  border-radius: 30px;
   margin: 10px;
   padding: 4px;
 }
@@ -82,10 +79,6 @@ small {
     margin: auto;
   }
 
-  label {
-    font-size: 23px;
-  }
-
   #upload-form {
     margin: 0 5%;
     padding: 1.5%;
@@ -96,7 +89,6 @@ small {
   }
 
   .custom-file-label {
-    font-size: 20px;
     position: relative;
     text-align: left;
     width: 24em;

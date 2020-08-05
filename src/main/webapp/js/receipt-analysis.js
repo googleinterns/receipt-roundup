@@ -33,11 +33,18 @@ function loadReceiptAnalysis() {
   dateInput.value = receipt.date || today;
   dateInput.max = today;
 
+  if (receipt.showEditText) {
+    document.getElementById('header').innerText = 'Edit Receipt';
+    document.getElementById('instructions').innerText =
+        'Changes will not be saved unless you click the "Save Changes" button.';
+  }
+
   if (receipt.storeName) {
     document.getElementById('store-input').value = receipt.storeName;
   }
   if (receipt.price) {
-    document.getElementById('price-input').value = `$${receipt.price}`;
+    document.getElementById('price-input').value =
+        `$${Number(receipt.price).toFixed(2)}`;
   }
   if (receipt.categories) {
     document.getElementById('categories-input').value = receipt.categories;
@@ -53,13 +60,14 @@ function loadReceiptAnalysis() {
 function getReceiptFromQueryString() {
   const parameters = new URLSearchParams(location.search);
 
+  const showEditText = parameters.get('show-edit-text');
   const date = formatReceiptProperty('timestamp', getDateFromTimestamp);
   const storeName = formatReceiptProperty('store', capitalizeFirstLetters);
   const price = parameters.get('price');
   const categories = formatReceiptProperty('categories', formatCategories);
   const imageUrl = parameters.get('image-url');
 
-  return {date, storeName, price, categories, imageUrl};
+  return {showEditText, date, storeName, price, categories, imageUrl};
 }
 
 /**

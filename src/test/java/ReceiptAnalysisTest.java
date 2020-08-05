@@ -113,7 +113,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsAnalysisResults()
+  public void analyzeImageAt_url_returnsAnalysisResults()
       throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE, RAW_TEXT.get());
     stubTextClassification();
@@ -132,7 +132,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsAnalysisResultsWithNoStore()
+  public void analyzeImageAt_url_returnsAnalysisResultsWithNoStore()
       throws IOException, ReceiptAnalysisException {
     AnnotateImageResponse imageResponse = createImageResponseWithText(RAW_TEXT.get()).build();
     BatchAnnotateImagesResponse batchResponse =
@@ -147,7 +147,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlIgnoresLogoIfLowConfidence()
+  public void analyzeImageAt_lowConfidenceScore_ignoresLogo()
       throws IOException, ReceiptAnalysisException {
     stubAnnotationResponse(LOGO_CONFIDENCE_BELOW_THRESHOLD, RAW_TEXT.get());
     stubTextClassification();
@@ -160,7 +160,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDate() throws IOException, ReceiptAnalysisException {
+  public void analyzeImageAt_returnsTimestamp() throws IOException, ReceiptAnalysisException {
     String rawTextWithDate = "the date is 05-08-2020";
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDate);
     stubTextClassification();
@@ -171,7 +171,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateUsingSlashes()
+  public void analyzeImageAt_dateWithSlashes_returnsTimestamp()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithDateUsingSlashes = "the date is 05/08/2020";
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateUsingSlashes);
@@ -183,7 +183,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateWithNoLeadingZeros()
+  public void analyzeImageAt_dateWithNoLeadingZeros_returnsTimestamp()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithDateNoLeadingZeros = "the date is 5-8-2020";
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateNoLeadingZeros);
@@ -195,7 +195,7 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateWithTwoDigitYear()
+  public void analyzeImageAt_dateWithTwoDigitYear_returnsTimestamp()
       throws IOException, ReceiptAnalysisException {
     String rawTextWithDateTwoDigitYear = "the date is 05-08-20";
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateTwoDigitYear);
@@ -207,7 +207,8 @@ public final class ReceiptAnalysisTest {
   }
 
   @Test
-  public void analyzeImageAtUrlReturnsDateIn1900s() throws IOException, ReceiptAnalysisException {
+  public void analyzeImageAt_dateIn1900s_returnsTimestamp()
+      throws IOException, ReceiptAnalysisException {
     String rawTextWithDateIn1900s = "the date is 05-08-99";
     stubAnnotationResponse(LOGO_CONFIDENCE, rawTextWithDateIn1900s);
     stubTextClassification();

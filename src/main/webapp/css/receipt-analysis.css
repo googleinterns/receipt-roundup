@@ -1,3 +1,11 @@
 .card {
   max-width: 600px;
 }
+
+.instructions-container {
+  max-width: 600px;
+}
+
+.required {
+  color: red;
+}

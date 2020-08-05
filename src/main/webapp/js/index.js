@@ -28,8 +28,7 @@ function load() {
 async function loadLogoutButton(account) {
   document.getElementById('logout-button').href = account.logoutUrl;
 
-  document.getElementById('user-display').innerHTML =
-      `You are signed in as ${account.email}`;
+  document.getElementById('user-display').innerHTML = `${account.email}`;
 }
 
 /** Fetches all receipts from the server and adds them to the DOM. */
@@ -121,7 +120,7 @@ function createReceiptCardElement(receipt) {
   receiptCardClone.querySelector('#store-name').innerText =
       capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
-      'Total: $' + receipt.price;
+      `Total: $${receipt.price.toFixed(2)}`;
 
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length && i < 3; i++) {
@@ -172,6 +171,7 @@ async function deleteReceipt(receipt) {
 function attachEditButtonEventListener(receipt, receiptCardClone) {
   receiptCardClone.querySelector('#edit').addEventListener('click', () => {
     const params = new URLSearchParams();
+    params.append('show-edit-text', true);
     params.append('id', receipt.id);
     params.append('categories', receipt.categories);
     params.append('image-url', receipt.imageUrl);
@@ -217,6 +217,8 @@ $(function() {
               ],
             },
             showDropdowns: true,
+            linkedCalendars: false,
+            applyButtonClasses: 'btn btn-info',
           },
 
           cb);
