@@ -16,12 +16,12 @@ package com.google.sps.data;
 
 import com.google.common.collect.ImmutableList;
 
-/** Class that computes and stores user's spending analytics. */
-public class ServerResponse {
+/** Wrapper class for a search servlet doGet request. */
+public class SearchServletResponse {
   private final ImmutableList<Receipt> matchingReceipts;
   private final String encodedCursor;
 
-  public ServerResponse(ImmutableList<Receipt> matchingReceipts, String encodedCursor) {
+  public SearchServletResponse(ImmutableList<Receipt> matchingReceipts, String encodedCursor) {
     this.matchingReceipts = ImmutableList.copyOf(matchingReceipts);
     this.encodedCursor = encodedCursor;
   }

@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.sps.data.QueryInformation;
 import com.google.sps.data.Receipt;
-import com.google.sps.data.ServerResponse;
+import com.google.sps.data.SearchServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -80,10 +80,10 @@ public class SearchServlet extends HttpServlet {
       return;
     }
 
-    ServerResponse serverResponse = null;
+    SearchServletResponse servletResponse = null;
 
     if (checkParameter(request, "isPageLoad")) {
-      serverResponse = getMatchingReceipts(true);
+      servletResponse = getMatchingReceipts(true);
     } else if (checkParameter(request, "isNewSearch")) {
       try {
         createQueryInformation(request);
@@ -101,16 +101,16 @@ public class SearchServlet extends HttpServlet {
         return;
       }
 
-      serverResponse = getMatchingReceipts(false);
+      servletResponse = getMatchingReceipts(false);
     } else if (checkParameter(request, "getNextPage")) {
-      serverResponse = getPage(true, request.getParameter("encodedCursor"));
+      servletResponse = getPage(true, request.getParameter("encodedCursor"));
     } else if (checkParameter(request, "getPreviousPage")) {
-      serverResponse = getPage(false, request.getParameter("encodedCursor"));
+      servletResponse = getPage(false, request.getParameter("encodedCursor"));
     }
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
-    response.getWriter().println(gson.toJson(serverResponse));
+    response.getWriter().println(gson.toJson(servletResponse));
   }
 
   /**
@@ -139,9 +139,9 @@ public class SearchServlet extends HttpServlet {
   /**
    * Gets a receipts page from an existing query.
    * @param isNextPage If true, get the next page. If false, get the previous page.
-   * @return a ServerResponse object containing the receipts page and encodedCursor.
+   * @return wrapper object containing the receipts page and encodedCursor.
    */
-  private ServerResponse getPage(boolean isNextPage, String encodedCursor) {
+  private SearchServletResponse getPage(boolean isNextPage, String encodedCursor) {
     Cursor cursor = Cursor.fromWebSafeString(encodedCursor);
     FetchOptions options = isNextPage ? FetchOptions.Builder.withStartCursor(cursor)
                                       : FetchOptions.Builder.withEndCursor(cursor);
@@ -151,14 +151,14 @@ public class SearchServlet extends HttpServlet {
     ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
     encodedCursor = results.getCursor().toWebSafeString();
 
-    return new ServerResponse(receipts, encodedCursor);
+    return new SearchServletResponse(receipts, encodedCursor);
   }
 
   /**
    * Gets receipts from datastore matching queryInformation fields and encodedCursor.
-   * @return a ServerResponse object containing the receipts and encodedCursor.
+   * @return wrapper object containing the receipts and encodedCursor.
    */
-  private ServerResponse getMatchingReceipts(boolean isPageLoad) {
+  private SearchServletResponse getMatchingReceipts(boolean isPageLoad) {
     Query query = new Query("Receipt")
                       .addSort("timestamp", SortDirection.DESCENDING)
                       .addSort("__key__", SortDirection.DESCENDING);
@@ -176,7 +176,7 @@ public class SearchServlet extends HttpServlet {
     ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
     String encodedCursor = results.getCursor().toWebSafeString();
 
-    return new ServerResponse(receipts, encodedCursor);
+    return new SearchServletResponse(receipts, encodedCursor);
   }
 
   /** Sets up a {@link Query} with filters set based on which values were input by user. */
