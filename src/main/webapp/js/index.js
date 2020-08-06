@@ -116,7 +116,8 @@ function createReceiptCardElement(receipt) {
 
   // Fill in template fields with correct information.
   const date = new Date(receipt.timestamp);
-  receiptCardClone.querySelector('#timestamp').innerText = date.toDateString();
+  receiptCardClone.querySelector('#timestamp').innerText =
+      date.toUTCString().substring(0, 16);
   receiptCardClone.querySelector('#store-name').innerText =
       capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
