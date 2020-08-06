@@ -76,8 +76,8 @@
       </div>
     </div>
     <h1 class="text-center">Home</h1>
-    <form onsubmit="return false">
-      <div class="row mb-4 search-bar vertical-center">
+    <form onsubmit="return false" class="search-bar">
+      <div class="row vertical-center ml-1 mr-1">
         <div class="col-md-2 d-flex justify-content-center pt-2">
           <input class="form-control mr-sm-2" name="category" id="category-input" placeholder="Category" type="text" />
         </div>
@@ -115,7 +115,7 @@
       </div>
     </form>
     <!-- The columns will automatically stack on top of each other when the screen is less than 768px wide. -->
-    <div id="receipts-display" class="row"></div>
+    <div id="receipts-display" class="row mt-4"></div>
   </div>
 </body>
 <template id="receipt-card-template">
@@ -128,9 +128,15 @@
       <img src="temp" alt="Receipt image" class="img-fluid receipt-img" />
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
-          <div class="btn-group">
-            <button id="edit" type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
-            <button id="delete" type="button" class="btn btn-sm btn-outline-secondary">Delete</button>
+          <div class="btn-toolbar">
+            <div class="btn-group mr-2">
+              <button id="edit" type="button" class="btn btn-sm btn-info"><img src="img/edit.svg" alt="Edit" /></button>
+            </div>
+            <div class="btn-group">
+              <button id="delete" type="button" class="btn btn-sm btn-info">
+                <img src="img/delete.svg" alt="Delete" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

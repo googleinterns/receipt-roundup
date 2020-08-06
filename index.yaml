@@ -2,16 +2,24 @@ indexes:
 
 - kind: Receipt
   properties:
+  - name: userId
+  - name: timestamp
+
+- kind: Receipt
+  properties:
+  - name: userId
   - name: store
   - name: timestamp
 
 - kind: Receipt
   properties:
+  - name: userId
   - name: categories
   - name: timestamp
 
 - kind: Receipt
   properties:
+  - name: userId
   - name: store
   - name: categories
   - name: timestamp
