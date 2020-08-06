@@ -61,3 +61,10 @@ function capitalizeFirstLetters(lowercasedString) {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 }
+
+/**
+ * Redirects the user to the home page.
+ */
+function redirectHome() {
+  window.location.href = '/';
+}
