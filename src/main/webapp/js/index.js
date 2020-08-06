@@ -116,16 +116,19 @@ function createReceiptCardElement(receipt) {
 
   // Fill in template fields with correct information.
   const date = new Date(receipt.timestamp);
-  receiptCardClone.querySelector('#timestamp').innerText = date.toDateString();
+  receiptCardClone.querySelector('#timestamp').innerText =
+      date.toUTCString().substring(0, 16);
   receiptCardClone.querySelector('#store-name').innerText =
       capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
       `Total: $${receipt.price.toFixed(2)}`;
 
+  const categoriesContainer =
+      receiptCardClone.getElementById('categories-container');
+
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length && i < 3; i++) {
-    receiptCardClone.querySelector('#c' + i).innerText =
-        capitalizeFirstLetters(categories[i]);
+    categoriesContainer.appendChild(createCategoryElement(categories[i]));
   }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
@@ -137,6 +140,16 @@ function createReceiptCardElement(receipt) {
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
+}
+
+/** Creates the div element for a category along with its children. */
+function createCategoryElement(category) {
+  category = capitalizeFirstLetters(category);
+  const categoryElement =
+      document.querySelector('#category-template').content.cloneNode(true);
+  categoryElement.querySelector('#category-name').innerText = category;
+
+  return categoryElement;
 }
 
 /**
