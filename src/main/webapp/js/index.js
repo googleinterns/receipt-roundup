@@ -116,7 +116,8 @@ function createReceiptCardElement(receipt) {
 
   // Fill in template fields with correct information.
   const date = new Date(receipt.timestamp);
-  receiptCardClone.querySelector('#timestamp').innerText = date.toDateString();
+  receiptCardClone.querySelector('#timestamp').innerText =
+      date.toUTCString().substring(0, 16);
   receiptCardClone.querySelector('#store-name').innerText =
       capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
@@ -126,9 +127,9 @@ function createReceiptCardElement(receipt) {
       receiptCardClone.getElementById('categories-container');
 
   const categories = Array.from(receipt.categories);
-  categories.forEach((category) => {
-    categoriesContainer.appendChild(createCategoryElement(category));
-  });
+  for (let i = 0; i < categories.length && i < 3; i++) {
+    categoriesContainer.appendChild(createCategoryElement(categories[i]));
+  }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
   receiptCardClone.querySelector('.col-md-6').id = receipt.id;
