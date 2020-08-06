@@ -83,7 +83,7 @@ public class SearchServlet extends HttpServlet {
     SearchServletResponse servletResponse = null;
 
     if (checkParameter(request, "isPageLoad")) {
-      servletResponse = getMatchingReceipts(true);
+      servletResponse = getMatchingReceipts(/* isPageLoad = */ true);
     } else if (checkParameter(request, "isNewSearch")) {
       try {
         createQueryInformation(request);
@@ -101,11 +101,11 @@ public class SearchServlet extends HttpServlet {
         return;
       }
 
-      servletResponse = getMatchingReceipts(false);
+      servletResponse = getMatchingReceipts(/* isPageLoad = */ false);
     } else if (checkParameter(request, "getNextPage")) {
-      servletResponse = getPage(true, request.getParameter("encodedCursor"));
+      servletResponse = getNextPage(request.getParameter("encodedCursor"));
     } else if (checkParameter(request, "getPreviousPage")) {
-      servletResponse = getPage(false, request.getParameter("encodedCursor"));
+      servletResponse = getPreviousPage(request.getParameter("encodedCursor"));
     }
 
     Gson gson = new Gson();
@@ -137,14 +137,28 @@ public class SearchServlet extends HttpServlet {
   }
 
   /**
-   * Gets a receipts page from an existing query.
-   * @param isNextPage If true, get the next page. If false, get the previous page.
+   * Gets next receipts page from an existing query.
    * @return wrapper object containing the receipts page and encodedCursor.
    */
-  private SearchServletResponse getPage(boolean isNextPage, String encodedCursor) {
+  private SearchServletResponse getNextPage(String encodedCursor) {
     Cursor cursor = Cursor.fromWebSafeString(encodedCursor);
-    FetchOptions options = isNextPage ? FetchOptions.Builder.withStartCursor(cursor)
-                                      : FetchOptions.Builder.withEndCursor(cursor);
+    FetchOptions options = FetchOptions.Builder.withStartCursor(cursor);
+    options.limit(RECEIPTS_PER_PAGE);
+
+    QueryResultList<Entity> results = preparedQuery.asQueryResultList(options);
+    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
+    encodedCursor = results.getCursor().toWebSafeString();
+
+    return new SearchServletResponse(receipts, encodedCursor);
+  }
+
+  /**
+   * Gets previous receipts page from an existing query.
+   * @return wrapper object containing the receipts page and encodedCursor.
+   */
+  private SearchServletResponse getPreviousPage(String encodedCursor) {
+    Cursor cursor = Cursor.fromWebSafeString(encodedCursor);
+    FetchOptions options = FetchOptions.Builder.withEndCursor(cursor);
     options.limit(RECEIPTS_PER_PAGE);
 
     QueryResultList<Entity> results = preparedQuery.asQueryResultList(options);
