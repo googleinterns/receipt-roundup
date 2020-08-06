@@ -83,7 +83,7 @@ public class SearchServlet extends HttpServlet {
     SearchServletResponse servletResponse = null;
 
     if (checkParameter(request, "isPageLoad")) {
-      servletResponse = getMatchingReceipts(/* isPageLoad = */ true);
+      servletResponse = getReceipts(/* isPageLoad = */ true);
     } else if (checkParameter(request, "isNewSearch")) {
       try {
         createQueryInformation(request);
@@ -101,7 +101,7 @@ public class SearchServlet extends HttpServlet {
         return;
       }
 
-      servletResponse = getMatchingReceipts(/* isPageLoad = */ false);
+      servletResponse = getReceipts(/* isPageLoad = */ false);
     } else if (checkParameter(request, "getNextPage")) {
       servletResponse = getNextPage(request.getParameter("encodedCursor"));
     } else if (checkParameter(request, "getPreviousPage")) {
@@ -169,10 +169,11 @@ public class SearchServlet extends HttpServlet {
   }
 
   /**
-   * Gets receipts from datastore matching queryInformation fields and encodedCursor.
+   * Gets receipts from datastore.
+   * @param isPageLoad If true, gets all receipts, else gets receipts matching queryInformation.
    * @return wrapper object containing the receipts and encodedCursor.
    */
-  private SearchServletResponse getMatchingReceipts(boolean isPageLoad) {
+  private SearchServletResponse getReceipts(boolean isPageLoad) {
     Query query = new Query("Receipt")
                       .addSort("timestamp", SortDirection.DESCENDING)
                       .addSort("__key__", SortDirection.DESCENDING);
