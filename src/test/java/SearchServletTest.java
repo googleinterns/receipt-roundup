@@ -63,6 +63,8 @@ public final class SearchServletTest {
   private static final String STORE = "walmart";
   private static final String MIN_PRICE = "5.00";
   private static final String MAX_PRICE = "30.00";
+  private static final String ENCODED_CURSOR =
+      "CjEKFAoJdGltZXN0YW1wEgcI2NeP6LUeEhVqBHRlc3RyDQsSB1JlY2VpcHQYAwwYACAB";
 
   private static final String DOMAIN_NAME = "gmail.com";
   private static final String USER_EMAIL = "test@gmail.com";
@@ -77,6 +79,9 @@ public final class SearchServletTest {
           .setEnvAuthDomain(DOMAIN_NAME)
           .setEnvAttributes(new HashMap(
               ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", USER_ID)));
+
+  private final Gson gson =
+      new GsonBuilder().registerTypeAdapterFactory(ImmutableAdapterFactory.forGuava()).create();
 
   @Mock private SearchServlet servlet;
   @Mock private HttpServletRequest request;
@@ -217,7 +222,7 @@ public final class SearchServletTest {
     // Add mock receipts to datastore.
     ImmutableSet<Entity> expectedReceipts = TestUtils.addTestReceipts(datastore);
 
-    when(request.getParameter("isNewLoad")).thenReturn("true");
+    when(request.getParameter("isPageLoad")).thenReturn("true");
 
     // Perform doGet - this should retrieve all receipts.
     servlet.doGet(request, response);
@@ -226,14 +231,10 @@ public final class SearchServletTest {
     // Make sure all receipts retrieved by checking their ids.
     Gson gson =
         new GsonBuilder().registerTypeAdapterFactory(ImmutableAdapterFactory.forGuava()).create();
-    Receipt[] returnedReceipts = gson.fromJson(stringWriter.toString(), Receipt[].class);
-    Assert.assertEquals(expectedReceipts.size(), returnedReceipts.length);
-    for (Entity expectedReceipt : expectedReceipts) {
-      Assert.assertTrue(
-          Arrays.stream(returnedReceipts)
-              .anyMatch(
-                  receipt -> receipt.getId() == expectedReceipt.getKey().getId())); // check id
-    }
+    String receipts = TestUtils.getReceiptsString(stringWriter.toString());
+    Receipt[] returnedReceipts = gson.fromJson(receipts, Receipt[].class);
+
+    Assert.assertTrue(TestUtils.checkIdsMatch(expectedReceipts.asList(), returnedReceipts));
   }
 
   @Test
@@ -245,8 +246,9 @@ public final class SearchServletTest {
     TestUtils.addTestReceipts(datastore);
 
     // Perform doGet with a null value as a parameter.
-    TestUtils.setSearchServletRequestParameters(
-        request, CST_TIMEZONE_ID, CATEGORY, SHORT_DATE_RANGE, STORE, MIN_PRICE, /*maxPrice=*/null);
+    TestUtils.setSearchServletRequestParameters(request, CST_TIMEZONE_ID, CATEGORY,
+        SHORT_DATE_RANGE, STORE, MIN_PRICE,
+        /*maxPrice=*/null);
     servlet.doGet(request, response);
     writer.flush();
 
@@ -314,7 +316,8 @@ public final class SearchServletTest {
     writer.flush();
 
     // No receipts should be returned (empty string).
-    Assert.assertEquals(ImmutableList.of().toString() + "\n", stringWriter.toString());
+    String receiptsString = TestUtils.getReceiptsString(stringWriter.toString());
+    Assert.assertEquals("[]", receiptsString);
   }
 
   @Test
@@ -328,5 +331,79 @@ public final class SearchServletTest {
 
     Assert.assertTrue(stringWriter.toString().contains(AUTHENTICATION_ERROR_MESSAGE));
     verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+  }
+
+  @Test
+  public void paginationNextPage() throws IOException {
+    // This test simulates starting on page 1, then moving to page 2.
+
+    // Add 12 mock receipts to datastore.
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore, 12);
+
+    // Perform doGet - this should retrieve max receipts for page, which is 10.
+    when(request.getParameter("isPageLoad")).thenReturn("true");
+
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure first page of returned receipts matches expected by checking ids.
+    ImmutableList<Entity> expectedFirstPage = expectedReceipts.asList().subList(2, 12);
+    String receipts = TestUtils.getReceiptsString(stringWriter.toString());
+    Receipt[] returnedFirstPage = gson.fromJson(receipts, Receipt[].class);
+
+    Assert.assertEquals(expectedFirstPage.size(), returnedFirstPage.length);
+    Assert.assertTrue(TestUtils.checkIdsMatch(expectedFirstPage, returnedFirstPage));
+
+    // Perform doGet - this should retrieve last few receipts, which is 2.
+    when(request.getParameter("getNextPage")).thenReturn("true");
+    when(request.getParameter("encodedCursor")).thenReturn(ENCODED_CURSOR);
+
+    stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure second page of returned receipts matches expected by checking ids.
+    ImmutableList<Entity> expectedSecondPage = expectedReceipts.asList().subList(0, 2);
+    receipts = TestUtils.getReceiptsString(stringWriter.toString());
+    Receipt[] returnedSecondPage = gson.fromJson(receipts, Receipt[].class);
+
+    Assert.assertTrue(TestUtils.checkIdsMatch(expectedSecondPage, returnedSecondPage));
+  }
+
+  @Test
+  public void paginationPreviousPage() throws IOException {
+    // This test simulates starting on page 1, moving to page 2, then moving back to 1.
+
+    // Add 12 mock receipts to datastore.
+    ImmutableSet<Entity> expectedReceipts = TestUtils.addManyTestReceipts(datastore, 12);
+
+    // Perform doGet - this should retrieve first page with 10 receipts.
+    when(request.getParameter("isPageLoad")).thenReturn("true");
+
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Perform doGet - this should retrieve second page with last 2 receipts.
+    when(request.getParameter("getNextPage")).thenReturn("true");
+    when(request.getParameter("encodedCursor")).thenReturn(ENCODED_CURSOR);
+
+    stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Perform doGet - this should retrieve first page again with 10 receipts.
+    when(request.getParameter("getNextPage")).thenReturn("false");
+    when(request.getParameter("getPreviousPage")).thenReturn("true");
+
+    stringWriter.getBuffer().setLength(0); // Clear stringwriter of last receipts.
+    servlet.doGet(request, response);
+    writer.flush();
+
+    // Make sure first page of returned receipts matches expected by checking ids.
+    ImmutableList<Entity> expectedFirstPage = expectedReceipts.asList().subList(2, 12);
+    String receipts = TestUtils.getReceiptsString(stringWriter.toString());
+    Receipt[] returnedFirstPage = gson.fromJson(receipts, Receipt[].class);
+
+    Assert.assertTrue(TestUtils.checkIdsMatch(expectedFirstPage, returnedFirstPage));
   }
 }

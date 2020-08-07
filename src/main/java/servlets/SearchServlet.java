@@ -14,12 +14,16 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.datastore.QueryResultList;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -29,9 +33,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.sps.data.QueryInformation;
 import com.google.sps.data.Receipt;
+import com.google.sps.data.SearchServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +46,8 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet that searches and returns matching receipts from datastore. */
 @WebServlet("/search-receipts")
 public class SearchServlet extends HttpServlet {
+  private static final int RECEIPTS_PER_PAGE = 10;
+
   /** Messages that show up on client-side banner on thrown exception. */
   private static final String NULL_EXCEPTION_MESSAGE =
       "Null Field: Receipt unable to be queried at this time, please try again.";
@@ -51,16 +59,14 @@ public class SearchServlet extends HttpServlet {
       "No Authentication: User must be logged in to search receipts.";
 
   private final DatastoreService datastore;
-  private final UserService userService;
+  private final UserService userService = UserServiceFactory.getUserService();
 
   public SearchServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
-    userService = UserServiceFactory.getUserService();
   }
 
   public SearchServlet(DatastoreService datastore) {
     this.datastore = datastore;
-    userService = UserServiceFactory.getUserService();
   }
 
   @Override
@@ -71,14 +77,15 @@ public class SearchServlet extends HttpServlet {
       return;
     }
 
-    QueryInformation queryInformation;
-    ImmutableList<Receipt> receipts;
+    Query query = null;
+    QueryInformation queryInformation = null;
 
-    if (Boolean.parseBoolean(request.getParameter("isNewLoad"))) {
-      receipts = getAllReceipts();
+    // Query is set differently based on type of search.
+    if (checkParameter(request, "isPageLoad")) {
+      query = getQuery(/* isPageLoad = */ true, queryInformation);
     } else {
       try {
-        queryInformation = createQueryInformation(request, response);
+        queryInformation = createQueryInformation(request);
       } catch (NullPointerException exception) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         response.getWriter().println(NULL_EXCEPTION_MESSAGE);
@@ -92,18 +99,38 @@ public class SearchServlet extends HttpServlet {
         response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
         return;
       }
-
-      receipts = getMatchingReceipts(queryInformation);
+      query = getQuery(/* isPageLoad = */ false, queryInformation);
     }
+
+    QueryResultList<Entity> results = null;
+
+    // Results retrieved differently based on type of search.
+    if (checkParameter(request, "getNextPage")) {
+      results = getNextPage(request.getParameter("encodedCursor"), query);
+    } else if (checkParameter(request, "getPreviousPage")) {
+      results = getPreviousPage(request.getParameter("encodedCursor"), query);
+    } else {
+      results = getFirstPage(query);
+    }
+
+    SearchServletResponse servletResponse = createServletResponse(results, queryInformation);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
-    response.getWriter().println(gson.toJson(receipts));
+    response.getWriter().println(gson.toJson(servletResponse));
+  }
+
+  /**
+   * Checks if the passed in parameter was true or false.
+   * @param parameter A string representation of a boolean: "true" or "false".
+   * @return the input string parsed to a boolean.
+   */
+  private boolean checkParameter(HttpServletRequest request, String parameter) {
+    return Boolean.parseBoolean(request.getParameter(parameter));
   }
 
   /** Creates a {@link QueryInformation} based on request parameters. */
-  private QueryInformation createQueryInformation(
-      HttpServletRequest request, HttpServletResponse response)
+  private QueryInformation createQueryInformation(HttpServletRequest request)
       throws IOException, NullPointerException, NumberFormatException, ParseException {
     String timeZoneId = request.getParameter("timeZoneId");
     String category = request.getParameter("category");
@@ -112,61 +139,102 @@ public class SearchServlet extends HttpServlet {
     String minPrice = request.getParameter("min");
     String maxPrice = request.getParameter("max");
 
-    QueryInformation queryInformation =
-        new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
-
-    return queryInformation;
+    return new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
   }
 
-  /** Returns ImmutableList of receipts from datastore matching queryInformation fields. */
-  private ImmutableList<Receipt> getMatchingReceipts(QueryInformation queryInformation) {
-    Query query = setupQuery(queryInformation);
+  /**
+   * Gets next receipts page from an existing query.
+   * @return list of receipts as entities.
+   */
+  private QueryResultList<Entity> getNextPage(String encodedCursor, Query query) {
+    Cursor cursor = Cursor.fromWebSafeString(encodedCursor);
+    FetchOptions options = FetchOptions.Builder.withStartCursor(cursor);
+    options.limit(RECEIPTS_PER_PAGE);
 
-    /**
-     * Datastore doesn't support queries with multiple inequality filters
-     * (i.e price and timestamp) so price filtering is manually done here.
-     */
-    return datastore.prepare(query)
-        .asList(FetchOptions.Builder.withDefaults())
-        .stream()
-        .map(this::createReceiptFromEntity)
-        .filter(receipt
-            -> receipt.getPrice() >= queryInformation.getMinPrice()
-                && receipt.getPrice() <= queryInformation.getMaxPrice())
-        .collect(ImmutableList.toImmutableList());
+    return datastore.prepare(query).asQueryResultList(options);
   }
 
-  /** Returns ImmutableList of all receipts from datastore. */
-  private ImmutableList<Receipt> getAllReceipts() {
-    Query query = new Query("Receipt");
+  /**
+   * Gets previous receipts page from an existing query.
+   * @return list of receipts as entities.
+   */
+  private QueryResultList<Entity> getPreviousPage(String encodedCursor, Query query) {
+    Cursor cursor = Cursor.fromWebSafeString(encodedCursor);
+    FetchOptions options = FetchOptions.Builder.withEndCursor(cursor);
+    options.limit(RECEIPTS_PER_PAGE);
+
+    return datastore.prepare(query).asQueryResultList(options);
+  }
+
+  /**
+   * Gets first receipts page from a new query.
+   * @return list of receipts as entities.
+   */
+  private QueryResultList<Entity> getFirstPage(Query query) {
+    PreparedQuery preparedQuery = datastore.prepare(query);
+    QueryResultList<Entity> results =
+        preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
+
+    return results;
+  }
+
+  /**
+   * Creates query to be used to retrieve receipts from datastore.
+   * @param isPageLoad If true, gets all receipts, else gets receipts matching queryInformation.
+   */
+  private Query getQuery(boolean isPageLoad, QueryInformation queryInformation) {
+    Query query = new Query("Receipt")
+                      .addSort("timestamp", SortDirection.DESCENDING)
+                      .addSort("__key__", SortDirection.DESCENDING);
     query.addFilter("userId", Query.FilterOperator.EQUAL, userService.getCurrentUser().getUserId());
 
-    return datastore.prepare(query)
-        .asList(FetchOptions.Builder.withDefaults())
-        .stream()
-        .map(this::createReceiptFromEntity)
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  /** Creates a {@link Query} with filters set based on which values were input by user. */
-  private Query setupQuery(QueryInformation queryInformation) {
-    Query query = new Query("Receipt");
-    query.addFilter("userId", Query.FilterOperator.EQUAL, userService.getCurrentUser().getUserId());
-
-    if (queryInformation.getCategory() != null && queryInformation.getCategory().size() != 0) {
-      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategory());
+    // Don't need to set any other filters if it's a pageLoad event.
+    if (!isPageLoad) {
+      setupQuery(query, queryInformation);
     }
 
+    return query;
+  }
+
+  /** Sets up a {@link Query} with filters set based on which values were input by user. */
+  private void setupQuery(Query query, QueryInformation queryInformation) {
     query.addFilter("timestamp", Query.FilterOperator.GREATER_THAN_OR_EQUAL,
         queryInformation.getStartTimestamp());
     query.addFilter(
         "timestamp", Query.FilterOperator.LESS_THAN_OR_EQUAL, queryInformation.getEndTimestamp());
 
+    if (queryInformation.getCategory() != null && queryInformation.getCategory().size() != 0) {
+      query.addFilter("categories", Query.FilterOperator.IN, queryInformation.getCategory());
+    }
+
     if (!Strings.isNullOrEmpty(queryInformation.getStore())) {
       query.addFilter("store", Query.FilterOperator.EQUAL, queryInformation.getStore());
     }
+  }
 
-    return query;
+  /** Creates a SearchServletResponse object containing information for the client. */
+  private SearchServletResponse createServletResponse(
+      QueryResultList<Entity> results, QueryInformation queryInformation) {
+    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results, queryInformation);
+    String encodedCursor = results.getCursor().toWebSafeString();
+    return new SearchServletResponse(receipts, encodedCursor);
+  }
+
+  private ImmutableList<Receipt> entitiesListToReceiptsList(
+      QueryResultList<Entity> results, QueryInformation queryInformation) {
+    Stream<Receipt> receipts = results.stream().map(this::createReceiptFromEntity);
+
+    if (queryInformation != null) {
+      /**
+       * Datastore doesn't support queries with multiple inequality filters
+       * (i.e price and timestamp) so price filtering is manually done here.
+       */
+      receipts = receipts.filter(receipt
+          -> receipt.getPrice() >= queryInformation.getMinPrice()
+              && receipt.getPrice() <= queryInformation.getMaxPrice());
+    }
+
+    return receipts.collect(ImmutableList.toImmutableList());
   }
 
   /** Creates a {@link Receipt} from an {@link Entity}. */

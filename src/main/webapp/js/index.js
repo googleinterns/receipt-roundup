@@ -14,9 +14,10 @@
 
 /* global capitalizeFirstLetters, loadPage */
 
-/**
- * Checks that the user is logged in then loads the logout button and receipts.
- */
+let encodedCursor;
+let isPageLoad;
+
+/** Checks if user is logged in then loads the logout button and receipts. */
 function load() {
   loadPage(getAllReceipts, loadLogoutButton);  // From js/common.js
 }
@@ -31,27 +32,63 @@ async function loadLogoutButton(account) {
   document.getElementById('user-display').innerHTML = `${account.email}`;
 }
 
-/** Fetches all receipts from the server and adds them to the DOM. */
-async function getAllReceipts() {
+/**
+ * Fetches all receipts from the server and adds them to the DOM.
+ * This will only be called on page load.
+ */
+function getAllReceipts() {
   document.body.style.cursor = 'wait';
 
   const params = new URLSearchParams();
-  params.append('isNewLoad', 'true');
+  isPageLoad = true;
+  params.append('isPageLoad', isPageLoad);
 
-  const response = await fetch(`/search-receipts?${params.toString()}`);
-  const receipts = await response.json();
-
-  clearExistingDisplay();
-  displayReceipts(receipts);
-  document.body.style.cursor = 'default';
+  searchReceipts(params);
 }
 
 /** Fetches matching receipts from the server and adds them to the DOM. */
-async function searchReceipts() {
+function getMatchingReceipts() {
   document.body.style.cursor = 'wait';
 
   const params = new URLSearchParams();
-  params.append('isNewLoad', 'false');
+  isPageLoad = false;
+  params.append('isPageLoad', isPageLoad);
+  appendQueryInformation(params);
+
+  searchReceipts(params);
+}
+
+/** Fetches next receipts page from the server and adds to the DOM. */
+function getNextPageOfReceipts() {
+  document.body.style.cursor = 'wait';
+
+  const params = new URLSearchParams();
+  params.append('isPageLoad', isPageLoad);
+  params.append('getNextPage', 'true');
+  params.append('encodedCursor', encodedCursor);
+  appendQueryInformation(params);
+
+  searchReceipts(params);
+  scrollToTop();
+}
+
+/** Fetches previous receipts page from the server and adds to the DOM. */
+function getPreviousPageOfReceipts() {
+  document.body.style.cursor = 'wait';
+
+  const params = new URLSearchParams();
+  params.append('isPageLoad', isPageLoad);
+  params.append('getNextPage', 'false');
+  params.append('getPreviousPage', 'true');
+  params.append('encodedCursor', encodedCursor);
+  appendQueryInformation(params);
+
+  searchReceipts(params);
+  scrollToTop();
+}
+
+/** Attaches search query information to params to be sent to the server. */
+function appendQueryInformation(params) {
   params.append('category', document.getElementById('category-input').value);
   params.append(
       'dateRange', document.getElementById('date-range-input').textContent);
@@ -60,13 +97,28 @@ async function searchReceipts() {
   params.append('max', document.getElementById('max-price-input').value);
   const dateTimeFormat = new Intl.DateTimeFormat();
   params.append('timeZoneId', dateTimeFormat.resolvedOptions().timeZone);
+}
 
+/**
+ * Searches receipts based on user query.
+ * @param {URLSearchParams} params To be used in query string.
+ */
+async function searchReceipts(params) {
   const response = await fetch(`/search-receipts?${params.toString()}`);
-  const receipts = await response.json();
+  const info = await response.json();
+
+  const receipts = info.matchingReceipts;
+  encodedCursor = info.encodedCursor;
 
   clearExistingDisplay();
   displayReceipts(receipts);
   document.body.style.cursor = 'default';
+}
+
+/** Scrolls to the top of the page. */
+function scrollToTop() {
+  document.body.scrollTop = 0;             // For Safari
+  document.documentElement.scrollTop = 0;  // For Chrome, Firefox, IE and Opera
 }
 
 /** Clears out receipts display including old receipts and error messages. */
@@ -237,7 +289,6 @@ $(function() {
           cb);
   cb(start, end);
 });
-
 
 /**
  * Price range slider setup:

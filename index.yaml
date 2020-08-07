@@ -4,18 +4,27 @@ indexes:
   properties:
   - name: userId
   - name: timestamp
+    direction: desc
+  - name: __key__
+    direction: desc
 
 - kind: Receipt
   properties:
   - name: userId
   - name: store
   - name: timestamp
+    direction: desc
+  - name: __key__
+    direction: desc
 
 - kind: Receipt
   properties:
   - name: userId
   - name: categories
   - name: timestamp
+    direction: desc
+  - name: __key__
+    direction: desc
 
 - kind: Receipt
   properties:
@@ -23,3 +32,6 @@ indexes:
   - name: store
   - name: categories
   - name: timestamp
+    direction: desc
+  - name: __key__
+    direction: desc

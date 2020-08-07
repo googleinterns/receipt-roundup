@@ -108,7 +108,7 @@
           </div>
         </div>
         <div class="col-md-1">
-          <button type="submit" class="btn btn-outline-info btn-md mt-2 mb-2" onclick="searchReceipts()">
+          <button type="submit" class="btn btn-outline-info my-2 my-sm-0" onclick="getMatchingReceipts()">
             Search
           </button>
         </div>
@@ -116,6 +116,14 @@
     </form>
     <!-- The columns will automatically stack on top of each other when the screen is less than 768px wide. -->
     <div id="receipts-display" class="row mt-4"></div>
+    <div class="row">
+      <div class="col-6 d-flex justify-content-end pb-4">
+        <button type="button" class="btn btn-info" onclick="getPreviousPageOfReceipts()">&lt; Back</button>
+      </div>
+      <div class="col-6 d-flex justify-content-start pb-4">
+        <button type="button" class="btn btn-info" onclick="getNextPageOfReceipts()">Next &gt;</button>
+      </div>
+    </div>
   </div>
 </body>
 <template id="receipt-card-template">
@@ -150,6 +158,6 @@
 </template>
 <template id="category-template">
   <div class="col-auto d-flex justify-content-center">
-    <h4><span id="category-name" class="badge badge-pill badge-secondary">-</span></h4>
+    <h4><span id="category-name" class="badge badge-pill badge-info">-</span></h4>
   </div>
 </template>
