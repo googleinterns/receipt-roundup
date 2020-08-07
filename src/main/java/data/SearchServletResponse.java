@@ -16,7 +16,7 @@ package com.google.sps.data;
 
 import com.google.common.collect.ImmutableList;
 
-/** Wrapper class for infromation sent on a search servlet doGet request. */
+/** Wrapper class for information sent on a search servlet doGet response. */
 public class SearchServletResponse {
   private final ImmutableList<Receipt> matchingReceipts;
   private final String encodedCursor;
