@@ -83,7 +83,7 @@ public class SearchServlet extends HttpServlet {
     // Query is set differently based on type of search.
     if (checkParameter(request, "isPageLoad")) {
       query = getQuery(/* isPageLoad = */ true, queryInformation);
-    } else if (checkParameter(request, "isNewSearch")) {
+    } else {
       try {
         queryInformation = createQueryInformation(request);
       } catch (NullPointerException exception) {
@@ -175,7 +175,7 @@ public class SearchServlet extends HttpServlet {
     QueryResultList<Entity> results =
         preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
 
-    return retults;
+    return results;
   }
 
   /**

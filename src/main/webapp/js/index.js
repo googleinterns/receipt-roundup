@@ -49,7 +49,6 @@ function getAllReceipts() {
 function getMatchingReceipts() {
   const params = new URLSearchParams();
   isPageLoad = false;
-  params.append('isNewSearch', 'true');
   params.append('isPageLoad', isPageLoad);
   appendQueryInformation(params);
 
@@ -60,7 +59,6 @@ function getMatchingReceipts() {
 function getNextPageOfReceipts() {
   const params = new URLSearchParams();
   params.append('isPageLoad', isPageLoad);
-  params.append('isNewSearch', !isPageLoad);
   params.append('getNextPage', 'true');
   params.append('encodedCursor', encodedCursor);
   appendQueryInformation(params);
@@ -73,7 +71,6 @@ function getNextPageOfReceipts() {
 function getPreviousPageOfReceipts() {
   const params = new URLSearchParams();
   params.append('isPageLoad', isPageLoad);
-  params.append('isNewSearch', !isPageLoad);
   params.append('getNextPage', 'false');
   params.append('getPreviousPage', 'true');
   params.append('encodedCursor', encodedCursor);
