@@ -61,9 +61,6 @@ public class SearchServlet extends HttpServlet {
   private final DatastoreService datastore;
   private final UserService userService = UserServiceFactory.getUserService();
 
-  private PreparedQuery preparedQuery;
-  private QueryInformation queryInformation;
-
   public SearchServlet() {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
@@ -80,13 +77,15 @@ public class SearchServlet extends HttpServlet {
       return;
     }
 
-    SearchServletResponse servletResponse = null;
+    Query query = null;
+    QueryInformation queryInformation = null;
 
+    // Query is set differently based on type of search.
     if (checkParameter(request, "isPageLoad")) {
-      servletResponse = getReceipts(/* isPageLoad = */ true);
+      query = getQuery(/* isPageLoad = */ true, queryInformation);
     } else if (checkParameter(request, "isNewSearch")) {
       try {
-        createQueryInformation(request);
+        queryInformation = createQueryInformation(request);
       } catch (NullPointerException exception) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         response.getWriter().println(NULL_EXCEPTION_MESSAGE);
@@ -100,13 +99,21 @@ public class SearchServlet extends HttpServlet {
         response.getWriter().println(PARSE_EXCEPTION_MESSAGE);
         return;
       }
-
-      servletResponse = getReceipts(/* isPageLoad = */ false);
-    } else if (checkParameter(request, "getNextPage")) {
-      servletResponse = getNextPage(request.getParameter("encodedCursor"));
-    } else if (checkParameter(request, "getPreviousPage")) {
-      servletResponse = getPreviousPage(request.getParameter("encodedCursor"));
+      query = getQuery(/* isPageLoad = */ false, queryInformation);
     }
+
+    QueryResultList<Entity> results = null;
+
+    // Results retrieved differently based on type of search.
+    if (checkParameter(request, "getNextPage")) {
+      results = getNextPage(request.getParameter("encodedCursor"), query);
+    } else if (checkParameter(request, "getPreviousPage")) {
+      results = getPreviousPage(request.getParameter("encodedCursor"), query);
+    } else {
+      results = getFirstPage(query);
+    }
+
+    SearchServletResponse servletResponse = createServletResponse(results, queryInformation);
 
     Gson gson = new Gson();
     response.setContentType("application/json;");
@@ -123,7 +130,7 @@ public class SearchServlet extends HttpServlet {
   }
 
   /** Creates a {@link QueryInformation} based on request parameters. */
-  private void createQueryInformation(HttpServletRequest request)
+  private QueryInformation createQueryInformation(HttpServletRequest request)
       throws IOException, NullPointerException, NumberFormatException, ParseException {
     String timeZoneId = request.getParameter("timeZoneId");
     String category = request.getParameter("category");
@@ -132,48 +139,50 @@ public class SearchServlet extends HttpServlet {
     String minPrice = request.getParameter("min");
     String maxPrice = request.getParameter("max");
 
-    queryInformation =
-        new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
+    return new QueryInformation(timeZoneId, category, dateRange, store, minPrice, maxPrice);
   }
 
   /**
    * Gets next receipts page from an existing query.
-   * @return wrapper object containing the receipts page and encodedCursor.
+   * @return list of receipts as entities.
    */
-  private SearchServletResponse getNextPage(String encodedCursor) {
+  private QueryResultList<Entity> getNextPage(String encodedCursor, Query query) {
     Cursor cursor = Cursor.fromWebSafeString(encodedCursor);
     FetchOptions options = FetchOptions.Builder.withStartCursor(cursor);
     options.limit(RECEIPTS_PER_PAGE);
 
-    QueryResultList<Entity> results = preparedQuery.asQueryResultList(options);
-    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
-    encodedCursor = results.getCursor().toWebSafeString();
-
-    return new SearchServletResponse(receipts, encodedCursor);
+    return datastore.prepare(query).asQueryResultList(options);
   }
 
   /**
    * Gets previous receipts page from an existing query.
-   * @return wrapper object containing the receipts page and encodedCursor.
+   * @return list of receipts as entities.
    */
-  private SearchServletResponse getPreviousPage(String encodedCursor) {
+  private QueryResultList<Entity> getPreviousPage(String encodedCursor, Query query) {
     Cursor cursor = Cursor.fromWebSafeString(encodedCursor);
     FetchOptions options = FetchOptions.Builder.withEndCursor(cursor);
     options.limit(RECEIPTS_PER_PAGE);
 
-    QueryResultList<Entity> results = preparedQuery.asQueryResultList(options);
-    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
-    encodedCursor = results.getCursor().toWebSafeString();
-
-    return new SearchServletResponse(receipts, encodedCursor);
+    return datastore.prepare(query).asQueryResultList(options);
   }
 
   /**
-   * Gets receipts from datastore.
-   * @param isPageLoad If true, gets all receipts, else gets receipts matching queryInformation.
-   * @return wrapper object containing the receipts and encodedCursor.
+   * Gets first receipts page from a new query.
+   * @return list of receipts as entities.
    */
-  private SearchServletResponse getReceipts(boolean isPageLoad) {
+  private QueryResultList<Entity> getFirstPage(Query query) {
+    PreparedQuery preparedQuery = datastore.prepare(query);
+    QueryResultList<Entity> results =
+        preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
+
+    return preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
+  }
+
+  /**
+   * Creates query to be used to retrieve receipts from datastore.
+   * @param isPageLoad If true, gets all receipts, else gets receipts matching queryInformation.
+   */
+  private Query getQuery(boolean isPageLoad, QueryInformation queryInformation) {
     Query query = new Query("Receipt")
                       .addSort("timestamp", SortDirection.DESCENDING)
                       .addSort("__key__", SortDirection.DESCENDING);
@@ -181,21 +190,14 @@ public class SearchServlet extends HttpServlet {
 
     // Don't need to set any other filters if it's a pageLoad event.
     if (!isPageLoad) {
-      setupQuery(query);
+      setupQuery(query, queryInformation);
     }
 
-    preparedQuery = datastore.prepare(query);
-    QueryResultList<Entity> results =
-        preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
-
-    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results);
-    String encodedCursor = results.getCursor().toWebSafeString();
-
-    return new SearchServletResponse(receipts, encodedCursor);
+    return query;
   }
 
   /** Sets up a {@link Query} with filters set based on which values were input by user. */
-  private void setupQuery(Query query) {
+  private void setupQuery(Query query, QueryInformation queryInformation) {
     query.addFilter("timestamp", Query.FilterOperator.GREATER_THAN_OR_EQUAL,
         queryInformation.getStartTimestamp());
     query.addFilter(
@@ -210,7 +212,16 @@ public class SearchServlet extends HttpServlet {
     }
   }
 
-  private ImmutableList<Receipt> entitiesListToReceiptsList(QueryResultList<Entity> results) {
+  /** Creates a SearchServletResponse object containing information for the client. */
+  private SearchServletResponse createServletResponse(
+      QueryResultList<Entity> results, QueryInformation queryInformation) {
+    ImmutableList<Receipt> receipts = entitiesListToReceiptsList(results, queryInformation);
+    String encodedCursor = results.getCursor().toWebSafeString();
+    return new SearchServletResponse(receipts, encodedCursor);
+  }
+
+  private ImmutableList<Receipt> entitiesListToReceiptsList(
+      QueryResultList<Entity> results, QueryInformation queryInformation) {
     Stream<Receipt> receipts = results.stream().map(this::createReceiptFromEntity);
 
     if (queryInformation != null) {

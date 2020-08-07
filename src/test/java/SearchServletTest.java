@@ -327,7 +327,6 @@ public final class SearchServletTest {
     Assert.assertTrue(TestUtils.checkIdsMatch(expectedFirstPage, returnedFirstPage));
 
     // Perform doGet - this should retrieve last few receipts, which is 2.
-    when(request.getParameter("isPageLoad")).thenReturn("false");
     when(request.getParameter("isNewSearch")).thenReturn("false");
     when(request.getParameter("getNextPage")).thenReturn("true");
     when(request.getParameter("encodedCursor")).thenReturn(ENCODED_CURSOR);
@@ -358,7 +357,6 @@ public final class SearchServletTest {
     writer.flush();
 
     // Perform doGet - this should retrieve second page with last 2 receipts.
-    when(request.getParameter("isPageLoad")).thenReturn("false");
     when(request.getParameter("isNewSearch")).thenReturn("false");
     when(request.getParameter("getNextPage")).thenReturn("true");
     when(request.getParameter("encodedCursor")).thenReturn(ENCODED_CURSOR);

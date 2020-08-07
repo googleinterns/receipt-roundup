@@ -15,6 +15,7 @@
 /* global capitalizeFirstLetters, loadPage */
 
 let encodedCursor;
+let isPageLoad;
 
 /** Checks if user is logged in then loads the logout button and receipts. */
 function load() {
@@ -38,7 +39,8 @@ async function loadLogoutButton(account) {
  */
 function getAllReceipts() {
   const params = new URLSearchParams();
-  params.append('isPageLoad', 'true');
+  isPageLoad = true;
+  params.append('isPageLoad', isPageLoad);
 
   searchReceipts(params);
 }
@@ -46,16 +48,10 @@ function getAllReceipts() {
 /** Fetches matching receipts from the server and adds them to the DOM. */
 function getMatchingReceipts() {
   const params = new URLSearchParams();
+  isPageLoad = false;
   params.append('isNewSearch', 'true');
-  params.append('isPageLoad', 'false');
-  params.append('category', document.getElementById('category-input').value);
-  params.append(
-      'dateRange', document.getElementById('date-range-input').textContent);
-  params.append('store', document.getElementById('store-name-input').value);
-  params.append('min', document.getElementById('min-price-input').value);
-  params.append('max', document.getElementById('max-price-input').value);
-  const dateTimeFormat = new Intl.DateTimeFormat();
-  params.append('timeZoneId', dateTimeFormat.resolvedOptions().timeZone);
+  params.append('isPageLoad', isPageLoad);
+  appendQueryInformation(params);
 
   searchReceipts(params);
 }
@@ -63,10 +59,11 @@ function getMatchingReceipts() {
 /** Fetches next receipts page from the server and adds it to the DOM. */
 function getNextPageOfReceipts() {
   const params = new URLSearchParams();
-  params.append('isPageLoad', 'false');
-  params.append('isNewSearch', 'false');
+  params.append('isPageLoad', isPageLoad);
+  params.append('isNewSearch', !isPageLoad);
   params.append('getNextPage', 'true');
   params.append('encodedCursor', encodedCursor);
+  appendQueryInformation(params);
 
   searchReceipts(params);
   scrollToTop();
@@ -75,14 +72,27 @@ function getNextPageOfReceipts() {
 /** Fetches previous receipts page from the server and adds it to the DOM. */
 function getPreviousPageOfReceipts() {
   const params = new URLSearchParams();
-  params.append('isPageLoad', 'false');
-  params.append('isNewSearch', 'false');
+  params.append('isPageLoad', isPageLoad);
+  params.append('isNewSearch', !isPageLoad);
   params.append('getNextPage', 'false');
   params.append('getPreviousPage', 'true');
   params.append('encodedCursor', encodedCursor);
+  appendQueryInformation(params);
 
   searchReceipts(params);
   scrollToTop();
+}
+
+/** Attaches search query information to params to be sent to the server. */
+function appendQueryInformation(params) {
+  params.append('category', document.getElementById('category-input').value);
+  params.append(
+      'dateRange', document.getElementById('date-range-input').textContent);
+  params.append('store', document.getElementById('store-name-input').value);
+  params.append('min', document.getElementById('min-price-input').value);
+  params.append('max', document.getElementById('max-price-input').value);
+  const dateTimeFormat = new Intl.DateTimeFormat();
+  params.append('timeZoneId', dateTimeFormat.resolvedOptions().timeZone);
 }
 
 /**
