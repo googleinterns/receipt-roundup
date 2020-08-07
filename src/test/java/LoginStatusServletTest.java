@@ -82,7 +82,7 @@ public final class LoginStatusServletTest {
   }
 
   @Test
-  public void doGetIfUserIsNotLoggedIn() throws IOException {
+  public void doGet_userLoggedOut() throws IOException {
     helper.setEnvIsLoggedIn(false);
 
     StringWriter stringWriter = new StringWriter();
@@ -98,7 +98,7 @@ public final class LoginStatusServletTest {
   }
 
   @Test
-  public void doGetIfUserIsLoggedIn() throws IOException {
+  public void doGet_userLoggedIn() throws IOException {
     helper.setEnvIsLoggedIn(true);
 
     StringWriter stringWriter = new StringWriter();

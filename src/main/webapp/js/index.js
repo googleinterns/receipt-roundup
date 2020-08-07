@@ -29,8 +29,7 @@ function load() {
 async function loadLogoutButton(account) {
   document.getElementById('logout-button').href = account.logoutUrl;
 
-  document.getElementById('user-display').innerHTML =
-      `You are signed in as ${account.email}`;
+  document.getElementById('user-display').innerHTML = `${account.email}`;
 }
 
 /**
@@ -38,6 +37,8 @@ async function loadLogoutButton(account) {
  * This will only be called on page load.
  */
 function getAllReceipts() {
+  document.body.style.cursor = 'wait';
+
   const params = new URLSearchParams();
   isPageLoad = true;
   params.append('isPageLoad', isPageLoad);
@@ -47,6 +48,8 @@ function getAllReceipts() {
 
 /** Fetches matching receipts from the server and adds them to the DOM. */
 function getMatchingReceipts() {
+  document.body.style.cursor = 'wait';
+
   const params = new URLSearchParams();
   isPageLoad = false;
   params.append('isPageLoad', isPageLoad);
@@ -57,6 +60,8 @@ function getMatchingReceipts() {
 
 /** Fetches next receipts page from the server and adds it to the DOM. */
 function getNextPageOfReceipts() {
+  document.body.style.cursor = 'wait';
+
   const params = new URLSearchParams();
   params.append('isPageLoad', isPageLoad);
   params.append('getNextPage', 'true');
@@ -69,6 +74,8 @@ function getNextPageOfReceipts() {
 
 /** Fetches previous receipts page from the server and adds it to the DOM. */
 function getPreviousPageOfReceipts() {
+  document.body.style.cursor = 'wait';
+
   const params = new URLSearchParams();
   params.append('isPageLoad', isPageLoad);
   params.append('getNextPage', 'false');
@@ -105,6 +112,7 @@ async function searchReceipts(params) {
 
   clearExistingDisplay();
   displayReceipts(receipts);
+  document.body.style.cursor = 'default';
 }
 
 /** Scrolls to the top of the page. */
@@ -160,16 +168,19 @@ function createReceiptCardElement(receipt) {
 
   // Fill in template fields with correct information.
   const date = new Date(receipt.timestamp);
-  receiptCardClone.querySelector('#timestamp').innerText = date.toDateString();
+  receiptCardClone.querySelector('#timestamp').innerText =
+      date.toUTCString().substring(0, 16);
   receiptCardClone.querySelector('#store-name').innerText =
       capitalizeFirstLetters(receipt.store);
   receiptCardClone.querySelector('#total').innerText =
-      'Total: $' + receipt.price;
+      `Total: $${receipt.price.toFixed(2)}`;
+
+  const categoriesContainer =
+      receiptCardClone.getElementById('categories-container');
 
   const categories = Array.from(receipt.categories);
   for (let i = 0; i < categories.length && i < 3; i++) {
-    receiptCardClone.querySelector('#c' + i).innerText =
-        capitalizeFirstLetters(categories[i]);
+    categoriesContainer.appendChild(createCategoryElement(categories[i]));
   }
 
   receiptCardClone.querySelector('img').src = receipt.imageUrl;
@@ -181,6 +192,16 @@ function createReceiptCardElement(receipt) {
 
   // Attach receipt card clone to parent div.
   document.getElementById('receipts-display').appendChild(receiptCardClone);
+}
+
+/** Creates the div element for a category along with its children. */
+function createCategoryElement(category) {
+  category = capitalizeFirstLetters(category);
+  const categoryElement =
+      document.querySelector('#category-template').content.cloneNode(true);
+  categoryElement.querySelector('#category-name').innerText = category;
+
+  return categoryElement;
 }
 
 /**
@@ -215,6 +236,7 @@ async function deleteReceipt(receipt) {
 function attachEditButtonEventListener(receipt, receiptCardClone) {
   receiptCardClone.querySelector('#edit').addEventListener('click', () => {
     const params = new URLSearchParams();
+    params.append('show-edit-text', true);
     params.append('id', receipt.id);
     params.append('categories', receipt.categories);
     params.append('image-url', receipt.imageUrl);
@@ -260,6 +282,8 @@ $(function() {
               ],
             },
             showDropdowns: true,
+            linkedCalendars: false,
+            applyButtonClasses: 'btn btn-info',
           },
 
           cb);

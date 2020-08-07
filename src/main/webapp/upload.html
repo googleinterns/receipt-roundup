@@ -21,36 +21,42 @@
 <script src="js/upload.js"></script>
 
 <body onload="load()">
-  <button id="cancel-button" class="ml-2 btn btn-info" type="button" onclick="cancelUpload()">Cancel</button>
+  <button class="btn btn-info btn-sm mt-2 ml-2" type="button" onclick="redirectHome()">
+    <img id="home-icon" src="img/home.svg" alt="Home" />
+  </button>
   <h1>Upload a Receipt</h1>
   <br />
 
-  <form id="upload-form" action="#" onsubmit="uploadReceipt(event)">
-    <label id="receipt-image-label" for="receipt-image-input">Choose a receipt image to upload:</label>
-    <div class="custom-file">
-      <input
-        id="receipt-image-input"
-        class="custom-file-input"
-        type="file"
-        name="receipt-image"
-        accept="image/jpeg"
-        onchange="displayFileName()"
-      />
-      <label id="receipt-filename-label" class="custom-file-label" for="receipt-image-input">Choose file</label>
-    </div>
-    <small class="form-text text-muted">Only JPEG images under 10 MB are accepted.</small>
+  <div class="container-fluid">
+    <div class="card m-auto p-3">
+      <form id="upload-form" action="#" onsubmit="uploadReceipt(event)">
+        <div class="custom-file">
+          <input
+            id="receipt-image-input"
+            class="custom-file-input"
+            type="file"
+            name="receipt-image"
+            accept="image/jpeg"
+            onchange="displayFileName()"
+          />
+          <label id="receipt-filename-label" class="custom-file-label" for="receipt-image-input">Choose file</label>
+        </div>
+        <small class="form-text text-muted">Only JPEG images under 10 MB are accepted.</small>
 
-    <div id="loading" class="hidden">
-      <div
-        class="loading-bar"
-        data-value="1"
-        data-type="fill"
-        data-img="img/favicon.png"
-        data-fill-background="tan"
-        data-img-size="150,150"
-      ></div>
-    </div>
+        <div id="loading" class="hidden">
+          <div
+            class="loading-bar"
+            data-value="1"
+            data-type="fill"
+            data-img="img/favicon.png"
+            data-fill-background="rgba(210,105,30,.6)"
+            data-fill-background-extrude="1.2"
+            data-img-size="150,150"
+          ></div>
+        </div>
 
-    <button id="submit-receipt" class="btn btn-lg btn-primary" type="submit">Add Receipt</button>
-  </form>
+        <button id="submit-receipt" class="btn btn-outline-info" type="submit">Add Receipt</button>
+      </form>
+    </div>
+  </div>
 </body>

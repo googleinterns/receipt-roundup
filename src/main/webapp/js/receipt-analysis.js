@@ -33,11 +33,18 @@ function loadReceiptAnalysis() {
   dateInput.value = receipt.date || today;
   dateInput.max = today;
 
+  if (receipt.showEditText) {
+    document.getElementById('header').innerText = 'Edit Receipt';
+    document.getElementById('instructions').innerText =
+        'Changes will not be saved unless you click the "Save Changes" button.';
+  }
+
   if (receipt.storeName) {
     document.getElementById('store-input').value = receipt.storeName;
   }
   if (receipt.price) {
-    document.getElementById('price-input').value = `$${receipt.price}`;
+    document.getElementById('price-input').value =
+        `$${Number(receipt.price).toFixed(2)}`;
   }
   if (receipt.categories) {
     document.getElementById('categories-input').value = receipt.categories;
@@ -53,13 +60,14 @@ function loadReceiptAnalysis() {
 function getReceiptFromQueryString() {
   const parameters = new URLSearchParams(location.search);
 
+  const showEditText = parameters.get('show-edit-text');
   const date = formatReceiptProperty('timestamp', getDateFromTimestamp);
   const storeName = formatReceiptProperty('store', capitalizeFirstLetters);
   const price = parameters.get('price');
   const categories = formatReceiptProperty('categories', formatCategories);
   const imageUrl = parameters.get('image-url');
 
-  return {date, storeName, price, categories, imageUrl};
+  return {showEditText, date, storeName, price, categories, imageUrl};
 }
 
 /**
@@ -122,6 +130,12 @@ async function updateReceipt(event) {
   // Prevent the default action of reloading the page on form submission.
   event.preventDefault();
 
+  document.body.style.cursor = 'wait';
+  const saveButton = document.getElementById('submit-receipt');
+  const homeButton = document.getElementById('home-button');
+  saveButton.disabled = true;
+  homeButton.disabled = true;
+
   const receipt = getReceiptFromForm();
   const editRequest = new URLSearchParams();
 
@@ -139,12 +153,18 @@ async function updateReceipt(event) {
 
   if (response.status !== 200) {
     const error = await response.text();
+    document.body.style.cursor = 'default';
     alert(error);
+    saveButton.disabled = false;
+    homeButton.disabled = false;
     return;
   }
 
   const json = await response.json();
   const params = setUrlParameters(json);
+
+  // Restore the cursor after the edit request has loaded.
+  document.body.style.cursor = 'default';
 
   // Remove warning for unsaved changes.
   window.onbeforeunload = null;
@@ -230,10 +250,9 @@ function formatCurrency(event) {
 }
 
 /**
- * Redirects the user to the home page when the "Return to Home" button is
- * clicked.
+ * Redirects the user to the home page if all fields are set and saved.
  */
-function redirectHome() {
+function redirectHomeIfComplete() {
   if (isFormSaved()) {
     // Remove warning for unsaved changes.
     window.onbeforeunload = null;

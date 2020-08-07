@@ -68,7 +68,7 @@ public final class EditReceiptServletTest {
   private static final String PRICE_NOT_PARSABLE_WARNING =
       "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price could not be parsed.\n";
   private static final String PRICE_NEGATIVE_WARNING =
-      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price must be positive.\n";
+      "com.google.sps.servlets.FormatUtils$InvalidPriceException: Price must be non-negative.\n";
   private static final String INVALID_ID_WARNING =
       "java.lang.NumberFormatException: For input string: \"invalid\"\n";
   private static final String ENTITY_NOT_FOUND_WARNING =
@@ -135,7 +135,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostEditsReceipt() throws IOException {
+  public void doPost_editsReceipt() throws IOException {
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
 
     servlet.doPost(request, response);
@@ -159,7 +159,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostEditsReceiptWithNoInitialProperties()
+  public void doPost_noInitialProperties_editsReceipt()
       throws IOException, EntityNotFoundException {
     Entity originalReceipt = new Entity("Receipt");
     datastore.put(originalReceipt);
@@ -179,7 +179,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostSanitizesStore() throws IOException {
+  public void doPost_sanitizesStore() throws IOException {
     String store = "    TraDeR   JOE's  ";
     stubRequestBody(request, receiptId, NEW_CATEGORIES, store, NEW_PRICE, NEW_TIMESTAMP);
 
@@ -192,7 +192,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostRemovesDuplicateCategories() throws IOException {
+  public void doPost_removesDuplicateCategories() throws IOException {
     String[] categories = new String[] {"lunch", "restaurant", "lunch", "lunch", "restaurant"};
     stubRequestBody(request, receiptId, categories, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
 
@@ -205,7 +205,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostSanitizesCategories() throws IOException {
+  public void doPost_sanitizesCategories() throws IOException {
     String[] categories =
         new String[] {"   fast   Food ", " Burger ", "  rEstaUrAnt ", "    LUNCH"};
     stubRequestBody(request, receiptId, categories, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
@@ -220,7 +220,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfUserIsLoggedOut() throws IOException {
+  public void doPost_userLoggedOut_throwsException() throws IOException {
     helper.setEnvIsLoggedIn(false);
 
     servlet.doPost(request, response);
@@ -231,7 +231,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfDateIsInTheFuture() throws IOException {
+  public void doPost_futureDate_throwsException() throws IOException {
     long futureTimestamp = Instant.parse(INSTANT).plusMillis(1234).toEpochMilli();
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, NEW_PRICE, futureTimestamp);
 
@@ -243,7 +243,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfInvalidDateFormat() throws IOException {
+  public void doPost_invalidDateFormat_throwsException() throws IOException {
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
 
     String invalidDateType = "2020-05-20";
@@ -257,7 +257,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostRoundPrice() throws IOException {
+  public void doPost_roundsPrice() throws IOException {
     double price = 17.236;
     double roundedPrice = 17.24;
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, price, NEW_TIMESTAMP);
@@ -270,7 +270,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfPriceNotParsable() throws IOException {
+  public void doPost_priceNotParsable_throwsException() throws IOException {
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, NEW_PRICE, NEW_TIMESTAMP);
 
     String invalidPrice = "text";
@@ -284,7 +284,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfPriceNegative() throws IOException {
+  public void doPost_negativePrice_throwsException() throws IOException {
     double negativePrice = -12.55;
     stubRequestBody(request, receiptId, NEW_CATEGORIES, NEW_STORE, negativePrice, NEW_TIMESTAMP);
 
@@ -296,7 +296,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfInvalidIdFormat() throws IOException {
+  public void doPost_invalidIdFormat_throwsException() throws IOException {
     when(request.getParameter("id")).thenReturn("invalid");
 
     servlet.doPost(request, response);
@@ -307,7 +307,7 @@ public final class EditReceiptServletTest {
   }
 
   @Test
-  public void doPostThrowsIfEntityNotFound() throws IOException {
+  public void doPost_entityNotFound_throwsException() throws IOException {
     when(request.getParameter("id")).thenReturn(String.valueOf(-1));
 
     servlet.doPost(request, response);

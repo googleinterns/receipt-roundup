@@ -18,7 +18,7 @@
 }
 
 .search-bar {
-  background-color: #f7f7f7;
+  outline: 2px solid #ededed;
   padding: 0.3% 0 0.8%;
 }
 
@@ -31,4 +31,8 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
+}
+
+.slider-keypress .noUi-connect {
+  background: #17a2b8;
 }

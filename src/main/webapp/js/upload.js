@@ -21,13 +21,6 @@ async function load() {
 }
 
 /**
- * Redirects the user back to the home page when the cancel button is clicked.
- */
-function cancelUpload() {
-  window.location.href = 'index.html';
-}
-
-/**
  * Sends a request to add a receipt to Blobstore then redirects to the receipt
  * analysis page.
  */

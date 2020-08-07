@@ -23,26 +23,35 @@
 <title>Receipt Analysis</title>
 
 <body onload="load()">
-  <h1 class="p-3 text-center">Receipt Analysis</h1>
+  <button id="home-button" class="btn btn-info btn-sm mt-2 ml-2" type="button" onclick="redirectHomeIfComplete()">
+    <img id="home-icon" src="img/home.svg" alt="Home" />
+  </button>
+
+  <h1 id="header" class="p-3 text-center">Receipt Analysis</h1>
 
   <div class="container-fluid">
-    <p class="text-center">Success! The following receipt has been added to your account:</p>
+    <div class="instructions-container m-auto">
+      <p id="instructions" class="text-center">
+        The following information was extracted from your receipt. Please fix any mistakes and fill in any missing
+        items, then click the "Save Changes" button.
+      </p>
+    </div>
 
     <div class="card m-auto p-3">
       <form id="update-receipt-form" action="#" onsubmit="updateReceipt(event)">
         <div class="card border-0">
           <div class="d-flex justify-content-center">
-            <label for="date-input">Transaction Date:</label>
+            <label for="date-input">Date <span class="required">*</span></label>
           </div>
           <input id="date-input" class="form-control mb-3" type="date" name="date" />
 
           <div class="d-flex justify-content-center">
-            <label for="store-input">Store Name:</label>
+            <label for="store-input">Store Name <span class="required">*</span></label>
           </div>
           <input id="store-input" class="form-control mb-3" type="text" name="store" placeholder="Store" required />
 
           <div class="d-flex justify-content-center">
-            <label for="price-input">Total Price:</label>
+            <label for="price-input">Total Price <span class="required">*</span></label>
           </div>
           <input
             id="price-input"
@@ -58,7 +67,7 @@
           />
 
           <div class="d-flex justify-content-center">
-            <label for="categories-input">Categories:</label>
+            <label for="categories-input">Categories <span class="required">*</span></label>
           </div>
           <input
             id="categories-input"
@@ -75,11 +84,6 @@
         </div>
       </form>
       <img id="receipt-image" src="data:," alt="Receipt image" class="d-block p-2 img-fluid" />
-    </div>
-
-    <!-- TODO: Add warning if user has an incomplete receipt. -->
-    <div class="my-4 d-flex justify-content-center">
-      <button href="/" class="btn btn-lg btn-info" type="button" onclick="redirectHome()">Return to Home</button>
     </div>
   </div>
 
