@@ -58,21 +58,16 @@ function getMatchingReceipts() {
   searchReceipts(params);
 }
 
-/** Fetches next receipts page from the server and adds it to the DOM. */
-function getNextPageOfReceipts() {
-  document.body.style.cursor = 'wait';
-
-  const params = new URLSearchParams();
-  params.append('isPageLoad', isPageLoad);
-  params.append('getNextPage', 'true');
-  params.append('encodedCursor', encodedCursor);
+/**
+Fetches next receipts page from the server and adds itmvn encodedCursor);
   appendQueryInformation(params);
 
   searchReceipts(params);
   scrollToTop();
 }
 
-/** Fetches previous receipts page from the server and adds it to the DOM. */
+/** Fetches previous receipts page from the server and adds it to the DOM.
+*/
 function getPreviousPageOfReceipts() {
   document.body.style.cursor = 'wait';
 

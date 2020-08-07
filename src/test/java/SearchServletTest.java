@@ -70,10 +70,6 @@ public final class SearchServletTest {
   private static final String USER_EMAIL = "test@gmail.com";
   private static final String USER_ID = "testID";
 
-  private static final String DOMAIN_NAME = "gmail.com";
-  private static final String USER_EMAIL = "test@gmail.com";
-  private static final String USER_ID = "testID";
-
   // Local Datastore
   private final LocalServiceTestHelper helper =
       new LocalServiceTestHelper(
@@ -320,7 +316,8 @@ public final class SearchServletTest {
     writer.flush();
 
     // No receipts should be returned (empty string).
-    Assert.assertEquals(ImmutableList.of().toString() + "\n", stringWriter.toString());
+    String receiptsString = TestUtils.getReceiptsString(stringWriter.toString());
+    Assert.assertEquals("[]", receiptsString);
   }
 
   @Test
