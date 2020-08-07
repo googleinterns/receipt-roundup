@@ -175,7 +175,7 @@ public class SearchServlet extends HttpServlet {
     QueryResultList<Entity> results =
         preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
 
-    return preparedQuery.asQueryResultList(FetchOptions.Builder.withLimit(RECEIPTS_PER_PAGE));
+    return retults;
   }
 
   /**
