@@ -29,18 +29,25 @@ Receipts are easy to lose track of and get destroyed easily. Additionally, it ca
 
 ## Demos
 ### End-to-End
+![End-to-End](/demos/end-to-end.gif)
 
 ### Logging In
+![Logging In](/demos/login.gif)
 
 ### Home Page
+![Home Page](/demos/home.gif)
 
 ### Adding a Receipt
+![Adding a Receipt](/demos/upload.gif)
 
 ### Receipt Analysis
+![Receipt Analysis](/demos/analysis.gif)
 
 ### Editing a Receipt
+![Editing a Receipt](/demos/edit.gif)
 
 ### Viewing Spending Analytics
+![Viewing Spending Analytics](/demos/analytics.gif)
 
 
 ## Technologies
